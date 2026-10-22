@@ -46,6 +46,8 @@ export interface PwaApi {
   errorKind?: ErrorKind;
   /** When status is 'unsupported': why. */
   unsupportedReason?: UnsupportedReason;
+  /** Increments on every failure; lets the UI re-show a banner for a repeated identical error. */
+  errorSeq?: number;
   /** Show the "Update" action: a release is waiting, or a failed install can be retried. */
   updateOffered: boolean;
   /** True while any screen holds unsaved work; updates never reload then. */
@@ -357,7 +359,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
     try {
       sw = navigator.serviceWorker; // throws SecurityError in some browsers when storage is blocked
     } catch (e) {
-      send(registrationFailedAction(e, new Date()));
+      send(registrationFailedAction(e, new Date(), 'container'));
       return;
     }
     hadControllerRef.current = !!sw.controller;
@@ -435,6 +437,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
       lastChecked: state.lastChecked,
       error: state.error,
       errorKind: state.status === 'error' ? state.errorKind : undefined,
+      errorSeq: state.errorSeq,
       unsupportedReason: state.status === 'unsupported' ? (state.unsupportedReason ?? unsupportedReason) : undefined,
       updateOffered: updateOffered(state),
       hasDirtyWork,

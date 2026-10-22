@@ -262,7 +262,7 @@ function UpdateOverlay() {
 
 // Dismissal survives page changes (each page mounts its own AppShell) until the next failure.
 let dismissedErrorKey: string | undefined;
-const errorKey = (kind: string | undefined, d: Date | undefined, error: string | undefined) => `${kind ?? 'check'}|${d?.getTime() ?? 'none'}|${error ?? ''}`;
+const errorKey = (kind: string | undefined, seq: number | undefined, error: string | undefined) => `${kind ?? 'check'}|${seq ?? 0}|${error ?? ''}`;
 
 /**
  * A failed check (Retry re-checks, and re-registers the worker if that failed) or a failed install
@@ -272,7 +272,7 @@ function UpdateError() {
   const pwa = usePwa();
   const { t } = useI18n();
   const [, force] = useState(0);
-  const key = errorKey(pwa.errorKind, pwa.lastChecked, pwa.error);
+  const key = errorKey(pwa.errorKind, pwa.errorSeq, pwa.error);
   if (pwa.status !== 'error' || dismissedErrorKey === key) return null;
   return (
     <div className="notice notice-danger update-error" role="alert">

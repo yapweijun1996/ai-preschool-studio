@@ -31,6 +31,8 @@ export interface PwaState {
   /** After an apply failure: the new release is still waiting (or the page is stale), so it can be retried. */
   updatePending?: boolean;
   unsupportedReason?: UnsupportedReason;
+  /** Increments on every failure so the UI can tell a repeated identical error from a dismissed one. */
+  errorSeq?: number;
 }
 
 export type PwaAction =
@@ -72,7 +74,9 @@ export function canApply(state: PwaState, dirty: boolean): boolean {
 
 /**
  * Safe-idle policy: update automatically only when nothing is dirty and the user is away.
- * Only from 'available': a failed install is never retried without the user.
+ * Only from 'available'. After a failed install, a later background check may re-offer the
+ * release and retry it once per check while the tab stays hidden; the reload-loop guard still
+ * applies, so this can never become a loop.
  */
 export function shouldAutoApply(state: PwaState, dirty: boolean, visibility: DocumentVisibilityState | string): boolean {
   return state.status === 'available' && canApply(state, dirty) && visibility === 'hidden';
@@ -81,13 +85,14 @@ export function shouldAutoApply(state: PwaState, dirty: boolean, visibility: Doc
 const messageOf = (e: unknown) => (e instanceof Error && e.message ? e.message : String(e || 'Update check failed'));
 
 /**
- * Maps a failed navigator.serviceWorker.register() (or a throwing navigator.serviceWorker) to an
- * action. A SecurityError means the browser will not allow a worker here (cookies/storage blocked):
- * updates are unsupported, not a transient error. Anything else (404, network) is retryable.
+ * Maps a service-worker failure to an action. Only a SecurityError thrown by the
+ * navigator.serviceWorker getter itself means the browser blocks workers (storage blocked):
+ * that is 'unsupported'. register() also rejects with SecurityError for a wrong MIME type or a
+ * redirected sw.js (captive portal, proxy, deploy in progress), which is transient: retryable.
  */
-export function registrationFailedAction(e: unknown, at: Date): PwaAction {
+export function registrationFailedAction(e: unknown, at: Date, source: 'container' | 'register' = 'register'): PwaAction {
   const name = typeof e === 'object' && e !== null && 'name' in e ? (e as { name?: unknown }).name : undefined;
-  if (name === 'SecurityError') return { type: 'unsupported', reason: 'blocked' };
+  if (source === 'container' && name === 'SecurityError') return { type: 'unsupported', reason: 'blocked' };
   return { type: 'check-failed', message: messageOf(e), at };
 }
 
@@ -99,7 +104,8 @@ const applyError = (state: PwaState, message: string, pending: boolean | undefin
   status: 'error',
   error: message,
   errorKind: 'apply',
-  updatePending: pending === true
+  updatePending: pending === true,
+  errorSeq: (state.errorSeq ?? 0) + 1
 });
 
 /** Leaves the error state: drops error, errorKind and updatePending. */
@@ -122,7 +128,7 @@ export function pwaReducer(state: PwaState, action: PwaAction): PwaState {
         : { status: 'current', lastChecked: action.at };
     case 'check-failed':
       if (holds(state)) return { ...state, lastChecked: action.at };
-      return { ...state, status: 'error', error: action.message, errorKind: 'check', updatePending: undefined, lastChecked: action.at };
+      return { ...state, status: 'error', error: action.message, errorKind: 'check', updatePending: undefined, lastChecked: action.at, errorSeq: (state.errorSeq ?? 0) + 1 };
     case 'offline':
       if (holds(state) || retryableApply(state)) return state;
       return { ...clean(state), status: 'offline', lastChecked: action.at ?? state.lastChecked };

@@ -132,10 +132,14 @@ describe('pwa update state machine', () => {
     expect(updateOffered(run(initialPwaState(true), { type: 'check-done', waiting: false, at }))).toBe(false);
   });
 
-  it('registration blocked by the browser (SecurityError) is unsupported with a reason; other failures are retryable errors', () => {
-    const blocked = registrationFailedAction(new DOMException('The operation is insecure.', 'SecurityError'), at);
+  it('only a blocked serviceWorker container is unsupported; register() failures (even SecurityError) are retryable', () => {
+    const blocked = registrationFailedAction(new DOMException('The operation is insecure.', 'SecurityError'), at, 'container');
     expect(blocked).toEqual({ type: 'unsupported', reason: 'blocked' });
     expect(run(initialPwaState(true), blocked)).toEqual({ status: 'unsupported', unsupportedReason: 'blocked' });
+    // Chromium rejects register() with SecurityError for a wrong MIME type or a redirect (captive portal).
+    const mime = registrationFailedAction(new DOMException("The script has an unsupported MIME type ('text/html').", 'SecurityError'), at);
+    expect(mime).toMatchObject({ type: 'check-failed' });
+    expect(run(initialPwaState(true), mime)).toMatchObject({ status: 'error', errorKind: 'check', errorSeq: 1 });
     const missing = registrationFailedAction(new TypeError('A bad HTTP response code (404) was received'), at);
     expect(missing).toEqual({ type: 'check-failed', message: 'A bad HTTP response code (404) was received', at });
     expect(run(initialPwaState(true), missing)).toMatchObject({ status: 'error', errorKind: 'check' });
@@ -273,14 +277,15 @@ describe('PwaProvider registration (production mode, fake service worker)', () =
     expect(register).toHaveBeenCalledTimes(2);
   });
 
-  it('registration refused with SecurityError (storage blocked) reports unsupported with that reason', async () => {
-    const register = vi.fn().mockRejectedValue(new DOMException('The operation is insecure.', 'SecurityError'));
+  it('register() rejected with SecurityError (e.g. redirected sw.js) stays retryable and recovers on the next check', async () => {
+    const register = vi.fn().mockRejectedValueOnce(new DOMException('The script resource is behind a redirect, which is disallowed.', 'SecurityError'));
     install(register);
     const { result } = renderHook(() => usePwa(), { wrapper });
-    await waitFor(() => expect(result.current.status).toBe('unsupported'));
-    expect(result.current.unsupportedReason).toBe('blocked');
+    await waitFor(() => expect(result.current.status).toBe('error'));
+    expect(result.current.unsupportedReason).toBeUndefined();
     await act(() => result.current.checkNow());
-    expect(result.current.status).toBe('unsupported');
+    expect(register).toHaveBeenCalledTimes(2);
+    expect(result.current.status).not.toBe('unsupported');
   });
 
   it('production build in a browser without service workers: unsupported because of the browser', () => {
