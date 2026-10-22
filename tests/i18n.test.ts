@@ -67,6 +67,15 @@ describe('makeT', () => {
     expect(t('pages.shared.claims', { count: 1 })).toBe('1 claim needs teacher verification');
     expect(t('pages.shared.claims', { count: 2 })).toBe('2 claims need teacher verification');
     expect(makeT('ms')('pages.shared.observations', { count: 1 })).toBe('1 pemerhatian');
+    expect(makeT('en')('pages.reviews.waiting', { count: 1 })).toBe('1 day waiting');
+    expect(makeT('zh')('pages.reviews.waiting', { count: 1 })).toBe('已等待 1 天');
+    expect(makeT('ms')('pages.reviews.waiting', { count: 1 })).toBe('Menunggu selama 1 hari');
+  });
+
+  it('labels changes-requested dates separately from submission dates', () => {
+    expect(makeT('en')('pages.reviews.changesRequestedOn', { date: '22 Oct 2026' })).toBe('Changes requested 22 Oct 2026');
+    expect(makeT('zh')('pages.reviews.changesRequestedOn', { date: '22 Oct 2026' })).not.toBe(makeT('en')('pages.reviews.changesRequestedOn', { date: '22 Oct 2026' }));
+    expect(makeT('ms')('pages.reviews.changesRequestedOn', { date: '22 Oct 2026' })).not.toBe(makeT('en')('pages.reviews.changesRequestedOn', { date: '22 Oct 2026' }));
   });
 
   it('leaves unknown placeholders untouched', () => {
