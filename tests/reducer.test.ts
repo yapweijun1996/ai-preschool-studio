@@ -38,6 +38,14 @@ describe('portfolio reducer', () => {
     expect(selectReportHistory(s.auditEvents, 'meiling').map((decision) => decision.type)).toEqual(['approved', 'released']);
     expect(s.auditEvents.map((event) => event.action).lastIndexOf('demo.reset')).toBeGreaterThan(0);
   });
+  it('filters audit instants using the viewer local calendar date', () => {
+    const seeded = initialState().auditEvents[0];
+    const events = ['2026-10-22T01:30:00.000Z', '2026-10-21T18:30:00.000Z'].map((at, index) => ({ ...seeded, id: `TZ-${index}`, at }));
+    const day = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const localDay = day(new Date(events[0].at));
+    expect(events.every((event) => day(new Date(event.at)) === localDay)).toBe(true);
+    expect(selectAuditLog(events, { from: localDay, to: localDay })).toHaveLength(2);
+  });
   it('stores audit and decision timestamps as full instants and sorts same-time events by sequence', () => {
     const seeded = initialState();
     expect(seeded.auditEvents.every((event) => /^\d{4}-\d\d-\d\dT/.test(event.at))).toBe(true);

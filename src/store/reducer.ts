@@ -419,12 +419,16 @@ export function observationsFor(state: State, studentId: string, term: 3 | 4 = 4
 }
 
 export interface AuditFilters { action?: AuditAction; studentId?: string; from?: string; to?: string }
+export function localDateKey(instant: string): string {
+  const date = new Date(instant);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 export function selectAuditLog(events: AuditEvent[], filters: AuditFilters = {}): AuditEvent[] {
   return events.filter((event) =>
     (!filters.action || event.action === filters.action) &&
     (!filters.studentId || event.target.id === filters.studentId) &&
-    (!filters.from || event.at.slice(0, 10) >= filters.from) &&
-    (!filters.to || event.at.slice(0, 10) <= filters.to)
+    (!filters.from || localDateKey(event.at) >= filters.from) &&
+    (!filters.to || localDateKey(event.at) <= filters.to)
     ).sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || b.id.localeCompare(a.id));
 }
 
