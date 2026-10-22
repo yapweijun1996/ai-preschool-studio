@@ -29,7 +29,7 @@ export default defineConfig({
     ...(visual ? [{
       name: 'visual',
       testMatch: '**/visual.spec.ts',
-      use: { browserName: 'chromium' as const, viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' as const }
+      use: { browserName: 'chromium' as const, viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' as const, timezoneId: 'Asia/Singapore', locale: 'en-SG' }
     }] : []),
     ...(optionalBrowsers.includes('firefox')
       ? [{ name: 'firefox', testIgnore: ['**/a11y.spec.ts', '**/visual.spec.ts'], use: { browserName: 'firefox' as const, viewport: { width: 1440, height: 900 } } }]

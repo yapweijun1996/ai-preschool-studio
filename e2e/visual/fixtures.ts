@@ -1,8 +1,9 @@
 import { expect, test as base } from '@playwright/test';
 
 // Visual runs freeze browser time because a few UI actions use Date.now()/new Date(),
-// block service workers so an update banner cannot arrive asynchronously, and use a fresh
-// Playwright context per test with explicit theme/language storage. The build footer is
+// pin timezone/locale to Asia/Singapore and en-SG, block service workers so an update banner
+// cannot arrive asynchronously, and use a fresh Playwright context per test with explicit
+// theme/language storage. The build footer is
 // masked because its short commit SHA changes on every CI run. CSS uses system font stacks
 // (no self-hosted fonts), so wait for document.fonts.ready before capturing pixels.
 export const test = base.extend({

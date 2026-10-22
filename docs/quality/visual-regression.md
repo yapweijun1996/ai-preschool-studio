@@ -6,8 +6,10 @@ settings screens in fixed desktop and mobile viewports. The `visual` project is 
 visual tests. CI runs against Chromium on Ubuntu and allows a maximum differing pixel ratio of
 0.01.
 
-The visual fixture fixes browser time at 2026-10-22 09:00 +08:00, clears browser storage in each
-fresh context and sets English plus the requested theme, blocks service workers so update banners
+The visual fixture fixes browser time at 2026-10-22 09:00 +08:00 and pins the browser timezone to
+Asia/Singapore with locale `en-SG`, matching the demo market so date and time formatting is stable
+across host timezones. It clears browser storage in each fresh context and sets English plus the
+requested theme, blocks service workers so update banners
 cannot arrive during capture, and waits for `document.fonts.ready`. The demo's relative dates
 already use a fixed `TODAY` value. The interface uses system font stacks rather than self-hosted
 fonts. Screenshots mask the context-panel build/version footer because the commit SHA changes
