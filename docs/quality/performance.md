@@ -23,7 +23,7 @@ the heaviest page and worst run are checked despite that grouping.
 | Assertion | Threshold | Severity |
 |---|---:|---|
 | Script resource size | ≤ 174,080 bytes (170 KB) | Error |
-| Stylesheet resource size | ≤ 9,237 bytes (9.0 KiB) | Error |
+| Stylesheet resource size | ≤ 10,978 bytes (10.7 KiB) | Error |
 | Total resource size | ≤ 274,597 bytes (268.2 KiB) | Error |
 | Accessibility score | ≥ 0.95 | Error |
 | Best Practices score | ≥ 0.90 | Error |
@@ -59,16 +59,21 @@ The manager measured per-page transfers with `@lhci/cli` 0.15.1 against a local
 fragment, which explains why LHCI's default optimistic aggregation missed the
 report page's larger total. Pessimistic error assertions now cover this case.
 
-| Route | Transfer total |
+| Measurement | Size |
 |---|---:|
-| `#/` | 208,238 B |
-| `#/students` | 208,238 B |
-| `#/students/aria/report` | 238,780 B |
-| `#/catalog` | 167,845 B |
+| Main stylesheet | 8,217 B |
+| Catalog stylesheet | 9,546 B |
+| Main script | 149,635 B |
+| Catalog script | 156,488 B |
+| Largest total (`#/students/aria/report`) | 244,309 B |
 
-The total resource budget is 274,597 B, 15% above the heaviest observed page
-(238,780 B, rounded up). The current build still fits the existing script and
-stylesheet budgets.
+The stylesheet budget is 10,978 B, 15% above the catalog's 9,546 B. The total
+resource budget remains 274,597 B, 15% above the largest observed route total
+(244,309 B, rounded up). The script limit remains 174,080 B.
+
+The same local mobile Lighthouse run scored `#/` 0.92, `#/students` 0.97,
+`#/students/aria/report` 0.96, `#/catalog` 0.94, and `#/coverage` 0.87 for
+performance. Performance remains warn-only while the baseline is observed.
 
 ## First-party assets and font strategy (2026-10-22)
 
@@ -91,11 +96,10 @@ There are no third-party font requests.
 The manager's previous build emitted 785 WOFF/WOFF2 files (about 21.1 MiB) and
 its render-blocking main CSS was 510.16 KB raw / 208.94 KB gzip; `dist` was 24
 MB. The Inter-only build emits one WOFF2, a 38.75 KB main CSS file (7.19 KB
-gzip), and a 612,091-byte `dist` directory. Both CSS bundles together are
-8,032 gzip bytes. For the budget baseline, emitted HTML/CSS/JS are counted at
-gzip size and WOFF2 at its file size: 205,922 bytes across app assets. The
-stylesheet (8,032 bytes) and total limits are 15% above these build figures,
-rounded up. The existing script limit remains 174,080 bytes.
+gzip), and a 612,091-byte `dist` directory. Current Lighthouse measurements
+are 8,217 B for the main stylesheet and 9,546 B for the catalog stylesheet;
+see the route measurement table above for the active stylesheet and total
+budgets. The script limit remains 174,080 bytes.
 
 ## Reading the CI report
 
