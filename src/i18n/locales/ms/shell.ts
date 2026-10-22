@@ -6,6 +6,7 @@ export const shell: Dict['shell'] = {
   skipToContent: 'Langkau ke kandungan',
   demoStrip: 'Mod demo — semua murid dan pemerhatian ialah data contoh rekaan',
   demoStripCompact: 'Mod demo · data contoh rekaan',
+  roles: { heading: 'Peranan demo', teacher: 'Guru', reviewer: 'Penyemak / Pengetua', admin: 'Pentadbir sekolah', parent: 'Ibu bapa', viewingAs: 'Melihat sebagai: {role} (peranan demo — bukan kawalan akses)' },
   back: 'Kembali',
   breadcrumb: 'Laluan navigasi',
   search: {

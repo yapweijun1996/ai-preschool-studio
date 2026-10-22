@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { CLASS_NAME, TEACHER } from '../data/demo';
+import { CLASS_NAME } from '../data/demo';
 import { useBottomTabs, useBreakpoint, type Breakpoint } from '../hooks/useBreakpoint';
 import type { Theme, ThemePref } from '../hooks/useTheme';
 import { LANGS, useI18n, type TKey } from '../i18n';
@@ -10,6 +10,8 @@ import { GlobalSearch } from './GlobalSearch';
 import { Icon, type IconName } from './Icon';
 import { Menu } from './Menu';
 import { ModulePanel } from './ModulePanel';
+import { DEMO_ROLES } from '../roles';
+import { useRole } from '../roles/RoleContext';
 
 export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'settings';
 
@@ -131,20 +133,24 @@ function SettingsLink({ close, labelKey }: { close: () => void; labelKey: TKey }
 
 function AccountMenu() {
   const { t } = useI18n();
+  const { role, setRole } = useRole();
+  const account = DEMO_ROLES.find((item) => item.role === role)!;
+  const initials = account.name === 'Ms. Lim' ? 'ML' : account.name === 'Ms. Tan' ? 'MT' : account.name === 'Mr. Wong' ? 'MW' : 'AG';
   return (
     <Menu
       label={t('shell.account.label')}
       style={{ top: 'calc(100% + 8px)', right: 0, minWidth: 280 }}
       trigger={({ onClick, expanded, ref }) => (
-        <button ref={ref} className="avatar" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={`ML, ${t('shell.account.trigger', { name: TEACHER })}`}>ML</button>
+        <button ref={ref} className="avatar" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={`${initials}, ${t('shell.account.trigger', { name: account.name })}`}>{initials}</button>
       )}
     >
       {(close) => (
         <>
           <div className="menu-head">
-            <p className="strong">{TEACHER}</p>
-            <p className="sec muted">{t('shell.account.role', { className: CLASS_NAME })}</p>
+            <p className="strong">{account.name}</p>
+            <p className="sec muted">{t(account.labelKey)} · {CLASS_NAME}</p>
           </div>
+          <RoleItems role={role} setRole={setRole} close={close} />
           <div className="notice notice-warning" style={{ margin: 4 }}>
             <Icon name="info" size={16} />
             <p className="body-text">{t('shell.account.demoNote')}</p>
@@ -156,6 +162,21 @@ function AccountMenu() {
         </>
       )}
     </Menu>
+  );
+}
+
+function RoleItems({ role, setRole, close }: { role: string; setRole: (role: 'teacher' | 'reviewer' | 'admin' | 'parent') => void; close: () => void }) {
+  const { t } = useI18n();
+  return (
+    <>
+      <p className="cap muted menu-head">{t('shell.roles.heading')}</p>
+      {DEMO_ROLES.map((item) => (
+        <button key={item.role} className="menu-item" type="button" role="menuitemradio" aria-checked={role === item.role} onClick={() => { setRole(item.role); close(); }}>
+          <span className="grow">{t(item.labelKey)}</span>
+          {role === item.role && <Icon name="check" size={18} className="ic-primary" />}
+        </button>
+      ))}
+    </>
   );
 }
 
@@ -181,10 +202,13 @@ function DemoMenuItems({ close }: { close: () => void }) {
 
 function DemoStrip({ compact }: { compact?: boolean }) {
   const { t } = useI18n();
+  const { role } = useRole();
+  const selected = DEMO_ROLES.find((item) => item.role === role)!;
   return (
     <div className="demo-strip" role="note">
       <Icon name="alert" size={16} />
       <span>{compact ? t('shell.demoStripCompact') : t('shell.demoStrip')}</span>
+      <span className="role-chip">{t('shell.roles.viewingAs', { role: t(selected.labelKey) })}</span>
     </div>
   );
 }
@@ -294,6 +318,7 @@ function UpdateError() {
 
 function TabBar({ active }: { active: Module }) {
   const { t } = useI18n();
+  const roleContext = useRole();
   return (
     <nav className="tabbar" aria-label={t('shell.nav.main')}>
       {NAV.map((n) => (
@@ -315,6 +340,7 @@ function TabBar({ active }: { active: Module }) {
         {(close) => (
           <>
             <SettingsLink close={close} labelKey="shell.more.settings" />
+            <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
             <p className="cap muted menu-head">{t('shell.more.language')}</p>
             <LanguageItems close={close} />
             <DemoMenuItems close={close} />
@@ -370,6 +396,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
   // Tablets up to 1024px keep the tablet page layouts but navigate with the bottom tab bar (no rail, no panel).
   const tabNav = useBottomTabs();
   const { t } = useI18n();
+  const roleContext = useRole();
   const pwa = usePwa();
   // Read synchronously so the panel state is right on first paint (no flash).
   const [desktopOpen, setDesktopOpen] = useState(readPanelOpen);
@@ -510,6 +537,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
             {(close) => (
               <>
                 <SettingsLink close={close} labelKey="shell.more.settings" />
+                <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
                 <DemoMenuItems close={close} />
               </>
             )}

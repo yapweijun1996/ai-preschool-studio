@@ -6,6 +6,7 @@ export const shell: Dict['shell'] = {
   skipToContent: '跳到主要内容',
   demoStrip: '演示模式——所有学生和观察记录均为虚构的示例数据',
   demoStripCompact: '演示模式 · 虚构示例数据',
+  roles: { heading: '演示角色', teacher: '教师', reviewer: '审核人／园长', admin: '学校管理员', parent: '家长', viewingAs: '当前角色：{role}（演示角色，不是权限控制）' },
   back: '返回',
   breadcrumb: '导航路径',
   search: {

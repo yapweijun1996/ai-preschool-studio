@@ -4,6 +4,7 @@ export const shell = {
   skipToContent: 'Skip to content',
   demoStrip: 'Demo mode — all students and observations are fictional sample data',
   demoStripCompact: 'Demo mode · fictional sample data',
+  roles: { heading: 'Demo role', teacher: 'Teacher', reviewer: 'Reviewer / Principal', admin: 'School admin', parent: 'Parent', viewingAs: 'Viewing as: {role} (demo role — not access control)' },
   back: 'Back',
   breadcrumb: 'Breadcrumb',
   search: {
