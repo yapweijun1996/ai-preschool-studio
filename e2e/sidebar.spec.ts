@@ -12,6 +12,7 @@ test.describe('ChatGPT-style sidebar · desktop 1440', () => {
     await expect(panel).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Students' })).toHaveAttribute('aria-current', 'page');
     await expect(rail.getByRole('link', { name: 'Students' })).toHaveAttribute('data-tip', 'Students');
+    await expect(panel.getByRole('link', { name: /^Version v\d+\.\d+\.\d+/ })).toHaveAttribute('href', '#/settings/about');
     await page.screenshot(shot('20-sidebar-open'));
 
     await panel.getByRole('button', { name: 'Close sidebar' }).click();
@@ -74,6 +75,7 @@ test.describe('ChatGPT-style sidebar · desktop 1440', () => {
 
     await page.getByRole('button', { name: /Account menu/ }).click();
     await expect(page.getByRole('menu', { name: 'Account' }).getByText('Demo mode: no sign-in')).toBeVisible();
+    await expect(page.getByRole('menu', { name: 'Account' }).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '#/settings');
   });
 });
 
