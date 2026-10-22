@@ -75,6 +75,32 @@ The same local mobile Lighthouse run scored `#/` 0.92, `#/students` 0.97,
 `#/students/aria/report` 0.96, `#/catalog` 0.94, and `#/coverage` 0.87 for
 performance. Performance remains warn-only while the baseline is observed.
 
+## CLS hotfix (2026-10-22)
+
+The first full live LHCI run (three mobile runs per URL, pessimistic
+aggregation) failed the `cumulative-layout-shift <= 0.1` assertion. The observed
+values in run order were `#/`: 0.047, 0, 0.047; `#/students`: 0.016 in all
+three runs; `#/students/aria/report`: 0.114 in all three runs; and `#/catalog`:
+0, 0.243, 0.243.
+
+A local three-run reproduction with the default DevTools throttling measured
+0.0059 CLS on the report and 0.0022 on the catalog. Lighthouse identified the
+report's “Submit for review” button as the moved element and named the late
+Inter WOFF2 load as its cause. On the catalog, the “Tokens” heading moved as
+the lazy route replaced its single-element fallback. The report photo already
+has explicit dimensions and a fixed CSS slot, so it was not the cause.
+
+The fix preloads the hashed Inter WOFF2 from the generated HTML, applies
+metric-adjusted Arial/Helvetica fallback metrics while Inter loads, and keeps
+the catalog app shell mounted while its content chunk loads with a fallback
+that reserves the first section. The workflow now uploads hidden files so the
+`.lighthouseci` reports are included in its artifact.
+
+After the fix, the same local three-run Lighthouse collection measured CLS 0
+on all six report and catalog runs, with no layout-shift entries in the audit.
+The Playwright layout-shift tests also exercise both routes with a 1.6 Mbps,
+150 ms CDP network profile and enforce a CLS sum below 0.05.
+
 ## First-party assets and font strategy (2026-10-22)
 
 The production design reference makes no third-party requests. Google Fonts
