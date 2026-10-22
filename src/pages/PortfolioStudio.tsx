@@ -21,7 +21,7 @@ import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 import { useRole } from '../roles/RoleContext';
-import { DEMO_ROLES } from '../roles';
+import { demoRole } from '../roles';
 import { now } from '../utils/clock';
 
 type MobileTab = 'evidence' | 'write' | 'ai';
@@ -220,7 +220,7 @@ export function PortfolioStudio() {
 
   const statusNotice =
     !role.can('draft.edit') ? (
-      <Notice tone="info" icon="lock" role="status"><p className="body-text">{t('shell.roles.studioReadOnly', { role: t(DEMO_ROLES.find((item) => item.role === role.role)!.labelKey) })}</p></Notice>
+      <Notice tone="info" icon="lock" role="status"><p className="body-text">{t('shell.roles.studioReadOnly', { role: t(demoRole(role.role).labelKey) })}</p></Notice>
     ) : whyBlocked && !ready.canSubmit && !locked ? (
       <Notice tone="warning" icon="lock" id="why-blocked" role="status">
         <p className="semibold">{t('pages.report.notReady')}</p>

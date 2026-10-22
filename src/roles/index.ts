@@ -36,6 +36,10 @@ export const DEMO_ROLES = [
   { role: 'parent', name: PARENT, initials: 'AG', labelKey: 'shell.roles.parent' }
 ] as const satisfies readonly { role: Role; name: string; initials: string; labelKey: `shell.roles.${Role}` }[];
 
+export function demoRole(role: Role) {
+  return DEMO_ROLES.find((item) => item.role === role)!;
+}
+
 export function isRole(value: string | null): value is Role {
   return DEMO_ROLES.some((item) => item.role === value);
 }

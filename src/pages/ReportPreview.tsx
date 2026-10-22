@@ -18,6 +18,7 @@ import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 import { useRole } from '../roles/RoleContext';
 import { now } from '../utils/clock';
+import { auditActionForDecision, auditActionLabel } from '../store/audit';
 
 export function ReportPreview() {
   const { id = '' } = useParams();
@@ -38,8 +39,10 @@ export function ReportPreview() {
   const reopenTrigger = useRef<HTMLButtonElement>(null);
   const statusHeading = useRef<HTMLHeadingElement>(null);
   const { t, fmtDate, lang } = useI18n();
-  // An approved report keeps the framework labels it was approved with.
-  const { domainFull, status: statusLabel, term: periodLabel } = useLabels(state.reports[id]?.frameworkVersion);
+  const selectedFrameworkVersion = selectedVersion === null
+    ? state.reports[id]?.frameworkVersion
+    : state.reports[id]?.versions.find((version) => version.version === selectedVersion)?.frameworkVersion;
+  const { domainFull, status: statusLabel, term: periodLabel } = useLabels(selectedFrameworkVersion);
   const changeNote = editedNote ?? t('pages.report.defaultChangeNote', { domain: domainFull('en') });
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -195,14 +198,50 @@ export function ReportPreview() {
             {report.releasedVersion === viewingVersion.version && <p className="cap semibold">{t('pages.report.releasedBadge')}</p>}
           </div>
         )}
-        {showVersionSelector && <label className="field"><span className="field-label">{t('pages.report.versions')}</span><select className="input" value={selectedVersion ?? (status === 'approved' ? latestVersion?.version ?? 0 : 0)} onChange={(event) => setSelectedVersion(Number(event.target.value) || null)}>{status !== 'approved' && role.can('report.review') && <option value={0}>{t('pages.report.currentDraft')}</option>}{versions.map((version) => <option key={version.version} value={version.version}>{t('pages.report.version', { version: version.version })}</option>)}</select></label>}
-        {releaseAnnouncement && <span className="sr-only" role="status" aria-live="polite">{t('pages.report.releaseSuccess')}</span>}
+        {showVersionSelector && (
+          <label className="field">
+            <span className="field-label">{t('pages.report.versions')}</span>
+            <select
+              className="input"
+              value={selectedVersion ?? (status === 'approved' ? latestVersion?.version ?? 0 : 0)}
+              onChange={(event) => setSelectedVersion(Number(event.target.value) || null)}
+            >
+              {status !== 'approved' && role.can('report.review') && (
+                <option value={0}>{t('pages.report.currentDraft')}</option>
+              )}
+              {versions.map((version) => (
+                <option key={version.version} value={version.version}>
+                  {t('pages.report.version', { version: version.version })}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {releaseAnnouncement && (
+          <span className="sr-only" role="status" aria-live="polite">
+            {t('pages.report.releaseSuccess')}
+          </span>
+        )}
         {report.releasedVersion !== undefined && <p className="cap muted">{t('pages.report.releasedBadge')} · {t('pages.report.version', { version: report.releasedVersion })}</p>}
         <section className="stack" aria-labelledby="decision-history" style={{ gap: 8 }}>
           <h3 id="decision-history" className="sec semibold">{t('pages.report.history')}</h3>
           {decisions.map((decision, index) => {
-            const label = decision.type === 'submitted' ? t('pages.audit.submitted') : decision.type === 'changesRequested' ? t('pages.audit.changesRequested') : decision.type === 'approved' ? t('pages.audit.approved') : decision.type === 'released' ? t('pages.audit.released') : t('pages.audit.reopened');
-            return <div className="card stack" style={{ padding: 12, gap: 4 }} key={`${decision.type}-${decision.at}-${index}`}><p className="sec semibold">{label}{'version' in decision ? ` · ${t('pages.report.version', { version: decision.version })}` : ''}</p><p className="cap muted">{fmtDate(decision.at)} · {decision.by}</p>{'comment' in decision && <p className="sec">{decision.comment}</p>}{'reason' in decision && <p className="sec">{decision.reason}</p>}</div>;
+            const label = decision.type === 'reopened'
+              ? t('pages.report.reopenedNext', { version: decision.version })
+              : t(auditActionLabel[auditActionForDecision(decision)]);
+            return (
+              <div className="card stack" style={{ padding: 12, gap: 4 }} key={`${decision.type}-${decision.at}-${index}`}>
+                <p className="sec semibold">
+                  {label}
+                  {decision.type !== 'reopened' && 'version' in decision
+                    ? ` · ${t('pages.report.version', { version: decision.version })}`
+                    : ''}
+                </p>
+                <p className="cap muted">{fmtDate(decision.at)} · {decision.by}</p>
+                {'comment' in decision && <p className="sec">{decision.comment}</p>}
+                {'reason' in decision && <p className="sec">{decision.reason}</p>}
+              </div>
+            );
           })}
         </section>
         {role.can('audit.view') && <Link className="btn btn-ghost" to="/audit">{t('pages.audit.title')}</Link>}

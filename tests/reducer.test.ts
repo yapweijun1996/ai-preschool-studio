@@ -121,6 +121,15 @@ describe('portfolio reducer', () => {
     s = reducer(s, { type: 'setReflection', studentId: 'aria', text: 'Changed draft' });
     expect(s.reports.aria.versions[0]).toEqual(version);
   });
+  it('hashes equivalent frozen content independent of object key insertion order', () => {
+    const paragraph = initialState().paragraphs.aria[0];
+    const reordered = {
+      sentences: paragraph.sentences.map((sentence) => ({ sources: sentence.sources, text: sentence.text, id: sentence.id })),
+      domain: paragraph.domain,
+      id: paragraph.id
+    };
+    expect(reportContentHash([paragraph], 'reflection')).toBe(reportContentHash([reordered], 'reflection'));
+  });
 
   it('refuses release before approval, releases idempotently, and preserves release on reopen', () => {
     let s = initialState();

@@ -277,13 +277,19 @@ export const pages: Dict['pages'] = {
     phoneNote: '手机视图会重新排版 A4 页面。导出 PDF 可查看准确的打印版式。',
     releaseAction: '发布给家长', releasedBadge: '已发布给家长', versionBadge: 'v{version} · {date} 由 {name} 批准',
     reopenAction: '重新打开并修改', reopenTitle: '重新打开报告以修改', reopenReason: '重新打开的原因',
-    reopenedAnnounce: '报告已重新打开以供修改。',
+    reopenedNext: '已重新打开以供修改（下一版：v{version}）。', reopenedAnnounce: '报告已重新打开以供修改。',
     reopenHint: '之前批准的版本保持不变。如已发布，该版本会继续向家庭显示，直到发布新版本。', reopenConfirm: '重新打开报告',
     currentDraft: '当前草稿', history: '决定历史', versions: '报告版本', version: '版本 {version}', releasedVersion: '已发布版本', familyCopy: '家庭版',
     familyEmpty: '此儿童尚无已发布的报告。', familyTitle: '家庭报告', close: '关闭', releaseSuccess: '版本已发布给家庭。', reopenRequired: '请输入原因以继续。'
   },
   audit: {
-    title: '审计日志', empty: '没有符合筛选条件的事件。', clear: '清除筛选', action: '操作', child: '儿童', from: '开始日期', to: '结束日期', allActions: '所有操作', actor: '操作人', target: '对象', summary: '摘要',
+    title: '审计日志',
+    subtitle: '审计事件和报告活动。',
+    empty: '没有符合筛选条件的事件。请尝试清除筛选条件。', allChildren: '所有儿童',
+    clear: '清除筛选',
+    action: '操作', child: '儿童',
+    from: '开始日期', to: '结束日期',
+    allActions: '所有操作', actor: '操作人', target: '对象', summary: '摘要', timestamp: '时间', readFailed: '无法加载审计日志。',
     summaryObservationAdded: '已记录观察。', summarySubmitted: '已提交审核。', summaryChangesRequested: '已要求修改。', summaryApproved: '已批准为版本 {version}。', summaryReleased: '版本 {version} 已发布给家庭。', summaryReopened: '已重新打开以供修改。', summaryRoleSwitched: '演示角色从{from}切换为{to}。', summaryReset: '演示数据已重置。',
     observationAdded: '添加观察记录', submitted: '提交报告', changesRequested: '要求修改', approved: '批准报告', released: '发布报告', reopened: '重新打开报告', roleSwitched: '切换演示角色', reset: '重置演示数据'
   },

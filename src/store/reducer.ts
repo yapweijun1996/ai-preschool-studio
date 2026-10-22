@@ -3,7 +3,8 @@ import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEW
 import { CURRENT_FRAMEWORK, DOMAINS, termOf, type DomainKey, type Milestone } from '../framework';
 import type { Suggestion } from '../services/mockProvider';
 import type { Role } from '../roles';
-import { asInstant } from '../utils/clock';
+import { asInstant, now } from '../utils/clock';
+import { auditEventForDecision } from './audit';
 
 export interface ReportVersion {
   version: number;
@@ -126,10 +127,8 @@ export function initialState(): State {
     }
   }
   const seededAudit = STUDENTS.flatMap((student) => seedDecisions[student.id].map((decision) => {
-    const action: AuditAction = decision.type === 'submitted' ? 'report.submitted' : decision.type === 'changesRequested' ? 'report.changesRequested' : decision.type === 'approved' ? 'report.approved' : decision.type === 'released' ? 'report.released' : 'report.reopened';
-    const summaryKey: AuditSummaryKey = decision.type === 'submitted' ? 'pages.audit.summarySubmitted' : decision.type === 'changesRequested' ? 'pages.audit.summaryChangesRequested' : decision.type === 'approved' ? 'pages.audit.summaryApproved' : decision.type === 'released' ? 'pages.audit.summaryReleased' : 'pages.audit.summaryReopened';
-    const summaryParams = 'version' in decision ? { version: decision.version } : undefined;
-    return { at: decision.at, actor: { role: decision.type === 'submitted' ? 'teacher' as const : 'reviewer' as const, name: decision.by }, action, target: { type: 'student' as const, id: student.id }, summaryKey, ...(summaryParams ? { summaryParams } : {}), decision };
+    const actor = { role: decision.type === 'submitted' ? 'teacher' as const : 'reviewer' as const, name: decision.by };
+    return auditEventForDecision(decision, student.id, actor);
   })).sort((a, b) => a.at.localeCompare(b.at)).map((event, index) => ({ ...event, id: `AUD-${String(index + 1).padStart(4, '0')}` }));
   return {
     observations: OBSERVATIONS,
@@ -147,13 +146,27 @@ function cloneParagraphs(paragraphs: Paragraph[]): Paragraph[] {
 }
 
 export function reportContentHash(paragraphs: Paragraph[], reflection: string, frameworkVersion = CURRENT_FRAMEWORK.version, milestones?: Record<DomainKey, Milestone | null>): string {
-  const canonical = JSON.stringify({ frameworkVersion, milestones: milestones ?? null, paragraphs, reflection });
+  const canonical = JSON.stringify(canonicalize({
+    frameworkVersion,
+    milestones: milestones ?? null,
+    paragraphs,
+    reflection
+  }));
   let hash = 2166136261;
   for (let i = 0; i < canonical.length; i += 1) {
     hash ^= canonical.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
   return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    const sorted = Object.entries(value).sort(([a], [b]) => a.localeCompare(b));
+    return Object.fromEntries(sorted.map(([key, item]) => [key, canonicalize(item)]));
+  }
+  return value;
 }
 
 function appendAudit(state: State, event: Omit<AuditEvent, 'id'>): State {
@@ -202,7 +215,7 @@ export function reducer(state: State, action: Action): State {
       if (!term) return state;
       const obs = { ...action.obs, id, term };
       const withObservation = { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
-      return appendAudit(withObservation, { at: asInstant(action.at ?? `${TODAY}T00:00:00.000Z`), actor: action.actor ?? defaultActor, action: 'observation.added', target: { type: 'student', id: obs.studentId }, summaryKey: 'pages.audit.summaryObservationAdded' });
+      return appendAudit(withObservation, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'observation.added', target: { type: 'student', id: obs.studentId }, summaryKey: 'pages.audit.summaryObservationAdded' });
     }
     case 'fillMissingDomains': {
       const student = STUDENTS.find((x) => x.id === action.studentId);
@@ -264,7 +277,7 @@ export function reducer(state: State, action: Action): State {
       const at = asInstant(action.submittedAt);
       const decision: DecisionEvent = { type: 'submitted', at, by: actor.name };
       const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: at });
-      return appendAudit(submitted, { at, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summarySubmitted', decision });
+      return appendAudit(submitted, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'requestChanges': {
       if (state.reports[action.studentId]?.status !== 'review') return state;
@@ -276,7 +289,7 @@ export function reducer(state: State, action: Action): State {
         hadChanges: true,
         comment: { by: actor.name, date: at, text: action.text }
       });
-      return appendAudit(changed, { at, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryChangesRequested', decision });
+      return appendAudit(changed, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'approve': {
       // Approval is blocked while any claim lacks evidence.
@@ -299,7 +312,7 @@ export function reducer(state: State, action: Action): State {
         milestones: versionRecord.milestones,
         versions: [...report.versions, versionRecord]
       });
-      return appendAudit(approved, { at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryApproved', summaryParams: { version }, decision });
+      return appendAudit(approved, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'release': {
       const report = state.reports[action.studentId];
@@ -312,7 +325,7 @@ export function reducer(state: State, action: Action): State {
       const released = setReport(state, action.studentId, {
         versions: [...report.versions.slice(0, -1), version], releasedVersion: latest.version
       });
-      return appendAudit(released, { at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReleased', summaryParams: { version: latest.version }, decision });
+      return appendAudit(released, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'reopen': {
       const report = state.reports[action.studentId];
@@ -328,7 +341,7 @@ export function reducer(state: State, action: Action): State {
         frameworkVersion: undefined,
         milestones: undefined
       });
-      return appendAudit(reopened, { at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReopened', decision });
+      return appendAudit(reopened, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'roleSwitched':
       return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summaryKey: 'pages.audit.summaryRoleSwitched', summaryParams: { from: action.from, to: action.to } });
@@ -337,7 +350,7 @@ export function reducer(state: State, action: Action): State {
     case 'reset': {
       const seeded = initialState();
       let fresh = { ...seeded, auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
-      fresh = appendAudit(fresh, { at: asInstant(action.at ?? `${TODAY}T00:00:00.000Z`), actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summaryKey: 'pages.audit.summaryReset' });
+      fresh = appendAudit(fresh, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summaryKey: 'pages.audit.summaryReset' });
       for (const event of seeded.auditEvents) {
         fresh = appendAudit(fresh, event);
       }

@@ -277,7 +277,7 @@ export const pages = {
     releaseAction: 'Release to family', releasedBadge: 'Released to family',
     versionBadge: 'v{version} · Approved {date} by {name}', reopenAction: 'Reopen for amendment',
     reopenTitle: 'Reopen report for amendment', reopenReason: 'Reason for reopening',
-    reopenedAnnounce: 'Report reopened for amendment.',
+    reopenedNext: 'Reopened for amendment (next: v{version}).', reopenedAnnounce: 'Report reopened for amendment.',
     reopenHint: 'The previous approved version stays unchanged. If already released, it remains visible to families until a new version is released.',
     reopenConfirm: 'Reopen report', currentDraft: 'Current draft', history: 'Decision history', versions: 'Report versions',
     version: 'Version {version}', releasedVersion: 'Released version', familyCopy: 'Family copy',
@@ -285,7 +285,13 @@ export const pages = {
     close: 'Close', releaseSuccess: 'Version released to family.', reopenRequired: 'Enter a reason to continue.'
   },
   audit: {
-    title: 'Audit log', empty: 'No events match these filters.', clear: 'Clear filters', action: 'Action', child: 'Child', from: 'From date', to: 'To date', allActions: 'All actions', actor: 'Actor', target: 'Target', summary: 'Summary',
+    title: 'Audit log',
+    subtitle: 'Audit events and report activity.',
+    empty: 'No events match these filters. Try clearing filters.', allChildren: 'All children',
+    clear: 'Clear filters',
+    action: 'Action', child: 'Child',
+    from: 'From date', to: 'To date',
+    allActions: 'All actions', actor: 'Actor', target: 'Target', summary: 'Summary', timestamp: 'Timestamp', readFailed: 'Could not load the audit log.',
     summaryObservationAdded: 'Observation recorded.', summarySubmitted: 'Submitted for review.', summaryChangesRequested: 'Changes requested.', summaryApproved: 'Approved as version {version}.', summaryReleased: 'Version {version} released to family.', summaryReopened: 'Reopened for amendment.', summaryRoleSwitched: 'Role switched from {from} to {to}.', summaryReset: 'Demo data reset.',
     observationAdded: 'Observation added', submitted: 'Report submitted', changesRequested: 'Changes requested', approved: 'Report approved', released: 'Report released', reopened: 'Report reopened', roleSwitched: 'Demo role switched', reset: 'Demo data reset'
   },

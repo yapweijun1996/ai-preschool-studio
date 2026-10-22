@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TODAY, type Observation } from '../src/data/demo';
 import { CURRENT_FRAMEWORK } from '../src/framework';
 import { classCoverage, coverageFor, needsAttention, reviewQueue } from '../src/coverage';
-import { initialState, reducer, type State } from '../src/store/reducer';
+import { initialState, reducer, reportContentHash, type State } from '../src/store/reducer';
 import { loadState, serializeState } from '../src/store/PortfolioContext';
 
 const observation = (id: string, studentId: string, date: string, domain: Observation['domain'], term: 3 | 4 = 4): Observation => ({
@@ -70,27 +70,40 @@ describe('review queue and stored schema', () => {
   it('sorts review reports oldest first and returns changes requested separately', () => {
     const queue = reviewQueue(initialState());
     expect(queue.inReview.map((item) => item.student.id)).toEqual(['ethan', 'daniel', 'priya', 'weiming']);
-    expect(queue.inReview[0]).toMatchObject({ submittedAt: '2026-10-16', daysWaiting: 6 });
+    expect(queue.inReview[0]).toMatchObject({ submittedAt: '2026-10-16T09:00:00.000Z', daysWaiting: 6 });
     expect(queue.inReview[0].unverifiedClaimCount).toBeGreaterThanOrEqual(0);
     expect(queue.changesRequested.map((item) => item.student.id)).toContain('rayan');
   });
 
   it('records and refreshes submittedAt when a report enters review', () => {
     let state = reducer(initialState(), { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-19' });
-    expect(state.reports.aria.submittedAt).toBe('2026-10-19');
+    expect(state.reports.aria.submittedAt).toBe('2026-10-19T00:00:00.000Z');
     state = reducer(state, { type: 'requestChanges', studentId: 'aria', text: 'Please revise.', date: TODAY });
     state = reducer(state, { type: 'submitForReview', studentId: 'aria', submittedAt: TODAY });
-    expect(state.reports.aria.submittedAt).toBe(TODAY);
+    expect(state.reports.aria.submittedAt).toBe(`${TODAY}T00:00:00.000Z`);
   });
 
   it('bumps the serialized schema and resets old or incomplete review state', () => {
     const serialized = serializeState(initialState());
-    expect(JSON.parse(serialized).schema).toBe(6);
-    expect(loadState(serialized).reports.ethan.submittedAt).toBe('2026-10-16');
+    expect(JSON.parse(serialized).schema).toBe(8);
+    expect(loadState(serialized).reports.ethan.submittedAt).toBe('2026-10-16T09:00:00.000Z');
+    const loaded = loadState(serialized);
+    const frozen = loaded.reports.meiling.versions[0];
+    expect(frozen.contentHash).toBe(reportContentHash(frozen.paragraphs, frozen.reflection, frozen.frameworkVersion, frozen.milestones));
     const old = JSON.stringify({ schema: 5, state: initialState() });
-    expect(loadState(old).reports.ethan.submittedAt).toBe('2026-10-16');
+    expect(loadState(old).reports.ethan.submittedAt).toBe('2026-10-16T09:00:00.000Z');
     const incomplete = initialState();
     delete incomplete.reports.ethan.submittedAt;
-    expect(loadState(JSON.stringify({ schema: 6, state: incomplete })).reports.ethan.submittedAt).toBe('2026-10-16');
+    expect(loadState(JSON.stringify({ schema: 8, state: incomplete })).reports.ethan.submittedAt).toBe('2026-10-16T09:00:00.000Z');
+  });
+
+  it('rejects approved or released stored reports without a valid frozen version', () => {
+    const approved = initialState();
+    approved.reports.meiling.versions = [];
+    expect(loadState(JSON.stringify({ schema: 8, state: approved })).reports.meiling.versions).toHaveLength(1);
+
+    const released = initialState();
+    released.reports.meiling.versions[0].contentHash = 'corrupt';
+    expect(loadState(JSON.stringify({ schema: 8, state: released })).reports.meiling.versions[0].contentHash).not.toBe('corrupt');
   });
 });

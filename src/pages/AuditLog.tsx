@@ -1,25 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 import { Notice } from '../components/ui';
 import { STUDENTS } from '../data/demo';
-import { useI18n, type TKey } from '../i18n';
+import { useI18n } from '../i18n';
 import { usePortfolio } from '../store/PortfolioContext';
-import type { AuditAction, AuditEvent } from '../store/reducer';
+import type { AuditEvent } from '../store/reducer';
+import { AUDIT_ACTIONS, auditActionLabel, isAuditAction } from '../store/audit';
 import { useRole } from '../roles/RoleContext';
 
-const actionLabel: Record<AuditAction, TKey> = {
-  'observation.added': 'pages.audit.observationAdded',
-  'report.submitted': 'pages.audit.submitted',
-  'report.changesRequested': 'pages.audit.changesRequested',
-  'report.approved': 'pages.audit.approved',
-  'report.released': 'pages.audit.released',
-  'report.reopened': 'pages.audit.reopened',
-  'role.switched': 'pages.audit.roleSwitched',
-  'demo.reset': 'pages.audit.reset'
-};
-const actions = Object.keys(actionLabel) as AuditAction[];
+const actions = AUDIT_ACTIONS;
 
 export function AuditLog() {
   const role = useRole();
@@ -32,9 +23,10 @@ export function AuditLog() {
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const requestId = useRef(0);
   const filters = useMemo(
     () => ({
-      action: action ? action as AuditAction : undefined,
+      action: isAuditAction(action) ? action : undefined,
       studentId: studentId || undefined,
       from: from || undefined,
       to: to || undefined
@@ -43,14 +35,18 @@ export function AuditLog() {
   );
 
   const load = () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     setError(false);
     void dataPort.getAuditLog(filters)
-      .then(setEvents)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .then((result) => { if (currentRequest === requestId.current) setEvents(result); })
+      .catch(() => { if (currentRequest === requestId.current) setError(true); })
+      .finally(() => { if (currentRequest === requestId.current) setLoading(false); });
   };
-  useEffect(load, [dataPort, filters, state.auditEvents.length]);
+  useEffect(() => {
+    load();
+    return () => { requestId.current += 1; };
+  }, [dataPort, filters, state.auditEvents.length]);
 
   if (!role.can('audit.view')) {
     return (
@@ -80,15 +76,16 @@ export function AuditLog() {
   const eventCard = (event: AuditEvent) => (
     <article className="card stack" style={{ padding: 16, gap: 8 }} key={event.id}>
       <div className="row">
-        <strong className="grow">{t(actionLabel[event.action])}</strong>
+        <strong className="grow">{t(auditActionLabel[event.action])}</strong>
         <span className="cap muted">{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</span>
       </div>
       <p className="sec">{summary(event)}</p>
       <p className="cap muted">
-        {t('pages.audit.actor')}: {event.actor.name} · {t(`shell.roles.${event.actor.role}`)}
+        {t('pages.audit.actor')}: {event.actor.name} ·{' '}
+        {t(`shell.roles.${event.actor.role}`)}
       </p>
       <p className="cap muted">
-        {t('pages.audit.child')}: {event.target.type === 'student' ? childName(event.target.id) : t('pages.audit.title')}
+        {t('pages.audit.child')}: {event.target.type === 'student' ? childName(event.target.id) : '—'}
       </p>
     </article>
   );
@@ -100,7 +97,7 @@ export function AuditLog() {
           <div className="page-head">
             <div className="grow">
               <h1 className="h1">{t('pages.audit.title')}</h1>
-              <p className="sec muted">{t('pages.audit.summary')}</p>
+              <p className="sec muted">{t('pages.audit.subtitle')}</p>
             </div>
           </div>
           <section className="card card-pad stack" aria-label={t('pages.audit.title')}>
@@ -109,13 +106,13 @@ export function AuditLog() {
                 <span className="field-label">{t('pages.audit.action')}</span>
                 <select className="input" value={action} onChange={(event) => setAction(event.target.value)}>
                   <option value="">{t('pages.audit.allActions')}</option>
-                  {actions.map((item) => <option key={item} value={item}>{t(actionLabel[item])}</option>)}
+                  {actions.map((item) => <option key={item} value={item}>{t(auditActionLabel[item])}</option>)}
                 </select>
               </label>
               <label className="field">
                 <span className="field-label">{t('pages.audit.child')}</span>
                 <select className="input" value={studentId} onChange={(event) => setStudentId(event.target.value)}>
-                  <option value="">{t('pages.audit.child')}</option>
+                  <option value="">{t('pages.audit.allChildren')}</option>
                   {STUDENTS.map((student) => <option key={student.id} value={student.id}>{student.name}</option>)}
                 </select>
               </label>
@@ -136,7 +133,7 @@ export function AuditLog() {
             )}
             {error && (
               <Notice tone="warning" icon="alert" role="alert">
-                <p>{t('pages.shared.saveFailed')}</p>
+                <p>{t('pages.audit.readFailed')}</p>
                 <button className="btn btn-secondary" type="button" onClick={load}>{t('pages.shared.retry')}</button>
               </Notice>
             )}
@@ -144,6 +141,7 @@ export function AuditLog() {
               <div className="card card-pad stack empty-state">
                 <EmptyIllustration name="no-results" />
                 <p className="sec">{t('pages.audit.empty')}</p>
+                <button className="btn btn-secondary" type="button" onClick={clear}>{t('pages.audit.clear')}</button>
               </div>
             )}
             {!loading && !error && events.length > 0 && (
@@ -157,15 +155,18 @@ export function AuditLog() {
                         <th>{t('pages.audit.child')}</th>
                         <th>{t('pages.audit.actor')}</th>
                         <th>{t('pages.audit.summary')}</th>
-                        <th>{t('pages.audit.from')}</th>
+                        <th>{t('pages.audit.timestamp')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {events.map((event) => (
                         <tr key={event.id}>
-                          <td>{t(actionLabel[event.action])}</td>
+                          <td>{t(auditActionLabel[event.action])}</td>
                           <td>{event.target.type === 'student' ? childName(event.target.id) : '—'}</td>
-                          <td>{event.actor.name}<br /><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></td>
+                          <td>
+                            {event.actor.name}<br />
+                            <span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span>
+                          </td>
                           <td>{summary(event)}</td>
                           <td><time dateTime={event.at}>{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</time></td>
                         </tr>

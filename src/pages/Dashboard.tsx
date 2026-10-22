@@ -10,7 +10,7 @@ import { useLabels } from '../i18n/labels';
 import { useDataPort, usePortfolio } from '../store/PortfolioContext';
 import { allSummaries } from '../store/selectors';
 import { useLastObservedLabel } from './Students';
-import { DEMO_ROLES } from '../roles';
+import { demoRole } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { ReviewQueue } from '../coverage';
 import { useEffect, useState } from 'react';
@@ -35,7 +35,7 @@ export function Dashboard() {
     });
     return () => { cancelled = true; };
   }, [dataPort, showStaffDashboard, state]);
-  const activeRole = DEMO_ROLES.find((item) => item.role === role.role)!;
+  const activeRole = demoRole(role.role);
   const summaries = allSummaries(state);
   const topReviews = (reviewQueue?.inReview ?? []).slice(0, 3);
   const counts = ORDER.map((st) => ({ st, n: summaries.filter((s) => s.report.status === st).length }));

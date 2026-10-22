@@ -46,7 +46,7 @@ describe('learning framework (single owner of areas, scale and periods)', () => 
     s = reducer(s, { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22' });
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-en-2', obsId: 'OBS-0149' });
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-se-1', obsId: 'OBS-0151' });
-    s = reducer(s, { type: 'approve', studentId: 'aria', at: 'now' });
+    s = reducer(s, { type: 'approve', studentId: 'aria', at: '2026-10-22T09:00:00.000Z' });
     expect(s.reports.aria.status).toBe('approved');
     expect(s.reports.aria.frameworkVersion).toBe(CURRENT_FRAMEWORK.version);
     // Seeded approved reports carry one too.

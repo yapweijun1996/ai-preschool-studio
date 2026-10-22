@@ -39,7 +39,7 @@ export interface ReviewQueue {
 }
 
 const daysBetween = (earlier: string, later: string) =>
-  Math.floor((Date.parse(`${later}T00:00:00Z`) - Date.parse(`${earlier}T00:00:00Z`)) / 86_400_000);
+  Math.floor((Date.parse(`${later.slice(0, 10)}T00:00:00Z`) - Date.parse(`${earlier.slice(0, 10)}T00:00:00Z`)) / 86_400_000);
 
 /** Derives coverage for one child. Missing precedes thin, which precedes stale, then ok. */
 export function coverageFor(state: State, studentId: string, term: 3 | 4): AreaCoverage[] {

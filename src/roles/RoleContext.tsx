@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { can, isRole, type Capability, type Role } from './index';
-import { DEMO_ROLES } from './index';
+import { demoRole } from './index';
 import { usePortfolio } from '../store/PortfolioContext';
 import { now } from '../utils/clock';
 
@@ -24,7 +24,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     const previous = role;
     setCurrentRole(next);
     if (previous !== next) {
-      const actorRole = DEMO_ROLES.find((item) => item.role === previous)!;
+      const actorRole = demoRole(previous);
       dispatch({ type: 'roleSwitched', from: previous, to: next, actor: { role: previous, name: actorRole.name }, at: now() });
     }
     try {

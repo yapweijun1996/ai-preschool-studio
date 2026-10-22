@@ -12,7 +12,7 @@ import { LANGS, useI18n, type TKey } from '../i18n';
 import { APP_VERSION, BUILD_ID, usePwa, type PwaApi, type UnsupportedReason, type UpdateStatus } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
 import { useRole } from '../roles/RoleContext';
-import { DEMO_ROLES } from '../roles';
+import { demoRole } from '../roles';
 import { NotFound } from './NotFound';
 import { now } from '../utils/clock';
 
@@ -262,7 +262,7 @@ function DemoData() {
   const { t } = useI18n();
   const { state, dispatch } = usePortfolio();
   const { role } = useRole();
-  const account = DEMO_ROLES.find((item) => item.role === role)!;
+  const account = demoRole(role);
   const [done, setDone] = useState(false);
   return (
     <>

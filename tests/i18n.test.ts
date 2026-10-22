@@ -51,6 +51,23 @@ describe('English dictionary', () => {
 });
 
 describe('makeT', () => {
+  it('translates audit summary keys and role parameters for each locale', () => {
+    const enSummary = makeT('en')('pages.audit.summaryRoleSwitched', {
+      from: makeT('en')('shell.roles.teacher'),
+      to: makeT('en')('shell.roles.admin')
+    });
+    for (const lang of ['zh', 'ms'] as const) {
+      const t = makeT(lang);
+      const translated = t('pages.audit.summaryRoleSwitched', {
+        from: t('shell.roles.teacher'),
+        to: t('shell.roles.admin')
+      });
+      expect(translated).not.toBe(enSummary);
+      expect(translated).toContain(t('shell.roles.teacher'));
+      expect(translated).toContain(t('shell.roles.admin'));
+    }
+  });
+
   it('interpolates {vars}', () => {
     const t = makeT('en');
     expect(t('pages.dashboard.greeting', { name: 'Ms. Lim' })).toBe('Good morning, Ms. Lim');

@@ -45,16 +45,6 @@ function readLang(): Lang {
   return 'en';
 }
 
-/** Formats an ISO approval timestamp using the same locale and template as ReportPreview. */
-export function formatApprovalAt(iso: string): string {
-  const lang = readLang();
-  const meta = LANGS.find((item) => item.key === lang)!;
-  const date = new Date(iso);
-  const dateLabel = date.toLocaleDateString(meta.intl, { day: 'numeric', month: 'short', year: 'numeric' });
-  const timeLabel = date.toLocaleTimeString(meta.intl, { hour: '2-digit', minute: '2-digit', hour12: false });
-  return makeT(lang)('pages.report.approvedAt', { date: dateLabel, time: timeLabel });
-}
-
 export interface I18n {
   lang: Lang;
   setLang: (l: Lang) => void;

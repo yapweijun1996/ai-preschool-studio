@@ -11,7 +11,7 @@ import { Icon, type IconName } from './Icon';
 import { BrandMark } from './BrandMark';
 import { Menu } from './Menu';
 import { ModulePanel } from './ModulePanel';
-import { DEMO_ROLES } from '../roles';
+import { DEMO_ROLES, demoRole } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { Capability } from '../roles';
 import { now } from '../utils/clock';
@@ -143,7 +143,7 @@ function SettingsLink({ close, labelKey }: { close: () => void; labelKey: TKey }
 function AccountMenu() {
   const { t } = useI18n();
   const { role, setRole, can: hasCapability } = useRole();
-  const account = DEMO_ROLES.find((item) => item.role === role)!;
+  const account = demoRole(role);
   const initials = account.initials;
   return (
     <Menu
@@ -193,7 +193,7 @@ function RoleItems({ role, setRole, close }: { role: string; setRole: (role: 'te
 function DemoMenuItems({ close }: { close: () => void }) {
   const { state, dispatch } = usePortfolio();
   const { role } = useRole();
-  const account = DEMO_ROLES.find((item) => item.role === role)!;
+  const account = demoRole(role);
   const { t } = useI18n();
   return (
     <>
@@ -214,7 +214,7 @@ function DemoMenuItems({ close }: { close: () => void }) {
 function DemoStrip({ compact }: { compact?: boolean }) {
   const { t } = useI18n();
   const { role } = useRole();
-  const selected = DEMO_ROLES.find((item) => item.role === role)!;
+  const selected = demoRole(role);
   return (
     <div className="demo-strip" role="note">
       <Icon name="alert" size={16} />

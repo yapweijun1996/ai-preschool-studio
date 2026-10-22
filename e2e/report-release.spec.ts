@@ -26,6 +26,7 @@ test('approve, release, reopen, resubmit and approve v2 with immutable family co
   await expect(page.getByText('Report reopened for amendment.', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Report status' })).toBeFocused();
   await expect(page.getByLabel('Report versions')).toBeVisible();
+  await expect(page.getByText('Reopened for amendment (next: v2).', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
   await page.getByRole('button', { name: /Account menu/ }).click();
   await page.getByRole('menuitemradio', { name: 'Teacher', exact: true }).click();

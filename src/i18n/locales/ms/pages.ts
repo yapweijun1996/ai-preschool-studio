@@ -277,13 +277,19 @@ export const pages: Dict['pages'] = {
     phoneNote: 'Paparan telefon menyusun semula halaman A4. Eksport PDF menunjukkan susun atur cetakan yang tepat.',
     releaseAction: 'Lepaskan kepada keluarga', releasedBadge: 'Dilepaskan kepada keluarga', versionBadge: 'v{version} · Diluluskan pada {date} oleh {name}',
     reopenAction: 'Buka semula untuk pindaan', reopenTitle: 'Buka semula laporan untuk pindaan', reopenReason: 'Sebab membuka semula',
-    reopenedAnnounce: 'Laporan dibuka semula untuk pindaan.',
+    reopenedNext: 'Dibuka semula untuk pindaan (seterusnya: v{version}).', reopenedAnnounce: 'Laporan dibuka semula untuk pindaan.',
     reopenHint: 'Versi yang diluluskan sebelum ini kekal tanpa perubahan. Jika telah dilepaskan, keluarga masih melihatnya sehingga versi baharu dilepaskan.', reopenConfirm: 'Buka semula laporan',
     currentDraft: 'Draf semasa', history: 'Sejarah keputusan', versions: 'Versi laporan', version: 'Versi {version}', releasedVersion: 'Versi dilepaskan', familyCopy: 'Salinan keluarga',
     familyEmpty: 'Belum ada laporan dilepaskan untuk kanak-kanak ini.', familyTitle: 'Laporan keluarga', close: 'Tutup', releaseSuccess: 'Versi dilepaskan kepada keluarga.', reopenRequired: 'Masukkan sebab untuk meneruskan.'
   },
   audit: {
-    title: 'Log audit', empty: 'Tiada peristiwa sepadan dengan penapis ini.', clear: 'Kosongkan penapis', action: 'Tindakan', child: 'Kanak-kanak', from: 'Dari tarikh', to: 'Hingga tarikh', allActions: 'Semua tindakan', actor: 'Pelaku', target: 'Sasaran', summary: 'Ringkasan',
+    title: 'Log audit',
+    subtitle: 'Peristiwa audit dan aktiviti laporan.',
+    empty: 'Tiada peristiwa sepadan dengan penapis ini. Cuba kosongkan penapis.', allChildren: 'Semua kanak-kanak',
+    clear: 'Kosongkan penapis',
+    action: 'Tindakan', child: 'Kanak-kanak',
+    from: 'Dari tarikh', to: 'Hingga tarikh',
+    allActions: 'Semua tindakan', actor: 'Pelaku', target: 'Sasaran', summary: 'Ringkasan', timestamp: 'Masa', readFailed: 'Log audit tidak dapat dimuatkan.',
     summaryObservationAdded: 'Pemerhatian direkodkan.', summarySubmitted: 'Dihantar untuk semakan.', summaryChangesRequested: 'Perubahan diminta.', summaryApproved: 'Diluluskan sebagai versi {version}.', summaryReleased: 'Versi {version} dilepaskan kepada keluarga.', summaryReopened: 'Dibuka semula untuk pindaan.', summaryRoleSwitched: 'Peranan ditukar daripada {from} kepada {to}.', summaryReset: 'Data demo ditetapkan semula.',
     observationAdded: 'Pemerhatian ditambah', submitted: 'Laporan dihantar', changesRequested: 'Perubahan diminta', approved: 'Laporan diluluskan', released: 'Laporan dilepaskan', reopened: 'Laporan dibuka semula', roleSwitched: 'Peranan demo ditukar', reset: 'Data demo ditetapkan semula'
   },
