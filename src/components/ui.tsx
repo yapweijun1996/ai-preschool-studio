@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { MILESTONES, REPORT_STATUS_LABEL, type Milestone, type ReportStatus } from '../data/demo';
+import { MILESTONES, type Milestone, type ReportStatus } from '../data/demo';
 import type { SaveStatus } from '../hooks/useAutosave';
+import { useI18n } from '../i18n';
+import { useLabels } from '../i18n/labels';
 import { Icon, type IconName } from './Icon';
 
 const STATUS_STYLE: Record<ReportStatus, { cls: string; icon?: IconName }> = {
@@ -14,30 +16,34 @@ const STATUS_STYLE: Record<ReportStatus, { cls: string; icon?: IconName }> = {
 /** Report status: colour + icon + word, never colour alone. */
 export function StatusLabel({ status }: { status: ReportStatus }) {
   const s = STATUS_STYLE[status];
+  const labels = useLabels();
   return (
     <span className={`status ${s.cls}`}>
       {s.icon && <Icon name={s.icon} size={14} />}
-      {REPORT_STATUS_LABEL[status]}
+      {labels.status(status)}
     </span>
   );
 }
 
-export function VerifyLabel({ children = 'Needs teacher verification' }: { children?: ReactNode }) {
+export function VerifyLabel({ children }: { children?: ReactNode }) {
+  const { t } = useI18n();
   return (
     <span className="status st-verify">
       <Icon name="alert" size={14} />
-      {children}
+      {children ?? t('common.needsVerification')}
     </span>
   );
 }
 
 export function MockProviderLabel() {
-  return <span className="status st-draft">Mock provider</span>;
+  const { t } = useI18n();
+  return <span className="status st-draft">{t('common.mockProvider')}</span>;
 }
 
 export function SourceChip({ id }: { id: string }) {
+  const { t } = useI18n();
   return (
-    <span className="src" title={`Source observation ${id}`}>
+    <span className="src" title={t('shell.ui.sourceTitle', { id })}>
       {id}
     </span>
   );
@@ -45,6 +51,7 @@ export function SourceChip({ id }: { id: string }) {
 
 export function MilestoneDots({ milestone }: { milestone: Milestone }) {
   const m = MILESTONES.find((x) => x.key === milestone)!;
+  const labels = useLabels();
   return (
     <span className="ms">
       <span className="dots" aria-hidden="true">
@@ -52,7 +59,7 @@ export function MilestoneDots({ milestone }: { milestone: Milestone }) {
           <span key={i} className={`dot${i <= m.filled ? ' on' : ''}`} />
         ))}
       </span>
-      {m.label}
+      {labels.milestone(m.key)}
     </span>
   );
 }
@@ -66,16 +73,17 @@ export function Avatar({ initials, size, label }: { initials: string; size?: 'sm
 }
 
 export function SaveIndicator({ status, onRetry }: { status: SaveStatus; onRetry: () => void }) {
+  const { t } = useI18n();
   if (status.kind === 'failed') {
     return (
       <span className="row" role="alert">
         <span className="status st-failed">
           <Icon name="alertCircle" size={14} />
-          Save failed
+          {t('shell.ui.saveFailed')}
         </span>
         <button className="btn btn-secondary" type="button" onClick={onRetry}>
           <Icon name="undo" size={18} />
-          Retry
+          {t('shell.ui.retry')}
         </button>
       </span>
     );
@@ -84,7 +92,7 @@ export function SaveIndicator({ status, onRetry }: { status: SaveStatus; onRetry
     <span className="save-state" role="status">
       {status.kind === 'saved' && <Icon name="check" size={16} className="ic-primary" />}
       {status.kind === 'saving' && <Icon name="loader" size={16} className="spin" />}
-      {status.kind === 'saved' ? `Saved at ${status.at}` : status.kind === 'saving' ? 'Saving…' : 'Unsaved changes'}
+      {status.kind === 'saved' ? t('shell.ui.savedAt', { time: status.at }) : status.kind === 'saving' ? t('shell.ui.saving') : t('shell.ui.unsaved')}
     </span>
   );
 }
