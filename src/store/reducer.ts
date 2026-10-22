@@ -5,6 +5,8 @@ import type { Suggestion } from '../services/mockProvider';
 import type { Role } from '../roles';
 import { asInstant, now } from '../utils/clock';
 import { auditEventForDecision } from './audit';
+import { DEMO_CHILDREN, DEMO_CLASSES, DEMO_COLLECTORS, DEMO_GUARDIANS } from '../children/demo';
+import { hasPrimaryGuardian, validateChild, validateCollector, validateGuardian, withdrawRefusal, type AuthorisedCollector, type Child, type Class, type Guardian } from '../children/domain';
 
 export interface ReportVersion {
   version: number;
@@ -26,14 +28,14 @@ export type DecisionEvent =
   | { type: 'released'; at: string; by: string; version: number }
   | { type: 'reopened'; at: string; by: string; reason: string; version: number };
 
-export type AuditAction = 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved' | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset';
-export type AuditSummaryKey = 'pages.audit.summaryObservationAdded' | 'pages.audit.summarySubmitted' | 'pages.audit.summaryChangesRequested' | 'pages.audit.summaryApproved' | 'pages.audit.summaryReleased' | 'pages.audit.summaryReopened' | 'pages.audit.summaryRoleSwitched' | 'pages.audit.summaryReset';
+export type AuditAction = 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved' | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset' | 'child.updated' | 'child.withdrawn' | 'guardian.created' | 'guardian.updated' | 'guardian.removed' | 'collector.created' | 'collector.updated' | 'collector.removed';
+export type AuditSummaryKey = 'pages.audit.summaryObservationAdded' | 'pages.audit.summarySubmitted' | 'pages.audit.summaryChangesRequested' | 'pages.audit.summaryApproved' | 'pages.audit.summaryReleased' | 'pages.audit.summaryReopened' | 'pages.audit.summaryRoleSwitched' | 'pages.audit.summaryReset' | 'pages.audit.summaryChildUpdated' | 'pages.audit.summaryChildWithdrawn' | 'pages.audit.summaryGuardianCreated' | 'pages.audit.summaryGuardianUpdated' | 'pages.audit.summaryGuardianRemoved' | 'pages.audit.summaryCollectorCreated' | 'pages.audit.summaryCollectorUpdated' | 'pages.audit.summaryCollectorRemoved';
 export interface AuditEvent {
   id: string;
   at: string;
   actor: { role: Role; name: string };
   action: AuditAction;
-  target: { type: 'student' | 'demo'; id: string };
+  target: { type: 'student' | 'child' | 'demo'; id: string };
   summaryKey: AuditSummaryKey;
   summaryParams?: { version?: number };
   decision?: DecisionEvent;
@@ -65,6 +67,10 @@ export interface State {
   nextObsNumber: number;
   auditEvents: AuditEvent[];
   nextAuditNumber: number;
+  classes: Class[];
+  children: Record<string, Child>;
+  guardians: Guardian[];
+  collectors: AuthorisedCollector[];
 }
 
 export type Action =
@@ -83,6 +89,12 @@ export type Action =
   | { type: 'reopen'; studentId: string; reason: string; at: string; reopenedBy: string; actor?: Actor }
   | { type: 'roleSwitched'; from: Role; to: Role; actor: Actor; at: string }
   | { type: 'setSim'; key: keyof State['sim']; value: boolean }
+  | { type: 'updateChild'; child: Child; actor?: Actor; at?: string }
+  | { type: 'upsertGuardian'; guardian: Guardian; actor?: Actor; at?: string }
+  | { type: 'removeGuardian'; guardianId: string; actor?: Actor; at?: string }
+  | { type: 'upsertCollector'; collector: AuthorisedCollector; actor?: Actor; at?: string }
+  | { type: 'removeCollector'; collectorId: string; actor?: Actor; at?: string }
+  | { type: 'withdrawChild'; childId: string; actor?: Actor; at?: string }
   | { type: 'reset'; actor?: Actor; at?: string };
 
 export function initialState(): State {
@@ -137,7 +149,8 @@ export function initialState(): State {
     reports,
     sim: { aiDown: false, saveFail: false },
     nextObsNumber: NEXT_OBS_NUMBER,
-    auditEvents: seededAudit, nextAuditNumber: seededAudit.length + 1
+    auditEvents: seededAudit, nextAuditNumber: seededAudit.length + 1,
+    classes: DEMO_CLASSES, children: DEMO_CHILDREN, guardians: DEMO_GUARDIANS, collectors: DEMO_COLLECTORS
   };
 }
 
@@ -347,6 +360,54 @@ export function reducer(state: State, action: Action): State {
       return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summaryKey: 'pages.audit.summaryRoleSwitched' });
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
+    case 'updateChild': {
+      if (!state.children[action.child.id] || Object.keys(validateChild(action.child)).length > 0) return state;
+      const next = { ...state, children: { ...state.children, [action.child.id]: action.child } };
+      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'child.updated', target: { type: 'child', id: action.child.id }, summaryKey: 'pages.audit.summaryChildUpdated' });
+    }
+    case 'upsertGuardian': {
+      const guardian = action.guardian;
+      if (!state.children[guardian.childIds[0]] || Object.keys(validateGuardian(guardian)).length > 0) return state;
+      const without = state.guardians.filter((item) => item.id !== guardian.id);
+      const nextGuardians = [...without, guardian];
+      if (!hasPrimaryGuardian(nextGuardians, guardian.childIds[0])) return state;
+      const created = without.length === state.guardians.length;
+      const next = { ...state, guardians: nextGuardians };
+      const actionName = created ? 'guardian.created' : 'guardian.updated';
+      const summaryKey = created ? 'pages.audit.summaryGuardianCreated' : 'pages.audit.summaryGuardianUpdated';
+      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: guardian.childIds[0] }, summaryKey });
+    }
+    case 'removeGuardian': {
+      const guardian = state.guardians.find((item) => item.id === action.guardianId);
+      if (!guardian) return state;
+      const nextGuardians = state.guardians.filter((item) => item.id !== action.guardianId);
+      if (guardian.isPrimary && guardian.childIds.some((childId) => !hasPrimaryGuardian(nextGuardians, childId))) return state;
+      const next = { ...state, guardians: nextGuardians };
+      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'guardian.removed', target: { type: 'child', id: guardian.childIds[0] }, summaryKey: 'pages.audit.summaryGuardianRemoved' });
+    }
+    case 'upsertCollector': {
+      const collector = action.collector;
+      if (!state.children[collector.childId] || Object.keys(validateCollector(collector)).length > 0) return state;
+      const existing = state.collectors.some((item) => item.id === collector.id);
+      const next = { ...state, collectors: [...state.collectors.filter((item) => item.id !== collector.id), collector] };
+      const actionName = existing ? 'collector.updated' : 'collector.created';
+      const summaryKey = existing ? 'pages.audit.summaryCollectorUpdated' : 'pages.audit.summaryCollectorCreated';
+      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: collector.childId }, summaryKey });
+    }
+    case 'removeCollector': {
+      const collector = state.collectors.find((item) => item.id === action.collectorId);
+      if (!collector) return state;
+      const next = { ...state, collectors: state.collectors.filter((item) => item.id !== action.collectorId) };
+      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'collector.removed', target: { type: 'child', id: collector.childId }, summaryKey: 'pages.audit.summaryCollectorRemoved' });
+    }
+    case 'withdrawChild': {
+      const child = state.children[action.childId];
+      const refused = withdrawRefusal(child ? state.reports[action.childId]?.status : undefined);
+      if (!child || refused || child.status === 'withdrawn') return state;
+      const withdrawn: Child = { ...child, status: 'withdrawn' };
+      const next = { ...state, children: { ...state.children, [child.id]: withdrawn } };
+      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'child.withdrawn', target: { type: 'child', id: child.id }, summaryKey: 'pages.audit.summaryChildWithdrawn' });
+    }
     case 'reset': {
       const seeded = initialState();
       let fresh = { ...seeded, auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };

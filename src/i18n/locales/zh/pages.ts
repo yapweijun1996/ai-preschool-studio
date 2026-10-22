@@ -290,8 +290,8 @@ export const pages: Dict['pages'] = {
     action: '操作', child: '儿童',
     from: '开始日期', to: '结束日期',
     allActions: '所有操作', actor: '操作人', target: '对象', summary: '摘要', timestamp: '时间', readFailed: '无法加载审计日志。',
-    summaryObservationAdded: '已记录观察。', summarySubmitted: '已提交审核。', summaryChangesRequested: '已要求修改。', summaryApproved: '已批准为版本 {version}。', summaryReleased: '版本 {version} 已发布给家庭。', summaryReopened: '已重新打开以供修改。', summaryRoleSwitched: '演示角色已更改。', summaryReset: '演示数据已重置。',
-    observationAdded: '添加观察记录', submitted: '提交报告', changesRequested: '要求修改', approved: '批准报告', released: '发布报告', reopened: '重新打开报告', roleSwitched: '切换演示角色', reset: '重置演示数据'
+    summaryObservationAdded: '已记录观察。', summarySubmitted: '已提交审核。', summaryChangesRequested: '已要求修改。', summaryApproved: '已批准为版本 {version}。', summaryReleased: '版本 {version} 已发布给家庭。', summaryReopened: '已重新打开以供修改。', summaryRoleSwitched: '演示角色已更改。', summaryReset: '演示数据已重置。', summaryChildUpdated: '儿童记录已更新。', summaryChildWithdrawn: '儿童已退园。', summaryGuardianCreated: '已添加监护人。', summaryGuardianUpdated: '已更新监护人。', summaryGuardianRemoved: '已移除监护人。', summaryCollectorCreated: '已添加获授权接送人。', summaryCollectorUpdated: '已更新获授权接送人。', summaryCollectorRemoved: '已移除获授权接送人。',
+    observationAdded: '添加观察记录', submitted: '提交报告', changesRequested: '要求修改', approved: '批准报告', released: '发布报告', reopened: '重新打开报告', roleSwitched: '切换演示角色', reset: '重置演示数据', childUpdated: '更新儿童资料', childWithdrawn: '儿童退园', guardianCreated: '添加监护人', guardianUpdated: '更新监护人', guardianRemoved: '移除监护人', collectorCreated: '添加获授权接送人', collectorUpdated: '更新获授权接送人', collectorRemoved: '移除获授权接送人'
   },
   coverage: {
     title: '学习证据覆盖情况',

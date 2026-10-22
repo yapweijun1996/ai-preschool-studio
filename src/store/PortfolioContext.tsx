@@ -6,7 +6,7 @@ import { initialState, reducer, reportContentHash, type Action, type State } fro
 
 // Bump SCHEMA whenever the seeded data or the state shape changes: a tab that updates the app
 // (PWA reload) must not resume demo state saved by an older build.
-const SCHEMA = 8;
+const SCHEMA = 9;
 const STORAGE_KEY = 'aps-demo-state';
 const LEGACY_KEYS = ['aps-demo-state-v1'];
 const isIsoInstant = (value: unknown): value is string =>
@@ -28,6 +28,8 @@ export function loadState(raw: string | null): State {
       typeof s.sim === 'object' && s.sim !== null &&
       typeof s.nextObsNumber === 'number' &&
       Array.isArray(s.auditEvents) && typeof s.nextAuditNumber === 'number' &&
+      Array.isArray(s.classes) && typeof s.children === 'object' && s.children !== null &&
+      Array.isArray(s.guardians) && Array.isArray(s.collectors) &&
       s.auditEvents.every((event) => isIsoInstant(event.at) && (!event.decision || (isIsoInstant(event.decision.at) && event.decision.at === event.at))) &&
       STUDENTS.every((st) => s.reports?.[st.id]?.status) &&
       STUDENTS.every((st) => Array.isArray(s.reports[st.id].versions)) &&
