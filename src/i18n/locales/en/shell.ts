@@ -5,6 +5,16 @@ export const shell = {
   demoStrip: 'Demo mode — all students and observations are fictional sample data',
   demoStripCompact: 'Demo mode · fictional sample data',
   back: 'Back',
+  breadcrumb: 'Breadcrumb',
+  search: {
+    trigger: 'Search students or pages',
+    label: 'Search',
+    placeholder: 'Search students or pages…',
+    students: 'Students',
+    pages: 'Go to',
+    noResults: 'No results for “{query}”.',
+    hint: '↑ ↓ to move · Enter to open · Esc to close'
+  },
   nav: {
     main: 'Main',
     dashboard: 'Dashboard',

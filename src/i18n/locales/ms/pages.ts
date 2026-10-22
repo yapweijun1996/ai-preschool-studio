@@ -94,7 +94,8 @@ export const pages: Dict['pages'] = {
     photo: 'Foto',
     photoValue: 'Ruang foto sahaja dalam mod demo',
     claimsBody: 'Pautkan bukti atau buang kenyataan ini sebelum laporan dihantar untuk semakan.',
-    reviewClaims: 'Semak kenyataan di Studio'
+    reviewClaims: 'Semak kenyataan di Studio',
+    domainLinkHint: 'banding Penggal 3 dan Penggal 4'
   },
   observation: {
     title: 'Tambah pemerhatian',

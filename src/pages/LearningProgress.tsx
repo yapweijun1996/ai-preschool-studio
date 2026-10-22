@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { StudentTabs } from '../components/StudentTabs';
@@ -30,6 +31,18 @@ export function LearningProgress() {
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
+  // ?domain=<key> (from a profile domain card) highlights that row and moves focus to it.
+  const [params] = useSearchParams();
+  const focusDomain = params.get('domain');
+  useEffect(() => {
+    if (!focusDomain) return;
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(`domain-${focusDomain}`);
+      el?.scrollIntoView({ block: 'center' });
+      el?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focusDomain]);
   if (!sum) return <NotFound />;
   const { student } = sum;
   const t4 = observationsFor(state, id, 4);
@@ -42,6 +55,7 @@ export function LearningProgress() {
     <AppShell
       module="students"
       currentStudentId={id}
+      crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name, to: `/students/${id}` }, { label: t('pages.progress.title') }]}
       mobileTitle={t('pages.progress.title')}
       mobileSubtitle={t('pages.progress.mobileSubtitle', { name: student.name })}
       mobileBack={`/students/${id}`}
@@ -77,7 +91,7 @@ export function LearningProgress() {
               const after = student.term4[d.key];
               const note = NOTES[id]?.[d.key] ?? (before === after ? t('pages.progress.still', { milestone: label(after) }) : t('pages.progress.moved', { from: label(before), to: label(after) }));
               return (
-                <div key={d.key} style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr 1fr' : '1.3fr 1fr 1fr 1.6fr', gap: 16, padding: 20, borderTop: '1px solid var(--color-border)', alignItems: 'start' }}>
+                <div key={d.key} id={`domain-${d.key}`} tabIndex={focusDomain === d.key ? -1 : undefined} className={focusDomain === d.key ? 'row-focus' : undefined} style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr 1fr' : '1.3fr 1fr 1fr 1.6fr', gap: 16, padding: 20, borderTop: '1px solid var(--color-border)', alignItems: 'start' }}>
                   <h2 className="strong" style={{ gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>{domainFull(d.key)}</h2>
                   <div className="stack" style={{ gap: 6 }}>
                     <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{t('pages.shared.term3')}</span>
@@ -90,7 +104,7 @@ export function LearningProgress() {
                     {n4 > 0 && <span className="cap muted num">{t('pages.shared.observations', { count: n4 })}</span>}
                   </div>
                   <div className="stack" style={{ gap: 8, gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>
-                    <p className="sec">{note}</p>
+                    <p className="sec measure">{note}</p>
                     {sources.length > 0 && <span className="row" style={{ gap: 6 }}>{sources.map((s) => <SourceChip key={s} id={s} />)}</span>}
                   </div>
                 </div>

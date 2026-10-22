@@ -7,6 +7,16 @@ export const shell: Dict['shell'] = {
   demoStrip: '演示模式——所有学生和观察记录均为虚构的示例数据',
   demoStripCompact: '演示模式 · 虚构示例数据',
   back: '返回',
+  breadcrumb: '导航路径',
+  search: {
+    trigger: '搜索学生或页面',
+    label: '搜索',
+    placeholder: '搜索学生或页面…',
+    students: '学生',
+    pages: '前往',
+    noResults: '没有与“{query}”匹配的结果。',
+    hint: '↑ ↓ 移动 · Enter 打开 · Esc 关闭'
+  },
   nav: {
     main: '主导航',
     dashboard: '仪表板',

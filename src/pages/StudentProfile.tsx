@@ -37,6 +37,7 @@ export function StudentProfile() {
     <AppShell
       module="students"
       currentStudentId={id}
+      crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name }]}
       mobileTitle={student.name}
       mobileSubtitle={`${CLASS_NAME} · ${demo}`}
       mobileBack="/students"
@@ -50,7 +51,6 @@ export function StudentProfile() {
       {(bp) => (
         <div className="page">
           <div className="row profile-head">
-            {bp !== 'mobile' && <Link className="icon-btn" to="/students" aria-label={t('pages.profile.backToStudents')} title={t('pages.shared.back')}><Icon name="arrowLeft" /></Link>}
             <Avatar initials={student.initials} size="md" label={t('pages.shared.photoPlaceholderFor', { name: student.name })} />
             <div className="grow">
               <div className="row">
@@ -72,20 +72,27 @@ export function StudentProfile() {
           <StudentTabs id={id} active="overview" />
           <div className="grid-main-side profile-grid">
             <section aria-labelledby="ld-h" className="stack profile-main" style={{ gap: 16 }}>
-              <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading')}</h2><Link className="btn btn-secondary" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare')}</Link></div>
+              <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading')}</h2><Link className="btn btn-ghost" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare')}</Link></div>
+              <p className="sec muted note-line"><Icon name="info" size={16} />{t('pages.profile.milestoneNote', { emerging: milestone('emerging'), developing: milestone('developing'), consistent: milestone('consistent') })}</p>
               <div className="grid-2 domain-grid">
                 {DOMAINS.map((d) => {
                   const list = byDomain(d.key);
                   return (
-                    <article key={d.key} className="card card-pad stack">
-                      <h3 className="strong">{domainFull(d.key)}</h3>
+                    <article key={d.key} className="card card-pad stack card-link">
+                      <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}>
+                        <h3 className="strong grow">
+                          <Link className="stretched" to={`/students/${id}/progress?domain=${d.key}`}>
+                            {domainFull(d.key)}<span className="sr-only"> · {t('pages.profile.domainLinkHint')}</span>
+                          </Link>
+                        </h3>
+                        <Icon name="chevronRight" size={18} className="card-link-chevron" />
+                      </div>
                       <MilestoneDots milestone={student.term4[d.key]} />
                       <p className="sec muted num">{list.length ? t('pages.profile.domainObs', { count: list.length, date: fmtDate(list[0].date) }) : t('pages.profile.notSeeded')}</p>
                     </article>
                   );
                 })}
               </div>
-              <p className="cap muted">{t('pages.profile.milestoneNote', { emerging: milestone('emerging'), developing: milestone('developing'), consistent: milestone('consistent') })}</p>
               <section className="card" aria-labelledby="ro-h" style={{ overflow: 'hidden' }}>
                 <div className="card-head"><h2 id="ro-h" className="h2 grow">{t('pages.profile.recentObservations')}</h2></div>
                 {obs.length === 0 ? (
@@ -100,7 +107,7 @@ export function StudentProfile() {
                     <div key={o.id} className="row-link" style={{ alignItems: 'flex-start' }}>
                       <span className="grow stack" style={{ gap: 4 }}>
                         <span className="row"><SourceChip id={o.id} /><span className="cap muted num">{fmtDate(o.date)} · {domainShort(o.domain)}</span></span>
-                        <span className="sec">{o.text}</span>
+                        <span className="sec measure">{o.text}</span>
                       </span>
                     </div>
                   ))

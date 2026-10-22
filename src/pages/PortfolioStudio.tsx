@@ -182,6 +182,7 @@ export function PortfolioStudio() {
     <AppShell
       module="students"
       currentStudentId={id}
+      crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name, to: `/students/${id}` }, { label: t('pages.studio.title') }]}
       mobileTitle={student.name}
       mobileSubtitle={t('pages.studio.mobileSubtitle', { term })}
       mobileBack={`/students/${id}`}

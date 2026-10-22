@@ -6,6 +6,7 @@ import type { Theme, ThemePref } from '../hooks/useTheme';
 import { LANGS, useI18n, type TKey } from '../i18n';
 import { usePwa } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
+import { GlobalSearch } from './GlobalSearch';
 import { Icon, type IconName } from './Icon';
 import { Menu } from './Menu';
 import { ModulePanel } from './ModulePanel';
@@ -324,8 +325,35 @@ function TabBar({ active }: { active: Module }) {
   );
 }
 
+export interface Crumb {
+  label: string;
+  to?: string;
+}
+
+/** Top-bar breadcrumb; the last item is the current page. Defaults to the module name. */
+function Crumbs({ items }: { items: Crumb[] }) {
+  const { t } = useI18n();
+  return (
+    <nav className="topbar-context crumbs" aria-label={t('shell.breadcrumb')}>
+      <ol>
+        {items.map((c, i) => {
+          const last = i === items.length - 1;
+          return (
+            <li key={`${i}-${c.label}`}>
+              {i > 0 && <Icon name="chevronRight" size={16} className="crumb-sep" />}
+              {c.to && !last ? <Link className="crumb-link" to={c.to}>{c.label}</Link> : <span className="crumb-current" aria-current={last && items.length > 1 ? 'page' : undefined}>{c.label}</span>}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
 export interface AppShellProps {
   module: Module;
+  /** Breadcrumb trail for the top bar (desktop and tablet); defaults to the module name. */
+  crumbs?: Crumb[];
   currentStudentId?: string;
   mobileTitle: string;
   mobileSubtitle?: string;
@@ -335,7 +363,7 @@ export interface AppShellProps {
   children: (bp: Breakpoint) => ReactNode;
 }
 
-export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle, mobileBack, mobileTrailing, mobileActions, children }: AppShellProps) {
+export function AppShell({ module, crumbs, currentStudentId, mobileTitle, mobileSubtitle, mobileBack, mobileTrailing, mobileActions, children }: AppShellProps) {
   const bp = useBreakpoint();
   // Tablets up to 1024px keep the tablet page layouts but navigate with the bottom tab bar (no rail, no panel).
   const tabNav = useBottomTabs();
@@ -374,6 +402,7 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
   }, [bp, tabNav, toggle]);
 
   const moduleLabel = t(`shell.module.${module}`);
+  const trail = crumbs ?? [{ label: moduleLabel }];
   const content = <ShellPanelContext.Provider value={{ panelOpen: desktopOpen, setPanelOpen }}>{children(bp)}</ShellPanelContext.Provider>;
 
   if (bp === 'mobile') {
@@ -417,8 +446,9 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
         <a className="skip-link" href="#main">{t('shell.skipToContent')}</a>
         <header className="topbar">
           <Link className="brand" to="/"><span className="monogram">AP</span><span>{t('shell.appName')}</span></Link>
-          <span className="topbar-context">{moduleLabel}</span>
+          <Crumbs items={trail} />
           <div className="grow" />
+          <GlobalSearch />
           <UpdateButton />
           <LanguageMenu />
           <ThemeMenu />
@@ -442,7 +472,9 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
       <a className="skip-link" href="#main">{t('shell.skipToContent')}</a>
       <header className="topbar">
         <Link className="brand" to="/"><span className="monogram">AP</span><span>{t('shell.appName')}</span></Link>
-        <span className="topbar-context">{moduleLabel}</span>
+        <Crumbs items={trail} />
+        <div className="grow" />
+        <GlobalSearch />
         <div className="grow" />
         <UpdateButton />
         <LanguageMenu />

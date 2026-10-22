@@ -185,6 +185,7 @@ export function ReportPreview() {
     <AppShell
       module="reports"
       currentStudentId={id}
+      crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name, to: `/students/${id}` }, { label: t('pages.report.title') }]}
       mobileTitle={t('pages.report.title')}
       mobileSubtitle={`${student.name} · ${term}`}
       mobileBack={`/students/${id}/studio`}

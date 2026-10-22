@@ -93,7 +93,8 @@ export const pages = {
     photo: 'Photo',
     photoValue: 'Placeholder only in demo mode',
     claimsBody: 'Link evidence or remove these claims before the report goes to review.',
-    reviewClaims: 'Review claims in Studio'
+    reviewClaims: 'Review claims in Studio',
+    domainLinkHint: 'compare Term 3 and Term 4'
   },
   observation: {
     title: 'Add observation',

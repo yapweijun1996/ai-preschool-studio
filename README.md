@@ -28,7 +28,8 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   context panel whose content follows the module (class, report queue, latest observations),
   with student search, Pinned and Recent (last 5 opened). The toggle — or Ctrl/Cmd+Shift+S —
   collapses only the panel; the state persists. Top bar: theme menu (Light/Dark/System) and
-  account menu. Phones and tablets up to 1024px use a bottom tab bar with a More sheet.
+  account menu, a breadcrumb trail and global search (Ctrl/⌘+K: students and pages).
+  Phones and tablets up to 1024px use a bottom tab bar with a More sheet.
 - **Responsive** — desktop ≥1200 (rail + context panel + 3 columns; pages are fluid and
   fill the width), tablet 768–1199 (editor with a docked Evidence/AI drawer; bottom tab bar up to
   1024px, rail + overlay panel from 1025px), mobile <768 (compact header, bottom tab bar,
@@ -56,13 +57,13 @@ npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ (relative base, hash routing)
 npm test             # unit tests (reducer, approval rules, Mock provider, i18n, PWA state machine)
-npm run e2e          # Playwright: journey, sidebar, profile, i18n, settings, real service-worker updates
+npm run e2e          # Playwright: journey, sidebar, profile, navigation, i18n, settings, real service-worker updates
 npm run icons        # regenerate PWA icons (needs Chromium; see PW_CHROMIUM below)
 ```
 
 If Chromium is already installed elsewhere, point Playwright at it:
 `PW_CHROMIUM=/path/to/chrome npm run e2e`. `BASE_URL=<deployed url> npx playwright test
-e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts` runs the suite against a deployed site.
+e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts` runs the suite against a deployed site.
 
 Version identity: `package.json` version + short commit SHA, baked in at build time and
 published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
@@ -72,7 +73,7 @@ published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
 `.github/workflows/deploy-pages.yml` runs on every push to `main` (and on demand from the
 Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages →
 **live smoke**: waits until the live `version.json` reports this commit's build, then runs the
-journey, sidebar and profile e2e specs against the live URL.
+journey, sidebar, profile and navigation e2e specs against the live URL.
 
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pages on a

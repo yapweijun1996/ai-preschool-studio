@@ -60,7 +60,16 @@ test.describe('profile · mobile 390', () => {
     expect(box!.height).toBeLessThanOrEqual(80);
     await expect(page.getByRole('link', { name: 'Review claims in Studio' })).toBeVisible();
     const small = await page.$$eval('main .page button, main .page a[href]', (els) =>
-      els.filter((e) => (e as HTMLElement).offsetParent !== null).map((e) => e.getBoundingClientRect().height).filter((h) => h < 44));
+      els
+        .filter((e) => (e as HTMLElement).offsetParent !== null)
+        // A stretched card link's hit area is its whole card (::after covers it).
+        .map((e) => (e.classList.contains('stretched') ? e.closest('.card-link')! : e).getBoundingClientRect().height)
+        .filter((h) => h < 44));
     expect(small).toEqual([]);
+    // Tapping anywhere on a domain card (not just its title) opens that domain.
+    const card = page.locator('.domain-grid > article').first();
+    const cb = (await card.boundingBox())!;
+    await card.click({ position: { x: 24, y: cb.height - 16 } });
+    await expect(page).toHaveURL(/#\/students\/aria\/progress\?domain=en$/);
   });
 });

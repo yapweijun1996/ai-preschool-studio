@@ -7,6 +7,16 @@ export const shell: Dict['shell'] = {
   demoStrip: 'Mod demo — semua murid dan pemerhatian ialah data contoh rekaan',
   demoStripCompact: 'Mod demo · data contoh rekaan',
   back: 'Kembali',
+  breadcrumb: 'Laluan navigasi',
+  search: {
+    trigger: 'Cari murid atau halaman',
+    label: 'Carian',
+    placeholder: 'Cari murid atau halaman…',
+    students: 'Murid',
+    pages: 'Pergi ke',
+    noResults: 'Tiada hasil untuk “{query}”.',
+    hint: '↑ ↓ untuk bergerak · Enter untuk buka · Esc untuk tutup'
+  },
   nav: {
     main: 'Navigasi utama',
     dashboard: 'Papan pemuka',

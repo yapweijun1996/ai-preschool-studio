@@ -79,6 +79,7 @@ export function AddObservation() {
     <AppShell
       module="observations"
       currentStudentId={id}
+      crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name, to: `/students/${id}` }, { label: t('pages.observation.title') }]}
       mobileTitle={t('pages.observation.title')}
       mobileSubtitle={`${student.name} · ${demo}`}
       mobileBack={`/students/${id}`}
