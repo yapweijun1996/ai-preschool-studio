@@ -15,9 +15,9 @@ access-control boundary. Studio Platform enforces real access.
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Dashboard, portfolio screens, student list, observations, reports, released family-copy preview and personal Settings | Add observations, edit and submit drafts, view reports, preview/print released family copies, and use demo controls; review actions are explained and can be reached by switching role. |
-| Reviewer / Principal | Dashboard, students, reports, read-only Studio, audit log and personal Settings | Request changes, approve, release and reopen reports, link evidence, and read/filter audit events. |
-| School admin | Dashboard, read-only Students, coverage, review queue metadata, audit log, Settings and an admin planned page | Use demo controls and read/filter audit events; planned administration modules are listed with roadmap phases. Cannot view report narratives or open reports. |
+| Teacher | Dashboard, portfolio screens, student list, observations, reports, released family-copy preview, class roster, child basics, guardian contacts, authorised collectors, health/allergy notes and personal Settings | Add observations, edit and submit drafts, view reports, preview/print released family copies, and use demo controls; child records are read-only. |
+| Reviewer / Principal | Dashboard, child basics and class, reports, read-only Studio, audit log and personal Settings | Request changes, approve, release and reopen reports, link evidence, and read/filter audit events. Contacts and health notes are hidden. |
+| School admin | Dashboard, child basics, class, enrolment, contacts, health/allergy notes, coverage, review queue metadata, audit log and Settings | Edit child records, guardians and collectors; withdraw children when permitted; use demo controls and read/filter audit events. Cannot view report narratives or open reports. |
 | Parent | Dashboard, personal Settings and parent planned page; student navigation is hidden | See planned Family Portal and Notices modules with roadmap phases; switch back to Teacher. |
 
 Capabilities are assigned in the complete matrix below. Every role can view personal Settings (`settings.view`) and the dashboard (`dashboard.view`). Demo simulation controls, including the Demo data Settings section and Demo menu items, require `demo.controls` (Teacher and School admin only).
@@ -38,6 +38,13 @@ Capabilities are assigned in the complete matrix below. Every role can view pers
 | `reviews.view` | — | ✓ | ✓ | — |
 | `reviews.changes` | ✓ | — | — | — |
 | `audit.view` | — | ✓ | ✓ | — |
+| `children.edit` | — | — | ✓ | — |
+| `contacts.view` | ✓ | — | ✓ | — |
+| `health.view` | ✓ | — | ✓ | — |
+
+Children & Classes adds data-minimised capabilities: teachers can read contacts and health notes for
+their work; school admins can read and edit the relevant child records. Reviewer/principal and parent
+roles receive neither capability. Parent child access remains planned and unavailable.
 
 The capability union and complete role matrix have one owner in [`src/roles/index.ts`](../../src/roles/index.ts).
 The React provider in `src/roles/RoleContext.tsx` stores the selected role in tab-scoped
