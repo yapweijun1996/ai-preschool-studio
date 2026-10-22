@@ -42,7 +42,7 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `wrong-child-observation` | An evidence ID is missing or belongs to another child. |
 | `date-outside-period` | Observation date falls outside every reporting period. |
 | `report-locked` | Approved report content is frozen. |
-| `report-not-editable` | Wording is paused while the report is in review. |
+| `report-not-editable` | Wording is paused during review, or a review-only action was called outside review. |
 | `not-ready` | Required domains/reflection are missing, or approval is incomplete. |
 | `unverified-claims` | One or more narrative claims lack evidence. |
 | `invalid-target` | The requested transition is not valid for the target's current state, or the target sentence/paragraph is absent. |
