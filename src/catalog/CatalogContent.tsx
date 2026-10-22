@@ -79,6 +79,13 @@ const readinessExamples: { title: string; readiness: Readiness }[] = [
     },
   },
 ];
+const saveStatuses = [
+  { kind: 'idle' },
+  { kind: 'saved', at: '10:42 AM' },
+  { kind: 'unsaved' },
+  { kind: 'saving' },
+  { kind: 'failed' },
+] as const;
 
 function sectionId(name: string) {
   return name.toLowerCase().replaceAll(' ', '-');
@@ -181,7 +188,7 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
       return (
         <MarkupExample title="Save states">
           <div className="stack">
-            {([{ kind: 'idle' }, { kind: 'saved', at: '10:42 AM' }, { kind: 'unsaved' }, { kind: 'saving' }, { kind: 'failed' }] as const).map((status, index) => (
+            {saveStatuses.map((status, index) => (
               <div key={index} className="row">
                 <span className="muted">{status.kind}</span>
                 <SaveIndicator status={status} onRetry={() => {}} />
@@ -198,7 +205,9 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
               <Notice
                 key={tone}
                 tone={tone}
-                icon={tone === 'info' ? 'info' : tone === 'success' ? 'check' : tone === 'warning' ? 'alert' : 'alertCircle'}
+                icon={
+                  tone === 'info' ? 'info' : tone === 'success' ? 'check' : tone === 'warning' ? 'alert' : 'alertCircle'
+                }
               >
                 <p className="body-text">{tone[0].toUpperCase() + tone.slice(1)} notice message.</p>
               </Notice>
@@ -219,7 +228,14 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
       return (
         <MarkupExample title="Tabs">
           <div className="tabs">
-            <a className="tab" href="#/catalog" onClick={(event) => event.preventDefault()} aria-current="page">Overview</a>
+            <a
+              className="tab"
+              href="#/catalog"
+              onClick={(event) => event.preventDefault()}
+              aria-current="page"
+            >
+              Overview
+            </a>
             <a className="tab" href="#/catalog" onClick={(event) => event.preventDefault()}>Evidence</a>
             <a className="tab" href="#/catalog" onClick={(event) => event.preventDefault()}>Reports</a>
           </div>
@@ -251,7 +267,13 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
               <div className="input date-field">
                 <span className="num grow" aria-hidden="true">20 Oct 2026</span>
                 <Icon name="calendar" size={18} />
-                <input id="catalog-date" className="date-native" type="date" defaultValue="2026-10-20" aria-label="Observation date" />
+                <input
+                  id="catalog-date"
+                  className="date-native"
+                  type="date"
+                  defaultValue="2026-10-20"
+                  aria-label="Observation date"
+                />
               </div>
             </div>
           </div>
@@ -286,7 +308,14 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
           <Menu
             label="Example actions"
             trigger={({ onClick, expanded, ref }) => (
-              <button ref={ref} className="btn btn-secondary" onClick={onClick} aria-expanded={expanded}>Actions</button>
+              <button
+                ref={ref}
+                className="btn btn-secondary"
+                onClick={onClick}
+                aria-expanded={expanded}
+              >
+                Actions
+              </button>
             )}
           >
             {(close) => (
