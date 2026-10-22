@@ -5,6 +5,7 @@ import { expect, test } from '@playwright/test';
 
 const routes = [
   { name: 'dashboard', path: './#/' },
+  { name: 'catalog', path: './#/catalog' },
   { name: 'students', path: './#/students' },
   { name: 'aria-profile', path: './#/students/aria' },
   { name: 'aria-observe', path: './#/students/aria/observe' },

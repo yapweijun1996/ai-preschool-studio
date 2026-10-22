@@ -4,6 +4,10 @@ Open `#/catalog` to inspect the shared interface in the app shell. Theme and lan
 
 ## Porting workflow
 
+## How Studio Platform uses this page
+
+Copy the markup and token names as the starting point for the equivalent Studio Platform components. Token values come from `design/tokens.json` and `src/styles/tokens.css`; never copy hex values from screenshots.
+
 1. **Tokens:** copy the CSS custom properties and light/dark values into the destination design system.
 2. **CSS classes:** map the app classes shown in each example to equivalent styles, preserving responsive behavior, focus indicators, and touch target sizes.
 3. **Markup:** use the rendered markup disclosure as a structural reference. HTML is a rendered snapshot; dynamic attributes and event behavior still need implementation.

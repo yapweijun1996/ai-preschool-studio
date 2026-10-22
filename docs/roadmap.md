@@ -10,8 +10,8 @@ Status values: **done**, **in progress**, **planned**.
 | Item | Status |
 |---|---|
 | Learning Framework (single owner of areas, scale, periods; versioned) | done (v0.4.0) |
-| Quality gates: axe WCAG 2.2 AA scan on every route, Firefox and WebKit runs | in progress |
-| Component catalog route with every component state, plus visual regression | planned |
+| Quality gates: axe WCAG 2.2 AA scan on every route, Firefox and WebKit runs | done (v0.5.0) |
+| Component catalog route with every component state, plus visual regression | in progress (catalog done v0.5.0; visual regression planned) |
 | Data port interface (demo adapter now; platform adapter later) | planned |
 | Demo role switcher (Teacher, Reviewer/Principal, School admin, Parent) | planned |
 | Module spec template and specs for existing modules | done |
