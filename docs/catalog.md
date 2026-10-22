@@ -1,6 +1,6 @@
 # Component catalog
 
-Open `#/catalog` to inspect the shared interface in the app shell. Theme and language controls remain available, so examples show real translated component labels and the active light or dark token values. Use the table of contents to jump to a component family; expand **Markup** to view the rendered HTML and **Copy** to copy it.
+Open `#/catalog` to inspect the shared interface in the app shell. Theme and language controls remain available, so examples show real translated component labels and the active light or dark token values. Use the table of contents to jump to a component family; expand **Markup** to view the rendered HTML and **Copy** to copy it. The typography tokens use Fontsource's registered family names: `Inter Variable` and `Noto Sans SC`.
 
 ## Porting workflow
 

@@ -15,9 +15,8 @@ bytes; score and timing assertions use the median of the three CI runs.
 | Assertion | Threshold | Severity |
 |---|---:|---|
 | Script resource size | ≤ 174,080 bytes (170 KB) | Error |
-| Stylesheet resource size | ≤ 15,360 bytes (15 KB) | Error |
-| Total resource size | ≤ 409,600 bytes (400 KB) | Error |
-| Third-party resource count | ≤ 0 | Error |
+| Stylesheet resource size | ≤ 240,640 bytes (235 KB) | Error |
+| Total resource size | ≤ 595,456 bytes (581.5 KB) | Error |
 | Accessibility score | ≥ 0.95 | Error |
 | Best Practices score | ≥ 0.90 | Error |
 | Cumulative Layout Shift | ≤ 0.10 | Error |
@@ -44,6 +43,26 @@ are baseline observations, not CI medians:
 
 The largest improvement lever is the single entry chunk, about 460 KB raw / 140
 KB gzip. Route-level code splitting is a follow-up.
+
+## First-party assets and font strategy (2026-10-22)
+
+The production design reference makes no third-party requests. Google Fonts
+sent each visitor's IP address to Google and its files were not available
+offline through our service worker. A Playwright smoke test now checks all four
+production routes and fails on requests outside the page origin; LHCI's
+`resource-summary:third-party:count` is not used because Lighthouse counts the
+GitHub Pages host itself as third party.
+
+Inter Variable and Noto Sans SC are bundled from Fontsource. Inter uses its
+Latin variable face; Noto Sans SC includes 400, 500, 600 and 700 with Unicode
+ranges, so the browser fetches only glyph slices used by each page. The service
+worker precaches the app shell and caches same-origin assets, including fonts,
+on first use. The build emits 785 font files (22,137,340 bytes total, about
+21.1 MiB); a local dashboard load fetched five font files totaling 164,604
+transfer bytes. Its measured total resource transfer was 517,604 bytes.
+
+The stylesheet and total limits are 15% above those measured dashboard values
+(rounded up). The existing script limit remains 174,080 bytes.
 
 ## Reading the CI report
 

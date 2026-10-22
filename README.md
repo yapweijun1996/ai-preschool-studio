@@ -105,6 +105,8 @@ private repository needs a paid GitHub plan; on the free plan, make the repo pub
 
 ## Structure
 
+Font credits: Inter by Rasmus Andersson and Noto Sans SC by Google, both distributed under the SIL Open Font License 1.1.
+
 ```
 design/tokens.json        design system tokens (source of truth)
 src/styles/tokens.css     tokens as CSS variables, light + dark
