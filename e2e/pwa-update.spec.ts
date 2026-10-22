@@ -232,7 +232,7 @@ test('unknown new version: the button says "Update now", never "Update to v"', a
 test('apply failure (reload-loop guard): own message, update stays on offer, never a false "current"', async ({ page }) => {
   await switchTo('a');
   let loads = 0;
-  page.on('load', () => loads++);
+  page.on('load', () => { if (page.url() !== 'about:blank') loads++; });
   await page.goto('./');
   await waitForController(page);
   await expect.poll(async () => (await snap(page)).status).toBe('current');
