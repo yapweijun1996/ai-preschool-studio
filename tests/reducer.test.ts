@@ -2,8 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { approvalBlock, initialState, reducer, reportContentHash, selectAuditLog, unverifiedClaims } from '../src/store/reducer';
 import { requestSuggestion } from '../src/services/mockProvider';
 import { NEXT_OBS_NUMBER } from '../src/data/demo';
+import { now } from '../src/utils/clock';
 
 describe('portfolio reducer', () => {
+  it('uses the injectable clock as an ISO instant', () => {
+    expect(now(() => new Date('2026-10-22T08:32:00.000Z'))).toBe('2026-10-22T08:32:00.000Z');
+  });
+  it('stores audit and decision timestamps as full instants and sorts same-time events by sequence', () => {
+    const seeded = initialState();
+    expect(seeded.auditEvents.every((event) => /^\d{4}-\d\d-\d\dT/.test(event.at))).toBe(true);
+    let s = reducer(seeded, { type: 'requestChanges', studentId: 'ethan', text: 'check', date: '2026-10-22T08:32:00.000Z' });
+    s = reducer(s, { type: 'addObservation', at: '2026-10-22T08:32:00.000Z', obs: { studentId: 'aria', date: '2026-10-22', domain: 'ma', milestone: 'developing', text: 'Counted blocks.', hasPhoto: false, term: 4 } });
+    expect(s.auditEvents.slice(-2).map((event) => event.action)).toEqual(['report.changesRequested', 'observation.added']);
+    expect(selectAuditLog(s.auditEvents).slice(0, 2).map((event) => event.action)).toEqual(['observation.added', 'report.changesRequested']);
+  });
   it('flags sentences without sources as needing teacher verification', () => {
     const s = initialState();
     expect(unverifiedClaims(s, 'aria').map((c) => c.sentence.id)).toEqual(['s-en-2', 's-se-1']);
@@ -14,14 +26,14 @@ describe('portfolio reducer', () => {
     expect(s.reports.aria.status).toBe('review');
     expect(approvalBlock(s, 'aria')).toEqual({ reason: 'claims', count: 2 });
 
-    s = reducer(s, { type: 'approve', studentId: 'aria', at: 'now' });
+    s = reducer(s, { type: 'approve', studentId: 'aria', at: '2026-10-22T09:00:00.000Z' });
     expect(s.reports.aria.status).toBe('review');
 
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-en-2', obsId: 'OBS-0149' });
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-se-1', obsId: 'OBS-0151' });
     expect(approvalBlock(s, 'aria')).toBeNull();
 
-    s = reducer(s, { type: 'approve', studentId: 'aria', at: 'now' });
+    s = reducer(s, { type: 'approve', studentId: 'aria', at: '2026-10-22T09:00:00.000Z' });
     expect(s.reports.aria.status).toBe('approved');
   });
 

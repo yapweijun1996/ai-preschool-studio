@@ -17,6 +17,7 @@ import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 import { useRole } from '../roles/RoleContext';
+import { now } from '../utils/clock';
 
 export function ReportPreview() {
   const { id = '' } = useParams();
@@ -80,13 +81,13 @@ export function ReportPreview() {
 
   const approve = () => {
     if (block) return;
-    const at = new Date().toISOString();
+    const at = now();
     dispatch({ type: 'approve', studentId: id, at, approvedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
   };
-  const release = () => dispatch({ type: 'release', studentId: id, at: new Date().toISOString(), releasedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
+  const release = () => dispatch({ type: 'release', studentId: id, at: now(), releasedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
   const reopen = () => {
     if (!reopenReason.trim()) { setReopenError(true); return; }
-    dispatch({ type: 'reopen', studentId: id, reason: reopenReason, reopenedBy: REVIEWER, at: new Date().toISOString(), actor: { role: 'reviewer', name: REVIEWER } });
+    dispatch({ type: 'reopen', studentId: id, reason: reopenReason, reopenedBy: REVIEWER, at: now(), actor: { role: 'reviewer', name: REVIEWER } });
     setReopenOpen(false); setReopenReason(''); setSelectedVersion(null); reopenTrigger.current?.focus();
   };
   const linkFirstCandidate = (sentenceId: string, paragraphId: string) => {
@@ -108,7 +109,7 @@ export function ReportPreview() {
       return requesting ? (
         <>
           <button className="btn btn-secondary" type="button" onClick={() => setRequesting(false)}>{t('pages.shared.cancel')}</button>
-          <button className="btn btn-primary grow" type="button" onClick={() => { dispatch({ type: 'requestChanges', studentId: id, text: changeNote, date: TODAY }); setRequesting(false); }}>{t('pages.report.sendRequest')}</button>
+          <button className="btn btn-primary grow" type="button" onClick={() => { dispatch({ type: 'requestChanges', studentId: id, text: changeNote, date: now() }); setRequesting(false); }}>{t('pages.report.sendRequest')}</button>
         </>
       ) : (
         <>
@@ -127,7 +128,7 @@ export function ReportPreview() {
           <button
             className="btn btn-primary grow"
             type="button"
-            onClick={() => ready.canSubmit && dispatch({ type: 'submitForReview', studentId: id, submittedAt: TODAY })}
+            onClick={() => ready.canSubmit && dispatch({ type: 'submitForReview', studentId: id, submittedAt: now() })}
             aria-disabled={!ready.canSubmit}
             aria-describedby={ready.canSubmit ? undefined : 'not-ready'}
           >

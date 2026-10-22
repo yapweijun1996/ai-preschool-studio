@@ -2,7 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from 'react';
 import { can, isRole, type Capability, type Role } from './index';
 import { DEMO_ROLES } from './index';
 import { usePortfolio } from '../store/PortfolioContext';
-import { TODAY } from '../data/demo';
+import { now } from '../utils/clock';
 
 const STORAGE_KEY = 'aps-demo-role';
 type RoleContextValue = { role: Role; setRole: (role: Role) => void; can: (capability: Capability) => boolean };
@@ -25,7 +25,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     setCurrentRole(next);
     if (previous !== next) {
       const actorRole = DEMO_ROLES.find((item) => item.role === previous)!;
-      dispatch({ type: 'roleSwitched', from: previous, to: next, actor: { role: previous, name: actorRole.name }, at: `${TODAY}T00:00:00.000Z` });
+      dispatch({ type: 'roleSwitched', from: previous, to: next, actor: { role: previous, name: actorRole.name }, at: now() });
     }
     try {
       sessionStorage.setItem(STORAGE_KEY, next);

@@ -8,7 +8,7 @@ import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
 import { ReadinessList } from '../components/ReportFlow';
 import { Avatar, MockProviderLabel, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, TODAY } from '../data/demo';
+import { CLASS_NAME } from '../data/demo';
 import { DOMAINS } from '../framework';
 import { useAutosave } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
@@ -22,6 +22,7 @@ import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 import { useRole } from '../roles/RoleContext';
 import { DEMO_ROLES } from '../roles';
+import { now } from '../utils/clock';
 
 type MobileTab = 'evidence' | 'write' | 'ai';
 
@@ -145,7 +146,7 @@ export function PortfolioStudio() {
       setWhyBlocked(true);
       return;
     }
-    dispatch({ type: 'submitForReview', studentId: id, submittedAt: TODAY });
+    dispatch({ type: 'submitForReview', studentId: id, submittedAt: now() });
     navigate(`/students/${id}/report`);
   };
   const submitButton = (cls: string) =>
