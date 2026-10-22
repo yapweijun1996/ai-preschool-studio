@@ -28,9 +28,7 @@ export const pages: Dict['pages'] = {
     today: '今天',
     notObserved: '本学期尚未观察',
     photoPlaceholder: '照片占位',
-    photoPlaceholderFor: '{name}的照片占位',
-    term3: '第 3 学期',
-    term4: '第 4 学期'
+    photoPlaceholderFor: '{name}的照片占位'
   },
   tabs: {
     label: '学生页面分区',
@@ -130,6 +128,7 @@ export const pages: Dict['pages'] = {
     title: '学习进展',
     mobileSubtitle: '{name} · 第 3 学期对比第 4 学期',
     compared: '{term3} 与 {term4} 对比',
+    nelLine: 'NEL：{area}',
     keyLabel: '发展里程碑图例',
     milestones: '发展里程碑',
     keyNote: '描述观察到的学习表现——不是分数或排名。',
@@ -273,6 +272,7 @@ export const pages: Dict['pages'] = {
     approvedByLine: '批准人：{name}（演示审核人）',
     notApproved: '尚未批准',
     pageOf: '第 {page} 页，共 {total} 页',
+    frameworkLine: '{name} v{version}',
     phoneNote: '手机视图会重新排版 A4 页面。导出 PDF 可查看准确的打印版式。'
   }
 };

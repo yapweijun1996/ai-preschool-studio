@@ -114,6 +114,7 @@ export const shell: Dict['shell'] = {
     sections: {
       appearance: '外观',
       language: '语言',
+      framework: '学习框架',
       about: '关于与更新',
       demo: '演示数据'
     },
@@ -162,6 +163,16 @@ export const shell: Dict['shell'] = {
       updateNow: '立即更新',
       offlineHeading: '离线使用',
       offline: '可离线使用：本设备上的应用界面和演示数据。模拟服务（Mock provider）在本地运行，不会向服务器发送任何内容。'
+    },
+    framework: {
+      version: '版本 {version}',
+      basis: '所有页面使用的学习领域、里程碑等级和报告周期。各领域对应新加坡《培育幼儿》（NEL）框架 2022。',
+      readOnly: '本演示中只读。在 Studio Platform 中由学校管理员维护；已批准的报告会保留批准时的框架版本。',
+      areas: '学习领域',
+      mappingNote: 'NEL 对应关系是演示假设，需对照 NEL 官方文件确认。',
+      scale: '里程碑等级',
+      scaleNote: '描述观察到的学习表现，以文字和圆点显示。不是分数、百分比或排名。',
+      periods: '报告周期'
     },
     demo: {
       heading: '模拟问题',

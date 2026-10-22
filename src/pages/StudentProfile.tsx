@@ -5,7 +5,8 @@ import { Icon } from '../components/Icon';
 import { ReportFlow } from '../components/ReportFlow';
 import { StudentTabs } from '../components/StudentTabs';
 import { Avatar, MilestoneDots, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, DOMAINS, TEACHER } from '../data/demo';
+import { CLASS_NAME, TEACHER } from '../data/demo';
+import { DOMAINS } from '../framework';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
@@ -17,7 +18,7 @@ import { useLastObservedLabel } from './Students';
 export function StudentProfile() {
   const { id = '' } = useParams();
   const { t, fmtDate } = useI18n();
-  const { domainFull, domainShort, milestone } = useLabels();
+  const { domainFull, domainShort, milestone, term: periodLabel } = useLabels();
   const lastObservedLabel = useLastObservedLabel();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
@@ -120,7 +121,7 @@ export function StudentProfile() {
                 <div className="row" style={{ alignItems: 'flex-start' }}>
                   <div className="grow">
                     <h2 id="pr-h" className="h2">{t('pages.profile.portfolioReport')}</h2>
-                    <p className="sec muted">{t('common.term4')}</p>
+                    <p className="sec muted">{periodLabel(4)}</p>
                   </div>
                   <StatusLabel status={report.status} />
                 </div>

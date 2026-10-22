@@ -49,7 +49,7 @@ Status: **exists**, **partial**, **missing**, **out of scope** (by brief), **pla
 |---|---|---|---|---|
 | Core | Children & Classes | Child, Class, Enrolment, Guardian | partial (fictional class of 20) | in progress |
 | Core | Observations (Evidence) | Observation, media reference | exists | in progress |
-| Core | **Learning Framework** | Learning areas, milestone scale, reporting periods | **next** (hard-coded today) | to align |
+| Core | **Learning Framework** | Learning areas, milestone scale, reporting periods | exists (v0.4.0, read-only, versioned) | to align |
 | Core | Learning Progress | derived view | exists | in progress |
 | Core | Portfolio Studio | Draft, paragraph, sentence, source link, reflection | exists | in progress |
 | Core | Report Review & Release | Report version, review decision, comment | partial (no frozen version or history) | in progress |

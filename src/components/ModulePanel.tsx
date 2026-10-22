@@ -10,11 +10,12 @@ import type { Module } from './AppShell';
 import { Icon, type IconName } from './Icon';
 import { Avatar } from './ui';
 
-export type SettingsSection = 'appearance' | 'language' | 'about' | 'demo';
+export type SettingsSection = 'appearance' | 'language' | 'framework' | 'about' | 'demo';
 
 export const SETTINGS_SECTIONS: { key: SettingsSection; icon: IconName }[] = [
   { key: 'appearance', icon: 'palette' },
   { key: 'language', icon: 'languages' },
+  { key: 'framework', icon: 'layers' },
   { key: 'about', icon: 'info' },
   { key: 'demo', icon: 'flask' }
 ];

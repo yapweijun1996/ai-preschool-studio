@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DOMAINS, OBSERVATIONS, STUDENTS } from '../src/data/demo';
+import { OBSERVATIONS, STUDENTS } from '../src/data/demo';
+import { DOMAINS } from '../src/framework';
 import { requestSuggestion } from '../src/services/mockProvider';
 import { initialState, observationsFor, readiness, reducer } from '../src/store/reducer';
 import { milestonesFor, studentSummary } from '../src/store/selectors';

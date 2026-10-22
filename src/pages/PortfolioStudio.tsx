@@ -7,9 +7,11 @@ import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
 import { ReadinessList } from '../components/ReportFlow';
 import { Avatar, MockProviderLabel, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, DOMAINS } from '../data/demo';
+import { CLASS_NAME } from '../data/demo';
+import { DOMAINS } from '../framework';
 import { useAutosave } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
+import { useLabels } from '../i18n/labels';
 import { useDirtyGuard } from '../pwa';
 import { ProviderUnavailableError, requestSuggestion, type AiAction } from '../services/mockProvider';
 import { usePortfolio } from '../store/PortfolioContext';
@@ -24,6 +26,7 @@ export function PortfolioStudio() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { term: periodLabel } = useLabels();
   const { state, dispatch } = usePortfolio();
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -91,7 +94,7 @@ export function PortfolioStudio() {
 
   if (!sum) return <NotFound />;
   const { student, report } = sum;
-  const term = t('common.term4');
+  const term = periodLabel(4);
   const demo = t('common.demoStudent');
   const submitLabel = t('pages.shared.submitForReview');
   const evidenceLabel = t('pages.studio.evidence');

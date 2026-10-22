@@ -13,7 +13,7 @@ const ORDER: ReportStatus[] = ['notStarted', 'draft', 'review', 'changes', 'appr
 
 export function Dashboard() {
   const { t, fmtDate } = useI18n();
-  const { domainShort, status: statusLabel } = useLabels();
+  const { domainShort, status: statusLabel, term: periodLabel } = useLabels();
   const lastObservedLabel = useLastObservedLabel();
   const { state } = usePortfolio();
   const summaries = allSummaries(state);
@@ -32,7 +32,7 @@ export function Dashboard() {
   }, []);
   const recent = [...state.observations].filter((o) => o.term === 4).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   const nameOf = (id: string) => STUDENTS.find((s) => s.id === id)!.name;
-  const term = t('common.term4');
+  const term = periodLabel(4);
   const addLabel = t('pages.shared.addObservation');
   const today = t('pages.dashboard.today', { weekday: fmtDate(TODAY, { weekday: 'long' }), date: fmtDate(TODAY) });
 

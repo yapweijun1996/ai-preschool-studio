@@ -114,6 +114,7 @@ export const shell: Dict['shell'] = {
     sections: {
       appearance: 'Paparan',
       language: 'Bahasa',
+      framework: 'Rangka kerja pembelajaran',
       about: 'Perihal & kemas kini',
       demo: 'Data demo'
     },
@@ -162,6 +163,16 @@ export const shell: Dict['shell'] = {
       updateNow: 'Kemas kini sekarang',
       offlineHeading: 'Penggunaan luar talian',
       offline: 'Berfungsi di luar talian: rangka aplikasi dan data demo pada peranti ini. Penyedia simulasi (Mock provider) berjalan secara setempat; tiada apa-apa dihantar ke pelayan.'
+    },
+    framework: {
+      version: 'Versi {version}',
+      basis: 'Bidang pembelajaran, skala pencapaian dan tempoh laporan yang digunakan oleh setiap halaman. Bidang dipetakan kepada Rangka Kerja Nurturing Early Learners (NEL) 2022.',
+      readOnly: 'Baca sahaja dalam demo ini. Dalam Studio Platform, pentadbir sekolah menyelenggarakannya; laporan yang diluluskan mengekalkan versi rangka kerja semasa ia diluluskan.',
+      areas: 'Bidang pembelajaran',
+      mappingNote: 'Pemetaan NEL ialah andaian demo yang perlu disahkan dengan dokumen NEL.',
+      scale: 'Skala pencapaian',
+      scaleNote: 'Huraian pembelajaran yang diperhatikan, dipaparkan sebagai perkataan dan titik. Bukan markah, peratusan atau kedudukan.',
+      periods: 'Tempoh laporan'
     },
     demo: {
       heading: 'Simulasi masalah',

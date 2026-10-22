@@ -4,7 +4,7 @@ import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { StudentTabs } from '../components/StudentTabs';
 import { MilestoneDots, Notice, SourceChip } from '../components/ui';
-import { DOMAINS, MILESTONES } from '../data/demo';
+import { DOMAINS, MILESTONES } from '../framework';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
@@ -27,7 +27,7 @@ const NOTES: Record<string, Record<string, string>> = {
 export function LearningProgress() {
   const { id = '' } = useParams();
   const { t } = useI18n();
-  const { domainFull, milestone: label } = useLabels();
+  const { domainFull, milestone: label, term: periodLabel, termShort, domainNel } = useLabels();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -49,8 +49,8 @@ export function LearningProgress() {
   const m3 = milestonesFor(state, id, 3);
   const m4 = milestonesFor(state, id, 4);
   const t3 = observationsFor(state, id, 3);
-  const term3 = t('common.term3');
-  const term4 = t('common.term4');
+  const term3 = periodLabel(3);
+  const term4 = periodLabel(4);
   const openStudio = t('pages.shared.openStudio');
 
   return (
@@ -102,14 +102,17 @@ export function LearningProgress() {
                       : t('pages.progress.moved', { from: label(before), to: label(after) }));
               return (
                 <div key={d.key} id={`domain-${d.key}`} tabIndex={focusDomain === d.key ? -1 : undefined} className={focusDomain === d.key ? 'row-focus' : undefined} style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr 1fr' : '1.3fr 1fr 1fr 1.6fr', gap: 16, padding: 20, borderTop: '1px solid var(--color-border)', alignItems: 'start' }}>
-                  <h2 className="strong" style={{ gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>{domainFull(d.key)}</h2>
+                  <div className="stack" style={{ gap: 4, gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>
+                    <h2 className="strong">{domainFull(d.key)}</h2>
+                    <span className="cap muted">{t('pages.progress.nelLine', { area: domainNel(d.key) })}</span>
+                  </div>
                   <div className="stack" style={{ gap: 6 }}>
-                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{t('pages.shared.term3')}</span>
+                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{termShort(3)}</span>
                     <MilestoneDots milestone={before} />
                     {n3 > 0 && <span className="cap muted num">{t('pages.shared.observations', { count: n3 })}</span>}
                   </div>
                   <div className="stack" style={{ gap: 6 }}>
-                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{t('pages.shared.term4')}</span>
+                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{termShort(4)}</span>
                     <MilestoneDots milestone={after} />
                     {n4 > 0 && <span className="cap muted num">{t('pages.shared.observations', { count: n4 })}</span>}
                   </div>

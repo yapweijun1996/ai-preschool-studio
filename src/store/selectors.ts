@@ -1,4 +1,5 @@
-import { DOMAINS, STUDENTS, type DomainKey, type Milestone, type Student } from '../data/demo';
+import { STUDENTS, type Student } from '../data/demo';
+import { DOMAINS, type DomainKey, type Milestone } from '../framework';
 import { observationsFor, unverifiedClaims, type ReportState, type State } from './reducer';
 
 export interface StudentSummary {

@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { TEACHER, type Milestone, type Observation, type Paragraph, type DomainKey } from '../../data/demo';
+import { TEACHER, type Observation, type Paragraph } from '../../data/demo';
+import { type Milestone, type DomainKey } from '../../framework';
 import { useI18n } from '../../i18n';
 import { useLabels } from '../../i18n/labels';
 import { Icon } from '../Icon';

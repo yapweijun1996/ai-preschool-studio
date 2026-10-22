@@ -23,6 +23,10 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   only when all four domains are written and the teacher reflection is added; Approve is also
   blocked, with the reason shown, while any claim lacks evidence. The "Before approval" checks
   are computed from the report's real content.
+- **Learning framework** — `src/framework` is the single owner of learning areas (stable keys,
+  bilingual labels in en/中文/BM, each mapped to an NEL 2022 learning area), the milestone scale
+  and reporting periods. Every page reads it; Settings › Learning framework shows it read-only.
+  It is versioned: an approved report records the version and keeps its labels.
 - **Demo data** — 20 fictional students in K2 Sunflower. Observation counts, last-observed dates
   and every milestone are derived from the observation records (a domain's milestone is the one on
   its latest observation; no observation → "Not yet observed"). A not-started report can start a
@@ -74,7 +78,7 @@ npm run icons        # regenerate PWA icons (needs Chromium; see PW_CHROMIUM bel
 
 If Chromium is already installed elsewhere, point Playwright at it:
 `PW_CHROMIUM=/path/to/chrome npm run e2e`. `BASE_URL=<deployed url> npx playwright test
-e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts e2e/polish.spec.ts e2e/students-data.spec.ts` runs the suite against a deployed site.
+e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts e2e/polish.spec.ts e2e/students-data.spec.ts e2e/framework.spec.ts` runs the suite against a deployed site.
 
 Version identity: `package.json` version + short commit SHA, baked in at build time and
 published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
@@ -84,7 +88,7 @@ published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
 `.github/workflows/deploy-pages.yml` runs on every push to `main` (and on demand from the
 Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages →
 **live smoke**: waits until the live `version.json` reports this commit's build, then runs the
-journey, sidebar, profile, navigation, polish and students-data e2e specs against the live URL.
+journey, sidebar, profile, navigation, polish, students-data and framework e2e specs against the live URL.
 
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pages on a

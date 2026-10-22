@@ -7,6 +7,7 @@ import { MilestoneDots, Notice, StatusLabel, VerifyLabel } from '../components/u
 import { CLASS_NAME, REVIEWER, TEACHER, TODAY } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
+import { frameworkFor } from '../framework';
 import { useDirtyGuard } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
 import { approvalBlock, observationsFor, readiness, unverifiedClaims } from '../store/reducer';
@@ -21,8 +22,9 @@ export function ReportPreview() {
   const [editedNote, setEditedNote] = useState<string | undefined>(undefined);
   const [requesting, setRequesting] = useState(false);
   const [showChecks, setShowChecks] = useState(false);
-  const { t, fmtDate, fmtTime } = useI18n();
-  const { domainFull, status: statusLabel } = useLabels();
+  const { t, fmtDate, fmtTime, lang } = useI18n();
+  // An approved report keeps the framework labels it was approved with.
+  const { domainFull, status: statusLabel, term: periodLabel } = useLabels(state.reports[id]?.frameworkVersion);
   const changeNote = editedNote ?? t('pages.report.defaultChangeNote', { domain: domainFull('en') });
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -38,7 +40,8 @@ export function ReportPreview() {
   const block = approvalBlock(state, id);
   const observations = observationsFor(state, id);
   const status = report.status;
-  const term = t('common.term4');
+  const term = periodLabel(4);
+  const fw = frameworkFor(report.frameworkVersion);
   const openStudio = t('pages.shared.openStudio');
 
   const approve = () => {
@@ -208,7 +211,7 @@ export function ReportPreview() {
         <div className="grow" />
         <div className="row" style={{ justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
           <p className="cap muted">{t('pages.report.preparedBy', { teacher: TEACHER })} · {status === 'approved' ? t('pages.report.approvedByLine', { name: REVIEWER }) : t('pages.report.notApproved')}</p>
-          <p className="cap muted num">{t('pages.report.pageOf', { page: 1, total: 1 })}</p>
+          <p className="cap muted num">{t('pages.report.frameworkLine', { name: fw.name[lang], version: fw.version })} · {t('pages.report.pageOf', { page: 1, total: 1 })}</p>
         </div>
       </div>
     </article>

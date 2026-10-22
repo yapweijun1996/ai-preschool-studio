@@ -27,9 +27,7 @@ export const pages = {
     today: 'Today',
     notObserved: 'Not observed this term',
     photoPlaceholder: 'Photo placeholder',
-    photoPlaceholderFor: 'Photo placeholder for {name}',
-    term3: 'Term 3',
-    term4: 'Term 4'
+    photoPlaceholderFor: 'Photo placeholder for {name}'
   },
   tabs: {
     label: 'Student sections',
@@ -129,6 +127,7 @@ export const pages = {
     title: 'Learning progress',
     mobileSubtitle: '{name} · Term 3 vs Term 4',
     compared: '{term3} compared with {term4}',
+    nelLine: 'NEL: {area}',
     keyLabel: 'Milestone key',
     milestones: 'Milestones',
     keyNote: 'Descriptions of observed learning — not scores or rankings.',
@@ -272,6 +271,7 @@ export const pages = {
     approvedByLine: 'Approved by {name} (demo reviewer)',
     notApproved: 'Not yet approved',
     pageOf: 'Page {page} of {total}',
+    frameworkLine: '{name} v{version}',
     phoneNote: 'The phone view reflows the A4 page. Export PDF shows the exact printed layout.'
   }
 };

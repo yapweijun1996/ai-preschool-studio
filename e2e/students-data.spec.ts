@@ -148,6 +148,11 @@ test.describe('re-review fixes · desktop 1440', () => {
     await page.getByRole('button', { name: 'Save observation' }).click();
     await expect(page.getByText(/Choose a date in Term 4/)).toBeVisible();
     await expect(page.getByText(/Observation saved as/)).toHaveCount(0);
+    // Both problems are reported together.
+    await page.locator('#obs-text').fill('Short');
+    await page.getByRole('button', { name: 'Save observation' }).click();
+    await expect(page.getByText(/Choose a date in Term 4/)).toBeVisible();
+    await expect(page.getByText('Describe what you observed in at least one sentence.')).toBeVisible();
   });
 });
 

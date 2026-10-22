@@ -28,9 +28,7 @@ export const pages: Dict['pages'] = {
     today: 'Hari ini',
     notObserved: 'Belum diperhatikan pada penggal ini',
     photoPlaceholder: 'Ruang foto',
-    photoPlaceholderFor: 'Ruang foto untuk {name}',
-    term3: 'Penggal 3',
-    term4: 'Penggal 4'
+    photoPlaceholderFor: 'Ruang foto untuk {name}'
   },
   tabs: {
     label: 'Bahagian murid',
@@ -130,6 +128,7 @@ export const pages: Dict['pages'] = {
     title: 'Kemajuan pembelajaran',
     mobileSubtitle: '{name} · Penggal 3 lwn Penggal 4',
     compared: '{term3} berbanding {term4}',
+    nelLine: 'NEL: {area}',
     keyLabel: 'Petunjuk tahap perkembangan',
     milestones: 'Tahap perkembangan',
     keyNote: 'Huraian pembelajaran yang diperhatikan — bukan markah atau kedudukan.',
@@ -273,6 +272,7 @@ export const pages: Dict['pages'] = {
     approvedByLine: 'Diluluskan oleh {name} (penyemak demo)',
     notApproved: 'Belum diluluskan',
     pageOf: 'Halaman {page} daripada {total}',
+    frameworkLine: '{name} v{version}',
     phoneNote: 'Paparan telefon menyusun semula halaman A4. Eksport PDF menunjukkan susun atur cetakan yang tepat.'
   }
 };

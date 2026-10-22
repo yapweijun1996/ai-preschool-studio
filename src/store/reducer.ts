@@ -1,20 +1,6 @@
 // Pure portfolio state + transitions. Kept free of React so it can be unit tested.
-import {
-  ARIA_PARAGRAPHS,
-  ARIA_REFLECTION,
-  DOMAINS,
-  NEXT_OBS_NUMBER,
-  OBSERVATIONS,
-  REVIEWER,
-  STUDENTS,
-  draftFromObservations,
-  termOf,
-  seededDrafts,
-  type Observation,
-  type Paragraph,
-  type ReportStatus,
-  type Sentence
-} from '../data/demo';
+import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, STUDENTS, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
+import { CURRENT_FRAMEWORK, DOMAINS, termOf } from '../framework';
 import type { Suggestion } from '../services/mockProvider';
 
 export interface ReportState {
@@ -22,6 +8,8 @@ export interface ReportState {
   hadChanges: boolean;
   comment?: { by: string; date: string; text: string };
   approvedAt?: string;
+  /** Learning Framework version the report was approved under; its labels stay with the report. */
+  frameworkVersion?: string;
 }
 
 export interface State {
@@ -50,7 +38,8 @@ export type Action =
 
 export function initialState(): State {
   const reports: Record<string, ReportState> = {};
-  for (const s of STUDENTS) reports[s.id] = { status: s.reportStatus, hadChanges: s.reportStatus === 'changes' };
+  for (const s of STUDENTS)
+    reports[s.id] = { status: s.reportStatus, hadChanges: s.reportStatus === 'changes', ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version } : {}) };
   reports.rayan.comment = { by: REVIEWER, date: '2026-10-20', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
   const seeded = seededDrafts();
   return {
@@ -160,7 +149,7 @@ export function reducer(state: State, action: Action): State {
     case 'approve': {
       // Approval is blocked while any claim lacks evidence.
       if (!canApprove(state, action.studentId)) return state;
-      return setReport(state, action.studentId, { status: 'approved', approvedAt: action.at });
+      return setReport(state, action.studentId, { status: 'approved', approvedAt: action.at, frameworkVersion: CURRENT_FRAMEWORK.version });
     }
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };

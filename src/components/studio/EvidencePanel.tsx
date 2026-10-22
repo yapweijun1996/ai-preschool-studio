@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DOMAINS, type DomainKey, type Observation } from '../../data/demo';
+import { type Observation } from '../../data/demo';
+import { DOMAINS, type DomainKey } from '../../framework';
 import { useI18n } from '../../i18n';
 import { useLabels } from '../../i18n/labels';
 import { Icon } from '../Icon';

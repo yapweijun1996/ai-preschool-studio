@@ -34,7 +34,7 @@ export function useAgoLabel() {
 
 export function Students() {
   const { t } = useI18n();
-  const { status: statusLabel } = useLabels();
+  const { status: statusLabel, term: periodLabel } = useLabels();
   const lastObservedLabel = useLastObservedLabel();
   const agoLabel = useAgoLabel();
   const { state } = usePortfolio();
@@ -54,7 +54,7 @@ export function Students() {
   const rows = allSummaries(state).filter(
     (s) => (filter === 'all' || s.report.status === filter) && s.student.name.toLowerCase().includes(query.trim().toLowerCase())
   );
-  const term = t('common.term4');
+  const term = periodLabel(4);
   const addLabel = t('pages.shared.addObservation');
 
   return (

@@ -17,6 +17,7 @@ const PATHS = {
   arrowLeft: ['m12 19-7-7 7-7', 'M19 12H5'],
   arrowRight: ['M5 12h14', 'm12 5 7 7-7 7'],
   calendar: ['M8 2v4', 'M16 2v4', 'rect:3,4,18,18,2', 'M3 10h18'],
+  layers: ['m12 2 9 5-9 5-9-5 9-5z', 'm3 12 9 5 9-5', 'm3 17 9 5 9-5'],
   chevronRight: ['m9 18 6-6-6-6'],
   plus: ['M5 12h14', 'M12 5v14'],
   search: ['circle:11,11,8', 'm21 21-4.3-4.3'],

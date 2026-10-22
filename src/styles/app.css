@@ -295,6 +295,8 @@ html:not(:lang(zh)) body { word-break: keep-all; overflow-wrap: break-word; }
 .chip-row.scroll > * { flex: none; }
 .chip-row.scroll[data-more="true"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
 .nowrap { white-space: nowrap; }
+.framework-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding: var(--space-3) 0; border-top: 1px solid var(--color-border); }
+.framework-list > .framework-row:first-child { border-top: 0; padding-top: 0; }
 .checks-toggle { justify-content: flex-start; width: 100%; padding-left: 0; padding-right: 0; text-align: left; }
 .rot-90 { transform: rotate(90deg); }
 .is-mobile .chip-row.scroll { flex-wrap: nowrap; overflow-x: auto; margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4); }

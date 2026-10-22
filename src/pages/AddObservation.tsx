@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { Avatar, Notice, SourceChip } from '../components/ui';
-import { CLASS_NAME, DOMAINS, MILESTONES, TERM4_START, TODAY, type DomainKey, type Milestone } from '../data/demo';
+import { CLASS_NAME, TODAY } from '../data/demo';
+import { DOMAINS, MILESTONES, TERM4_START, type DomainKey, type Milestone } from '../framework';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDirtyGuard } from '../pwa';
@@ -33,7 +34,7 @@ const formKey = (f: Form) => JSON.stringify([f.date, f.domain, f.milestone, f.te
 export function AddObservation() {
   const { id = '' } = useParams();
   const { t, fmtDate } = useI18n();
-  const { domainShort, milestone: milestoneLabel } = useLabels();
+  const { domainShort, milestone: milestoneLabel, term: periodLabel } = useLabels();
   const { state, dispatch } = usePortfolio();
   const [date, setDate] = useState(TODAY);
   const [domain, setDomain] = useState<DomainKey>('ma');
@@ -53,24 +54,20 @@ export function AddObservation() {
   if (!sum) return <NotFound />;
   const { student } = sum;
   const demo = t('common.demoStudent');
-  const term = t('common.term4');
+  const term = periodLabel(4);
   const firstName = student.name.split(' ')[0];
 
   const save = () => {
     if (phase.kind === 'saving' || phase.kind === 'saved') return;
     // The picker limits the range, but a typed or cleared date must not slip through.
-    if (!date || date < TERM4_START || date > TODAY) {
-      setDateError(true);
-      document.getElementById('obs-date')?.focus();
-      return;
-    }
-    setDateError(false);
-    if (text.trim().length < 10) {
-      setError(true);
-      textRef.current?.focus();
-      return;
-    }
-    setError(false);
+    // Show every problem at once; focus the first one.
+    const badDate = !date || date < TERM4_START || date > TODAY;
+    const shortText = text.trim().length < 10;
+    setDateError(badDate);
+    setError(shortText);
+    if (badDate) document.getElementById('obs-date')?.focus();
+    else if (shortText) textRef.current?.focus();
+    if (badDate || shortText) return;
     setPhase({ kind: 'saving' });
     window.setTimeout(() => {
       if (state.sim.saveFail) {

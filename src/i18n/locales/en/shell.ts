@@ -113,6 +113,7 @@ export const shell = {
     sections: {
       appearance: 'Appearance',
       language: 'Language',
+      framework: 'Learning framework',
       about: 'About & updates',
       demo: 'Demo data'
     },
@@ -161,6 +162,16 @@ export const shell = {
       updateNow: 'Update now',
       offlineHeading: 'Offline use',
       offline: 'Works offline: the app shell and demo data on this device. The Mock provider runs locally; nothing is sent to a server.'
+    },
+    framework: {
+      version: 'Version {version}',
+      basis: 'Learning areas, the milestone scale and reporting periods used by every page. Areas are mapped to the Nurturing Early Learners (NEL) Framework 2022.',
+      readOnly: 'Read-only in this demo. In Studio Platform a school admin maintains it; an approved report keeps the framework version it was approved with.',
+      areas: 'Learning areas',
+      mappingNote: 'The NEL mapping is a demo assumption to confirm against the NEL documents.',
+      scale: 'Milestone scale',
+      scaleNote: 'Descriptions of observed learning, shown as words and dots. Never scores, percentages or rankings.',
+      periods: 'Reporting periods'
     },
     demo: {
       heading: 'Simulate problems',

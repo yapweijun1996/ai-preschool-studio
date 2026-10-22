@@ -1,42 +1,14 @@
 // Fictional demo data only. No real children, schools or staff.
 
-export type DomainKey = 'en' | 'zh' | 'ma' | 'se';
-export type Milestone = 'emerging' | 'developing' | 'consistent';
+import type { DomainKey, Milestone } from '../framework';
+
 export type ReportStatus = 'notStarted' | 'draft' | 'review' | 'changes' | 'approved';
 
-export const DOMAINS: { key: DomainKey; full: string; short: string }[] = [
-  { key: 'en', full: 'English Language 英语', short: 'English 英语' },
-  { key: 'zh', full: 'Chinese Language 华语', short: 'Chinese 华语' },
-  { key: 'ma', full: 'Mathematics 数学', short: 'Math 数学' },
-  { key: 'se', full: 'Social-Emotional Development 社交与情绪发展', short: 'Social-Emotional 社交与情绪' }
-];
-
-export const domainFull = (k: DomainKey) => DOMAINS.find((d) => d.key === k)!.full;
-export const domainShort = (k: DomainKey) => DOMAINS.find((d) => d.key === k)!.short;
-
-export const MILESTONES: { key: Milestone; label: string; filled: number }[] = [
-  { key: 'emerging', label: 'Emerging', filled: 1 },
-  { key: 'developing', label: 'Developing', filled: 2 },
-  { key: 'consistent', label: 'Consistently demonstrated', filled: 3 }
-];
-
-export const REPORT_STATUS_LABEL: Record<ReportStatus, string> = {
-  notStarted: 'Not started',
-  draft: 'Draft',
-  review: 'In review',
-  changes: 'Changes requested',
-  approved: 'Approved'
-};
-
 export const CLASS_NAME = 'K2 Sunflower';
-export const TERM = '2026 Term 4';
 export const TEACHER = 'Ms. Lim';
 export const REVIEWER = 'Ms. Tan';
 // Fixed "today" keeps relative dates stable in the demo and in tests.
 export const TODAY = '2026-10-22';
-/** First day of Term 4; earlier observations belong to Term 3. */
-export const TERM4_START = '2026-09-14';
-export const termOf = (date: string): 3 | 4 => (date >= TERM4_START ? 4 : 3);
 
 export interface Student {
   id: string;
@@ -302,19 +274,7 @@ export const ARIA_PARAGRAPHS: Paragraph[] = [
 export const ARIA_REFLECTION =
   'Aria has grown in confidence this term, especially in group play. Next term I will offer more name-writing and labelling activities in both English and 华语.';
 
-export function formatDate(iso: string): string {
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
 export function daysAgo(iso: string, today = TODAY): number {
   const ms = new Date(today + 'T00:00:00').getTime() - new Date(iso + 'T00:00:00').getTime();
   return Math.round(ms / 86400000);
-}
-
-export function lastObservedLabel(iso: string | undefined): string {
-  if (!iso) return 'Not observed this term';
-  const n = daysAgo(iso);
-  if (n <= 0) return 'Last observed today';
-  return `Last observed ${n} ${n === 1 ? 'day' : 'days'} ago`;
 }

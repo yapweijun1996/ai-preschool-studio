@@ -1,5 +1,6 @@
 import { useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
-import { MILESTONES, type Milestone, type ReportStatus } from '../data/demo';
+import { type ReportStatus } from '../data/demo';
+import { MILESTONES, type Milestone } from '../framework';
 import type { SaveStatus } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';

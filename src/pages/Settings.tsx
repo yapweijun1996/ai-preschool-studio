@@ -3,7 +3,9 @@ import { Link, useParams } from 'react-router-dom';
 import { AppShell, ThemeContext, useShellPanel } from '../components/AppShell';
 import { Icon, type IconName } from '../components/Icon';
 import { SETTINGS_SECTIONS, type SettingsSection } from '../components/ModulePanel';
-import { MockProviderLabel, Notice } from '../components/ui';
+import { MilestoneDots, MockProviderLabel, Notice } from '../components/ui';
+import { CURRENT_FRAMEWORK } from '../framework';
+import { useLabels } from '../i18n/labels';
 import type { Breakpoint } from '../hooks/useBreakpoint';
 import type { ThemePref } from '../hooks/useTheme';
 import { LANGS, useI18n, type TKey } from '../i18n';
@@ -211,6 +213,48 @@ function About() {
   );
 }
 
+/** Read-only view of the Learning Framework every module reads (ADR 0001). */
+function FrameworkSection() {
+  const { t, lang, fmtDate } = useI18n();
+  const fw = CURRENT_FRAMEWORK;
+  const { domainNel } = useLabels();
+  return (
+    <>
+      <Section title={fw.name[lang]} aside={<span className="status st-draft">{t('shell.settings.framework.version', { version: fw.version })}</span>}>
+        <p className="sec">{t('shell.settings.framework.basis')}</p>
+        <Notice tone="info" icon="info"><p className="body-text">{t('shell.settings.framework.readOnly')}</p></Notice>
+      </Section>
+      <Section title={t('shell.settings.framework.areas')}>
+        <ul className="stack framework-list" style={{ gap: 0 }}>
+          {fw.areas.map((a) => (
+            <li key={a.key} className="framework-row">
+              <span className="strong">{a.full[lang]}</span>
+              <span className="sec muted">{t('pages.progress.nelLine', { area: domainNel(a.key) })}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="cap muted">{t('shell.settings.framework.mappingNote')}</p>
+      </Section>
+      <Section title={t('shell.settings.framework.scale')}>
+        <ul className="stack" style={{ gap: 8 }}>
+          {fw.scale.map((m) => <li key={m.key}><MilestoneDots milestone={m.key} /></li>)}
+        </ul>
+        <p className="cap muted">{t('shell.settings.framework.scaleNote')}</p>
+      </Section>
+      <Section title={t('shell.settings.framework.periods')}>
+        <ul className="stack framework-list" style={{ gap: 0 }}>
+          {fw.periods.map((p) => (
+            <li key={p.term} className="framework-row">
+              <span className="strong">{p.label[lang]}</span>
+              <span className="sec muted num">{fmtDate(p.start)} – {fmtDate(p.end)}</span>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </>
+  );
+}
+
 function DemoData() {
   const { t } = useI18n();
   const { state, dispatch } = usePortfolio();
@@ -275,6 +319,7 @@ function SettingsBody({ section, bp }: { section: SettingsSection; bp: Breakpoin
       )}
       {section === 'appearance' && <Appearance />}
       {section === 'language' && <Language />}
+      {section === 'framework' && <FrameworkSection />}
       {section === 'about' && <About />}
       {section === 'demo' && <DemoData />}
     </div>
