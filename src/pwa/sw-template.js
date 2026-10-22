@@ -9,7 +9,6 @@ const SCOPE = self.registration.scope; // e.g. https://host/ai-preschool-studio/
 const SCOPE_PATH = new URL(SCOPE).pathname;
 const SHELL_URL = new URL('index.html', SCOPE).href;
 const NEVER_CACHE = [new URL('version.json', SCOPE).pathname, new URL('sw.js', SCOPE).pathname];
-const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
 // No skipWaiting here: a new release waits until the page asks for it.
 self.addEventListener('install', (event) => {
@@ -63,10 +62,6 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  if (FONT_HOSTS.includes(url.hostname)) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
   // Nothing else outside the app's own origin + path is touched.
   if (url.origin !== self.location.origin || !url.pathname.startsWith(SCOPE_PATH)) return;
 
