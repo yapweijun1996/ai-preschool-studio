@@ -10,7 +10,7 @@ function result(childrenWithGaps: number): ClassCoverage {
 }
 
 function Probe({ port, term }: { port: DataPort; term: 3 | 4 }) {
-  const { coverage, loading } = useCoverageRead(port, {}, term);
+  const { coverage, loading } = useCoverageRead(port, null, term);
   return <div>{loading ? 'Loading' : `Term ${term}: ${coverage?.summary.childrenWithGaps}`}</div>;
 }
 

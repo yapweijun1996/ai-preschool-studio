@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
@@ -10,6 +10,7 @@ import { usePortfolio, useDataPort } from '../store/PortfolioContext';
 import type { CoverageStatus } from '../coverage';
 import { DOMAINS } from '../framework';
 import type { TKey } from '../i18n';
+import { useCoverageRead } from './useCoverageRead';
 
 type Filter = 'all' | 'attention' | 'missing' | 'stale';
 
@@ -39,14 +40,7 @@ function CoverageContent() {
   const dataPort = useDataPort();
   const [term, setTerm] = useState<3 | 4>(4);
   const [filter, setFilter] = useState<Filter>('all');
-  const [coverage, setCoverage] = useState<Awaited<ReturnType<typeof dataPort.getCoverage>>>();
-  const [failed, setFailed] = useState(false);
-
-  const load = () => {
-    setFailed(false);
-    void dataPort.getCoverage(term).then(setCoverage).catch(() => setFailed(true));
-  };
-  useEffect(load, [dataPort, state, term]);
+  const { coverage, failed, loading, load } = useCoverageRead(dataPort, state, term);
 
   const visible = useMemo(() => (coverage?.students ?? []).filter((student) => {
     if (filter === 'attention') return student.attentionAreas > 0;
@@ -90,7 +84,7 @@ function CoverageContent() {
             {filters.map((item) => <button key={item.key} className={`chip${filter === item.key ? ' is-active' : ''}`} type="button" aria-pressed={filter === item.key} onClick={() => setFilter(item.key)}>{item.label}</button>)}
           </div>
           {failed && <div className="notice notice-error" role="alert"><span>{t('pages.coverage.error')}</span><button className="btn btn-secondary" type="button" onClick={load}>{t('pages.coverage.retry')}</button></div>}
-          {!coverage && !failed && <p role="status" className="sec muted">{t('pages.coverage.loading')}</p>}
+          {loading && <p role="status" className="sec muted">{t('pages.coverage.loading')}</p>}
           {coverage && visible.length === 0 && filter !== 'all' && <p className="card card-pad sec" role="status">{t('pages.coverage.noResults')}</p>}
           {coverage && visible.length > 0 && (
             <>
