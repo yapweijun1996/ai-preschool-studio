@@ -12,6 +12,7 @@ export const pages: Dict['pages'] = {
     backToProfile: 'Kembali ke profil',
     backToProfileOf: 'Kembali ke profil {name}',
     retry: 'Cuba lagi',
+    save: 'Simpan',
     saveFailed: 'Gagal disimpan',
     unsavedChanges: 'Perubahan belum disimpan',
     saved: 'Disimpan',
@@ -314,5 +315,24 @@ export const pages: Dict['pages'] = {
     empty: 'Tiada laporan yang menunggu semakan.', changesHeading: 'Menunggu tindakan anda', changesEmpty: 'Tiada laporan yang menunggu perubahan daripada anda.',
     loading: 'Memuatkan giliran semakan…', error: 'Giliran semakan tidak dapat dimuatkan.', retry: 'Cuba lagi',
     viewQueue: 'Lihat giliran semakan'
+  },
+  children: {
+    classesTitle: 'Kelas', classCount: '{name} · {count} kanak-kanak', levelYear: '{level} · {year}', teacher: 'Guru', enrolled: 'Berdaftar', statusFilter: 'Tapis kanak-kanak mengikut status pendaftaran',
+    active: 'Aktif', withdrawn: 'Berhenti', loading: 'Memuatkan senarai kelas…', rosterLabel: 'Kanak-kanak dalam {name}', child: 'Kanak-kanak', age: 'Umur', ageValue: '{age} tahun',
+    status: 'Status', emptyRoster: 'Tiada kanak-kanak dalam penapis ini', emptyRosterBody: 'Pilih status pendaftaran yang lain untuk melihat kanak-kanak dalam kelas ini.', noClass: 'Tiada kelas tersedia.',
+    portfolioStudents: 'Murid portfolio', viewClasses: 'Senarai kelas', familyTitle: 'Keluarga & pendaftaran', class: 'Kelas', dateOfBirth: 'Tarikh lahir', enrolledOn: 'Tarikh pendaftaran',
+    homeLanguages: 'Bahasa di rumah', editChild: 'Edit butiran kanak-kanak', childName: 'Nama kanak-kanak', readOnlyReason: 'Hanya pentadbir sekolah boleh mengedit rekod kanak-kanak dan keluarga.', guardians: 'Penjaga',
+    addGuardian: 'Tambah penjaga', edit: 'Edit', removeGuardianFor: 'Alih keluar penjaga {name}', primary: 'Utama', phone: 'Telefon', email: 'E-mel', preferredLanguage: 'Bahasa pilihan',
+    primaryGuardian: 'Penjaga utama', noGuardians: 'Tiada rekod penjaga.', contactsRestricted: 'Butiran hubungan dihadkan untuk peranan ini.', collectors: 'Pengambil yang dibenarkan', addCollector: 'Tambah pengambil',
+    removeCollectorFor: 'Alih keluar pengambil {name}', noCollectors: 'Tiada pengambil yang dibenarkan direkodkan.', noExpiry: 'Tiada tarikh tamat', photoIdNote: 'Semasa pengambilan, identiti disemak menggunakan ID bergambar dalam modul Pengambilan & Pelepasan (Fasa 2).',
+    healthNotes: 'Nota kesihatan dan alahan', allergies: 'Alahan', medical: 'Nota perubatan', noneRecorded: 'Tiada rekod', healthRestricted: 'Terhad — hanya guru dan pentadbir sekolah boleh melihat.', withdraw: 'Tarik keluar kanak-kanak',
+    saved: 'Perubahan disimpan.', saving: 'Menyimpan…', confirm: 'Sahkan', close: 'Tutup', confirmRemoveGuardian: 'Alih keluar {name} daripada senarai penjaga kanak-kanak ini?',
+    confirmRemoveCollector: 'Alih keluar {name} daripada senarai pengambil yang dibenarkan?', confirmWithdraw: 'Tarik keluar {name} daripada kelas ini?', guardianName: 'Nama penjaga', collectorName: 'Nama pengambil',
+    relationship: 'Hubungan', validFrom: 'Sah dari', validToOptional: 'Sah hingga (pilihan)', note: 'Nota', noIdentityNumbers: 'Jangan masukkan nombor pengenalan. Identiti disemak menggunakan ID bergambar semasa pengambilan.',
+    formError: 'Semak medan yang ditandakan dan cuba lagi.', errorRequired: 'Medan ini wajib diisi.', errorPhone: 'Gunakan format Singapura fiksyen +65 9000 1234.',
+    errorEmail: 'Gunakan alamat e-mel yang berakhir dengan @example.com.', errorDate: 'Masukkan tarikh kalendar yang sah.', errorDateOrder: 'Tarikh tamat mesti sama atau selepas tarikh mula.',
+    accessTitle: 'Akses kanak-kanak tidak tersedia', loadingFamily: 'Memuatkan keluarga dan pendaftaran…',
+    refusal: { unknownChild: 'Kanak-kanak ini tidak ditemui.', invalidChild: 'Semak butiran kanak-kanak dan kelas.', unknownGuardian: 'Penjaga ini tidak ditemui.', invalidGuardian: 'Semak butiran penjaga dan format hubungan.', primaryGuardian: 'Setiap kanak-kanak mesti mempunyai sekurang-kurangnya seorang penjaga utama.', unknownCollector: 'Pengambil yang dibenarkan ini tidak ditemui.', invalidCollector: 'Semak butiran pengambil dan tarikh sah.', reportInReview: 'Kanak-kanak ini tidak boleh ditarik keluar semasa laporan dalam semakan.', invalidTarget: 'Perubahan ini tidak lagi tersedia. Muat semula dan cuba lagi.' },
+    dialog: { child: 'Edit butiran kanak-kanak', guardian: 'Butiran penjaga', collector: 'Butiran pengambil yang dibenarkan', remove: 'Sahkan pengalihan keluar', withdraw: 'Sahkan penarikan keluar' }
   }
 };

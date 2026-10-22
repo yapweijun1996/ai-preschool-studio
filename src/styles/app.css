@@ -508,3 +508,31 @@ legend { padding: 0; margin-bottom: var(--space-2); }
 .is-mobile .review-row .btn { margin-left: 48px; }
 .is-mobile .coverage-summary-item { align-items: flex-start; }
 .is-mobile .coverage-summary { min-height: 112px; }
+
+/* Children & Classes */
+.class-summary { align-items: center; min-height: 112px; }
+.class-teacher, .class-total { display: flex; flex-direction: column; gap: 4px; min-width: 100px; }
+.class-filters { flex-wrap: wrap; }
+.family-section { margin-top: 20px; padding: 0 20px 20px; }
+.family-section > .card-head { margin: 0 -20px; padding: 16px 20px; border-bottom: 1px solid var(--color-border); }
+.family-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.family-facts > div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.family-subsection { display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--color-border); }
+.family-record { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.family-health { padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-muted); }
+.family-health .h3 { margin-bottom: 10px; }
+.family-dialog { width: min(560px, 100%); max-height: min(90vh, 780px); overflow-y: auto; padding: 24px; box-shadow: var(--shadow-lg); }
+.dialog-backdrop { position: fixed; z-index: 100; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgb(16 24 40 / 55%); }
+.field-error { color: var(--color-danger); font-size: 13px; line-height: 18px; }
+.input[aria-invalid="true"] { border-color: var(--color-danger); }
+.danger-text { color: var(--color-danger); align-self: flex-start; }
+@media (max-width: 680px) {
+  .class-summary { align-items: flex-start; flex-wrap: wrap; }
+  .class-summary > .grow { flex-basis: 100%; }
+  .family-section { padding-right: 14px; padding-left: 14px; }
+  .family-section > .card-head { margin-right: -14px; margin-left: -14px; padding-right: 14px; padding-left: 14px; }
+  .family-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .family-record { align-items: flex-start; flex-wrap: wrap; }
+  .family-record > .row { margin-left: auto; }
+  .family-dialog { padding: 18px; }
+}

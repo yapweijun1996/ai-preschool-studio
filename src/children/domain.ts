@@ -48,7 +48,14 @@ const isDate = (value: string) => {
 };
 const required = (value: string) => value.trim().length > 0;
 
-export function validateChild(child: Pick<Child, 'name' | 'dateOfBirth' | 'enrolledOn' | 'classId' | 'homeLanguages'>): ValidationErrors<'name' | 'dateOfBirth' | 'enrolledOn' | 'classId' | 'homeLanguages'> {
+type ChildFields = Pick<Child, 'name' | 'dateOfBirth' | 'enrolledOn' | 'classId' | 'homeLanguages'>;
+type ChildFieldName = keyof ChildFields;
+type GuardianFields = Pick<Guardian, 'name' | 'relationship' | 'phone' | 'email' | 'preferredLanguage'>;
+type GuardianFieldName = keyof GuardianFields;
+type CollectorFields = Pick<AuthorisedCollector, 'name' | 'relationship' | 'validFrom' | 'validTo'>;
+type CollectorFieldName = keyof CollectorFields;
+
+export function validateChild(child: ChildFields): ValidationErrors<ChildFieldName> {
   const errors: ValidationErrors<'name' | 'dateOfBirth' | 'enrolledOn' | 'classId' | 'homeLanguages'> = {};
   if (!required(child.name)) errors.name = 'required';
   if (!isDate(child.dateOfBirth)) errors.dateOfBirth = child.dateOfBirth ? 'date-format' : 'required';
@@ -58,7 +65,7 @@ export function validateChild(child: Pick<Child, 'name' | 'dateOfBirth' | 'enrol
   return errors;
 }
 
-export function validateGuardian(guardian: Pick<Guardian, 'name' | 'relationship' | 'phone' | 'email' | 'preferredLanguage'>): ValidationErrors<'name' | 'relationship' | 'phone' | 'email' | 'preferredLanguage'> {
+export function validateGuardian(guardian: GuardianFields): ValidationErrors<GuardianFieldName> {
   const errors: ValidationErrors<'name' | 'relationship' | 'phone' | 'email' | 'preferredLanguage'> = {};
   if (!required(guardian.name)) errors.name = 'required';
   if (!required(guardian.relationship)) errors.relationship = 'required';
@@ -68,7 +75,7 @@ export function validateGuardian(guardian: Pick<Guardian, 'name' | 'relationship
   return errors;
 }
 
-export function validateCollector(collector: Pick<AuthorisedCollector, 'name' | 'relationship' | 'validFrom' | 'validTo'>): ValidationErrors<'name' | 'relationship' | 'validFrom' | 'validTo'> {
+export function validateCollector(collector: CollectorFields): ValidationErrors<CollectorFieldName> {
   const errors: ValidationErrors<'name' | 'relationship' | 'validFrom' | 'validTo'> = {};
   if (!required(collector.name)) errors.name = 'required';
   if (!required(collector.relationship)) errors.relationship = 'required';

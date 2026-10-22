@@ -9,6 +9,7 @@ import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { allSummaries } from '../store/selectors';
+import { useRole } from '../roles/RoleContext';
 
 const FILTERS: (ReportStatus | 'all')[] = ['all', 'notStarted', 'draft', 'review', 'changes', 'approved'];
 
@@ -39,6 +40,7 @@ export function Students() {
   const lastObservedLabel = useLastObservedLabel();
   const agoLabel = useAgoLabel();
   const { state } = usePortfolio();
+  const role = useRole();
   const [params, setParams] = useSearchParams();
   const fromUrl = params.get('status') as ReportStatus | 'all' | null;
   const filter: ReportStatus | 'all' = fromUrl && fromUrl !== 'all' && FILTERS.includes(fromUrl) ? fromUrl : 'all';
@@ -58,6 +60,10 @@ export function Students() {
   const term = periodLabel(4);
   const addLabel = t('pages.shared.addObservation');
 
+  if (!role.can('students.view')) return <AppShell module="students" mobileTitle={t('pages.children.accessTitle')}>
+    {() => <div className="page"><section className="card card-pad stack"><h1 className="h1">{t('pages.children.accessTitle')}</h1><p className="sec muted">{t('shell.roles.accessDenied')}</p><Link className="btn btn-secondary" to="/">{t('pages.shared.back')}</Link></section></div>}
+  </AppShell>;
+
   return (
     <AppShell
       module="students"
@@ -73,7 +79,7 @@ export function Students() {
                 <h1 className="h1">{t('pages.students.title')}</h1>
                 <p className="sec muted">{CLASS_NAME} · {term} · {t('pages.students.count', { count: STUDENTS.length })}</p>
               </div>
-              <Link className="btn btn-primary" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link>
+              <div className="row"><Link className="btn btn-secondary" to="/classes">{t('pages.children.viewClasses')}</Link><Link className="btn btn-primary" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link></div>
             </div>
           )}
           <div className="row" style={{ gap: 12, alignItems: 'center' }}>

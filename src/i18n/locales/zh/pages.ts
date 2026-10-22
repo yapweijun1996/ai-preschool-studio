@@ -12,6 +12,7 @@ export const pages: Dict['pages'] = {
     backToProfile: '返回学生档案',
     backToProfileOf: '返回{name}的学生档案',
     retry: '重试',
+    save: '保存',
     saveFailed: '保存失败',
     unsavedChanges: '有未保存的更改',
     saved: '已保存',
@@ -313,5 +314,24 @@ export const pages: Dict['pages'] = {
     blockClaims: '{count} 项陈述尚无证据', blockClaims_one: '{count} 项陈述尚无证据', blockIncomplete: '报告尚未完成', blockStatus: '报告状态：{status}', open: '打开报告',
     empty: '目前没有等待审核的报告。', changesHeading: '等待你处理', changesEmpty: '目前没有等待修改的报告。',
     loading: '正在加载审核队列……', error: '无法加载审核队列。', retry: '重试', viewQueue: '查看审核队列'
+  },
+  children: {
+    classesTitle: '班级', classCount: '{name} · {count}名儿童', levelYear: '{level} · {year}', teacher: '教师', enrolled: '在读', statusFilter: '按在读状态筛选儿童',
+    active: '在读', withdrawn: '已退园', loading: '正在加载班级名册…', rosterLabel: '{name}儿童名册', child: '儿童', age: '年龄', ageValue: '{age}岁',
+    status: '状态', emptyRoster: '此筛选条件下没有儿童', emptyRosterBody: '选择另一种在读状态查看此班级的儿童。', noClass: '没有可用班级。',
+    portfolioStudents: '作品集学生', viewClasses: '班级名册', familyTitle: '家庭与入学信息', class: '班级', dateOfBirth: '出生日期', enrolledOn: '入学日期',
+    homeLanguages: '家庭语言', editChild: '编辑儿童资料', childName: '儿童姓名', readOnlyReason: '只有学校管理员可以编辑儿童和家庭记录。', guardians: '监护人',
+    addGuardian: '添加监护人', edit: '编辑', removeGuardianFor: '移除监护人{name}', primary: '主要监护人', phone: '电话', email: '电子邮件', preferredLanguage: '首选语言',
+    primaryGuardian: '设为主要监护人', noGuardians: '没有监护人记录。', contactsRestricted: '此角色无法查看联系资料。', collectors: '获授权接送人', addCollector: '添加接送人',
+    removeCollectorFor: '移除接送人{name}', noCollectors: '没有获授权接送人记录。', noExpiry: '没有结束日期', photoIdNote: '接送时，工作人员会在第二阶段的接送模块中核对照片身份证件。',
+    healthNotes: '健康与过敏备注', allergies: '过敏情况', medical: '医疗备注', noneRecorded: '没有记录', healthRestricted: '受限——仅教师和学校管理员可见。', withdraw: '办理退园',
+    saved: '更改已保存。', saving: '正在保存…', confirm: '确认', close: '关闭', confirmRemoveGuardian: '从此儿童的监护人名单中移除{name}？',
+    confirmRemoveCollector: '从获授权接送人名单中移除{name}？', confirmWithdraw: '将{name}从此班级退园？', guardianName: '监护人姓名', collectorName: '接送人姓名',
+    relationship: '关系', validFrom: '生效日期', validToOptional: '截止日期（可选）', note: '备注', noIdentityNumbers: '请勿输入身份证号码。接送时会核对照片身份证件。',
+    formError: '请检查标记的字段并重试。', errorRequired: '此字段为必填项。', errorPhone: '请使用虚构的新加坡格式 +65 9000 1234。',
+    errorEmail: '请使用以 @example.com 结尾的电子邮件地址。', errorDate: '请输入有效的日历日期。', errorDateOrder: '结束日期必须等于或晚于开始日期。',
+    accessTitle: '无法访问儿童资料', loadingFamily: '正在加载家庭与入学信息…',
+    refusal: { unknownChild: '找不到此儿童。', invalidChild: '请检查儿童资料和班级。', unknownGuardian: '找不到此监护人。', invalidGuardian: '请检查监护人资料和联系格式。', primaryGuardian: '每名儿童必须至少保留一位主要监护人。', unknownCollector: '找不到此获授权接送人。', invalidCollector: '请检查接送人资料和有效日期。', reportInReview: '报告审核中，暂不能为此儿童办理退园。', invalidTarget: '此更改已不可用，请刷新后重试。' },
+    dialog: { child: '编辑儿童资料', guardian: '监护人资料', collector: '获授权接送人资料', remove: '确认移除', withdraw: '确认退园' }
   }
 };

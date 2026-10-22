@@ -11,6 +11,7 @@ export const pages = {
     backToProfile: 'Back to profile',
     backToProfileOf: "Back to {name}'s profile",
     retry: 'Retry',
+    save: 'Save',
     saveFailed: 'Save failed',
     unsavedChanges: 'Unsaved changes',
     saved: 'Saved',
@@ -350,5 +351,31 @@ export const pages = {
     error: 'Review queue could not be loaded.',
     retry: 'Retry',
     viewQueue: 'View review queue'
+  },
+  children: {
+    classesTitle: 'Classes', classCount: '{name} · {count} children', levelYear: '{level} · {year}', teacher: 'Teacher', enrolled: 'Enrolled',
+    statusFilter: 'Filter children by enrolment status', active: 'Active', withdrawn: 'Withdrawn', loading: 'Loading class roster…',
+    rosterLabel: 'Children in {name}', child: 'Child', age: 'Age', ageValue: '{age} years', status: 'Status', emptyRoster: 'No children in this filter',
+    emptyRosterBody: 'Choose the other enrolment status to see children in this class.', noClass: 'No class is available.', portfolioStudents: 'Portfolio students', viewClasses: 'Class roster',
+    familyTitle: 'Family & enrolment', class: 'Class', dateOfBirth: 'Date of birth', enrolledOn: 'Enrolled on', homeLanguages: 'Home languages',
+    editChild: 'Edit child details', childName: 'Child name', readOnlyReason: 'Only school admins can edit child and family records.', guardians: 'Guardians',
+    addGuardian: 'Add guardian', edit: 'Edit', removeGuardianFor: 'Remove guardian {name}', primary: 'Primary', phone: 'Phone', email: 'Email',
+    preferredLanguage: 'Preferred language', primaryGuardian: 'Primary guardian', noGuardians: 'No guardian records.', contactsRestricted: 'Contact details are restricted for this role.',
+    collectors: 'Authorised collectors', addCollector: 'Add collector', removeCollectorFor: 'Remove collector {name}', noCollectors: 'No authorised collectors recorded.',
+    noExpiry: 'No end date', photoIdNote: 'At pick-up, identity is checked against photo ID in Pick-up & Release (Phase 2).',
+    healthNotes: 'Health and allergy notes', allergies: 'Allergies', medical: 'Medical notes', noneRecorded: 'None recorded',
+    healthRestricted: 'Restricted — visible to teachers and school admins.', withdraw: 'Withdraw child', saved: 'Changes saved.', saving: 'Saving…', confirm: 'Confirm', close: 'Close',
+    confirmRemoveGuardian: 'Remove {name} from this child’s guardian list?', confirmRemoveCollector: 'Remove {name} from authorised collectors?', confirmWithdraw: 'Withdraw {name} from this class?',
+    guardianName: 'Guardian name', collectorName: 'Collector name', relationship: 'Relationship', validFrom: 'Valid from', validToOptional: 'Valid to (optional)', note: 'Note',
+    noIdentityNumbers: 'Do not enter identity numbers. Identity is checked against photo ID at pick-up.', formError: 'Check the highlighted fields and try again.',
+    errorRequired: 'This field is required.', errorPhone: 'Use the fictional Singapore format +65 9000 1234.', errorEmail: 'Use an email address ending in @example.com.',
+    errorDate: 'Enter a valid calendar date.', errorDateOrder: 'The end date must be the same as or later than the start date.', accessTitle: 'Child access unavailable', loadingFamily: 'Loading family and enrolment…',
+    refusal: {
+      unknownChild: 'This child could not be found.', invalidChild: 'Check the child details and class.', unknownGuardian: 'This guardian could not be found.',
+      invalidGuardian: 'Check the guardian details and contact formats.', primaryGuardian: 'Each child must keep at least one primary guardian.',
+      unknownCollector: 'This authorised collector could not be found.', invalidCollector: 'Check the collector details and validity dates.',
+      reportInReview: 'This child cannot be withdrawn while a report is in review.', invalidTarget: 'This change is no longer available. Refresh and try again.'
+    },
+    dialog: { child: 'Edit child details', guardian: 'Guardian details', collector: 'Authorised collector details', remove: 'Confirm removal', withdraw: 'Confirm withdrawal' }
   }
 };

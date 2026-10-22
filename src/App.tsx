@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { ThemeContext } from './components/AppShell';
 import { NavMemoryProvider } from './hooks/useNavMemory';
@@ -21,6 +21,8 @@ import { Students } from './pages/Students';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 import { RoleProvider } from './roles/RoleContext';
+
+const Classes = lazy(() => import('./pages/Classes'));
 
 /**
  * Remounts a stateful student page (Studio, Add observation, Report) when the child changes, so no draft,
@@ -45,6 +47,7 @@ export function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
+            <Route path="/classes" element={<Suspense fallback={<main className="page" aria-busy="true" style={{ minHeight: '72vh' }}><section className="card" style={{ minHeight: 420 }} /></main>}><Classes /></Suspense>} />
             <Route path="/coverage" element={<Coverage />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/students/:id" element={<StudentProfile />} />
