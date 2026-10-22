@@ -3,7 +3,7 @@
 - Tier: Core
 - Owns: Learning areas, milestone scale, reporting periods, framework versions
 - Reads: None
-- Status: done (2026.1)
+- Status: done (framework 2026.1; app v0.4.0)
 
 ## Purpose
 
@@ -44,13 +44,14 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 ## Compliance hooks
 
 Framework vocabulary and version retention support the licensee's obligations under ECDA by making the learning areas and progress basis explicit. The exact ECDA alignment of the NEL mappings is to confirm. No consent, retention policy or audit-event mechanism is implemented here; Not in Studio Demo yet — planned (roadmap Phase 4) for Records Retention and Privacy Centre; audit events are planned with Report Release & History in roadmap Phase 1.
+No PDPA obligation is supported by this module in Studio Demo yet. Planned: consent, retention and audit-event mechanisms are addressed by the roadmap's Privacy Centre, Records Retention and Audit Log work.
 
 ## Data port
 
-Reads:
-- `getCurrentFramework(): Framework` (`src/framework/index.ts:47-54, 82-84`)
-- `getFramework(version?: string): Framework` (`src/framework/index.ts:82-86`)
-- `getPeriod(date: string): ReportingPeriod | undefined` (`src/framework/index.ts:92-98`)
+Proposed async interfaces:
+- `getFramework(version?: string): Promise<Framework>` (proposed; demo implementation: `frameworkFor` `src/framework/index.ts:82-86`)
+- `getPeriod(date: string): Promise<ReportingPeriod | undefined>` (proposed; demo implementation: `periodOf` `src/framework/index.ts:92-98`)
+- `getCurrentFramework(): Promise<Framework>` (proposed; demo implementation: `frameworkFor` `src/framework/index.ts:82-86`)
 
 Writes: none. Framework configuration is static and read-only in the demo.
 
