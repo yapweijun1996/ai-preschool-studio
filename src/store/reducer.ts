@@ -26,13 +26,15 @@ export type DecisionEvent =
   | { type: 'reopened'; at: string; by: string; reason: string; version: number };
 
 export type AuditAction = 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved' | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset';
+export type AuditSummaryKey = 'pages.audit.summaryObservationAdded' | 'pages.audit.summarySubmitted' | 'pages.audit.summaryChangesRequested' | 'pages.audit.summaryApproved' | 'pages.audit.summaryReleased' | 'pages.audit.summaryReopened' | 'pages.audit.summaryRoleSwitched' | 'pages.audit.summaryReset';
 export interface AuditEvent {
   id: string;
   at: string;
   actor: { role: Role; name: string };
   action: AuditAction;
   target: { type: 'student' | 'demo'; id: string };
-  summary: string;
+  summaryKey: AuditSummaryKey;
+  summaryParams?: { version?: number; from?: Role; to?: Role };
   decision?: DecisionEvent;
 }
 export interface Actor { role: Role; name: string }
@@ -125,8 +127,9 @@ export function initialState(): State {
   }
   const seededAudit = STUDENTS.flatMap((student) => reports[student.id].decisions.map((decision) => {
     const action: AuditAction = decision.type === 'submitted' ? 'report.submitted' : decision.type === 'changesRequested' ? 'report.changesRequested' : decision.type === 'approved' ? 'report.approved' : decision.type === 'released' ? 'report.released' : 'report.reopened';
-    const summary = decision.type === 'submitted' ? 'Report submitted for review' : decision.type === 'changesRequested' ? `Changes requested: ${decision.comment}` : decision.type === 'approved' ? `Report approved v${decision.version}` : decision.type === 'released' ? `Report v${decision.version} released to family` : `Report reopened: ${decision.reason}`;
-    return { at: decision.at, actor: { role: decision.type === 'submitted' ? 'teacher' as const : 'reviewer' as const, name: decision.by }, action, target: { type: 'student' as const, id: student.id }, summary, decision };
+    const summaryKey: AuditSummaryKey = decision.type === 'submitted' ? 'pages.audit.summarySubmitted' : decision.type === 'changesRequested' ? 'pages.audit.summaryChangesRequested' : decision.type === 'approved' ? 'pages.audit.summaryApproved' : decision.type === 'released' ? 'pages.audit.summaryReleased' : 'pages.audit.summaryReopened';
+    const summaryParams = 'version' in decision ? { version: decision.version } : undefined;
+    return { at: decision.at, actor: { role: decision.type === 'submitted' ? 'teacher' as const : 'reviewer' as const, name: decision.by }, action, target: { type: 'student' as const, id: student.id }, summaryKey, ...(summaryParams ? { summaryParams } : {}), decision };
   })).sort((a, b) => a.at.localeCompare(b.at)).map((event, index) => ({ ...event, id: `AUD-${String(index + 1).padStart(4, '0')}` }));
   return {
     observations: OBSERVATIONS,
@@ -199,7 +202,7 @@ export function reducer(state: State, action: Action): State {
       if (!term) return state;
       const obs = { ...action.obs, id, term };
       const withObservation = { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
-      return appendAudit(withObservation, { at: asInstant(action.at ?? `${TODAY}T00:00:00.000Z`), actor: action.actor ?? defaultActor, action: 'observation.added', target: { type: 'student', id: obs.studentId }, summary: `Observation added: ${obs.id}` });
+      return appendAudit(withObservation, { at: asInstant(action.at ?? `${TODAY}T00:00:00.000Z`), actor: action.actor ?? defaultActor, action: 'observation.added', target: { type: 'student', id: obs.studentId }, summaryKey: 'pages.audit.summaryObservationAdded' });
     }
     case 'fillMissingDomains': {
       const student = STUDENTS.find((x) => x.id === action.studentId);
@@ -261,7 +264,7 @@ export function reducer(state: State, action: Action): State {
       const at = asInstant(action.submittedAt);
       const decision: DecisionEvent = { type: 'submitted', at, by: actor.name };
       const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: at, decisions: [...r.decisions, decision] });
-      return appendAudit(submitted, { at, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summary: 'Report submitted for review', decision });
+      return appendAudit(submitted, { at, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summarySubmitted', decision });
     }
     case 'requestChanges': {
       if (state.reports[action.studentId]?.status !== 'review') return state;
@@ -274,7 +277,7 @@ export function reducer(state: State, action: Action): State {
         comment: { by: actor.name, date: at, text: action.text },
         decisions: [...state.reports[action.studentId].decisions, decision]
       });
-      return appendAudit(changed, { at, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summary: `Changes requested: ${action.text}`, decision });
+      return appendAudit(changed, { at, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryChangesRequested', decision });
     }
     case 'approve': {
       // Approval is blocked while any claim lacks evidence.
@@ -298,7 +301,7 @@ export function reducer(state: State, action: Action): State {
         versions: [...report.versions, versionRecord],
         decisions: [...report.decisions, decision]
       });
-      return appendAudit(approved, { at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summary: `Report approved v${version}`, decision });
+      return appendAudit(approved, { at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryApproved', summaryParams: { version }, decision });
     }
     case 'release': {
       const report = state.reports[action.studentId];
@@ -312,7 +315,7 @@ export function reducer(state: State, action: Action): State {
         versions: [...report.versions.slice(0, -1), version], releasedVersion: latest.version,
         decisions: [...report.decisions, decision]
       });
-      return appendAudit(released, { at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summary: `Report v${latest.version} released to family`, decision });
+      return appendAudit(released, { at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReleased', summaryParams: { version: latest.version }, decision });
     }
     case 'reopen': {
       const report = state.reports[action.studentId];
@@ -325,15 +328,15 @@ export function reducer(state: State, action: Action): State {
         status: 'draft', reopenedAt: at,
         decisions: [...report.decisions, decision]
       });
-      return appendAudit(reopened, { at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summary: `Report reopened: ${reason}`, decision });
+      return appendAudit(reopened, { at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReopened', decision });
     }
     case 'roleSwitched':
-      return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summary: `Role switched from ${action.from} to ${action.to}` });
+      return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summaryKey: 'pages.audit.summaryRoleSwitched', summaryParams: { from: action.from, to: action.to } });
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
     case 'reset': {
       const fresh = { ...initialState(), auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
-      return appendAudit(fresh, { at: action.at ?? TODAY, actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summary: 'Demo data reset' });
+      return appendAudit(fresh, { at: action.at ?? TODAY, actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summaryKey: 'pages.audit.summaryReset' });
     }
   }
 }

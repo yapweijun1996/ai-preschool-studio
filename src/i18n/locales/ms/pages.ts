@@ -283,6 +283,7 @@ export const pages: Dict['pages'] = {
   },
   audit: {
     title: 'Log audit', empty: 'Tiada peristiwa sepadan dengan penapis ini.', clear: 'Kosongkan penapis', action: 'Tindakan', child: 'Kanak-kanak', from: 'Dari tarikh', to: 'Hingga tarikh', allActions: 'Semua tindakan', actor: 'Pelaku', target: 'Sasaran', summary: 'Ringkasan',
+    summaryObservationAdded: 'Pemerhatian direkodkan.', summarySubmitted: 'Dihantar untuk semakan.', summaryChangesRequested: 'Perubahan diminta.', summaryApproved: 'Diluluskan sebagai versi {version}.', summaryReleased: 'Versi {version} dilepaskan kepada keluarga.', summaryReopened: 'Dibuka semula untuk pindaan.', summaryRoleSwitched: 'Peranan ditukar daripada {from} kepada {to}.', summaryReset: 'Data demo ditetapkan semula.',
     observationAdded: 'Pemerhatian ditambah', submitted: 'Laporan dihantar', changesRequested: 'Perubahan diminta', approved: 'Laporan diluluskan', released: 'Laporan dilepaskan', reopened: 'Laporan dibuka semula', roleSwitched: 'Peranan demo ditukar', reset: 'Data demo ditetapkan semula'
   },
   coverage: {

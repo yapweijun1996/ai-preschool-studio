@@ -8,6 +8,15 @@ describe('portfolio reducer', () => {
   it('uses the injectable clock as an ISO instant', () => {
     expect(now(() => new Date('2026-10-22T08:32:00.000Z'))).toBe('2026-10-22T08:32:00.000Z');
   });
+  it('stores audit summaries as translation keys and keeps reviewer free text only in decision details', () => {
+    const seeded = initialState();
+    expect(seeded.auditEvents.every((event) => !('summary' in event))).toBe(true);
+    let s = reducer(seeded, { type: 'requestChanges', studentId: 'ethan', text: 'private narrative note', date: '2026-10-22T08:32:00.000Z' });
+    const event = s.auditEvents.at(-1)!;
+    expect(event).toMatchObject({ summaryKey: 'pages.audit.summaryChangesRequested', decision: { comment: 'private narrative note' } });
+    expect(event.summaryKey).not.toContain('private narrative note');
+    expect('summary' in event).toBe(false);
+  });
   it('stores audit and decision timestamps as full instants and sorts same-time events by sequence', () => {
     const seeded = initialState();
     expect(seeded.auditEvents.every((event) => /^\d{4}-\d\d-\d\dT/.test(event.at))).toBe(true);

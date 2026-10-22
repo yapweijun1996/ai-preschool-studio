@@ -66,6 +66,11 @@ export function AuditLog() {
   }
 
   const childName = (id: string) => STUDENTS.find((student) => student.id === id)?.name ?? id;
+  const summary = (event: AuditEvent) => t(event.summaryKey, {
+    ...event.summaryParams,
+    ...(event.summaryParams?.from ? { from: t(`shell.roles.${event.summaryParams.from}`) } : {}),
+    ...(event.summaryParams?.to ? { to: t(`shell.roles.${event.summaryParams.to}`) } : {})
+  });
   const clear = () => {
     setAction('');
     setStudentId('');
@@ -78,7 +83,7 @@ export function AuditLog() {
         <strong className="grow">{t(actionLabel[event.action])}</strong>
         <span className="cap muted">{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</span>
       </div>
-      <p className="sec">{event.summary}</p>
+      <p className="sec">{summary(event)}</p>
       <p className="cap muted">
         {t('pages.audit.actor')}: {event.actor.name} · {t(`shell.roles.${event.actor.role}`)}
       </p>
@@ -161,7 +166,7 @@ export function AuditLog() {
                           <td>{t(actionLabel[event.action])}</td>
                           <td>{event.target.type === 'student' ? childName(event.target.id) : '—'}</td>
                           <td>{event.actor.name}<br /><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></td>
-                          <td>{event.summary}</td>
+                          <td>{summary(event)}</td>
                           <td><time dateTime={event.at}>{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</time></td>
                         </tr>
                       ))}
