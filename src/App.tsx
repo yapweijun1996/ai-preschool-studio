@@ -11,6 +11,7 @@ import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 import { RoleProvider } from './roles/RoleContext';
 import { RouteErrorBoundary } from './routes/RouteErrorBoundary';
+import { RoutePendingProvider } from './routes/RoutePending';
 
 /** Remount stateful student pages when the selected child changes. */
 function PerStudent({ children }: { children: ReactNode }) {
@@ -57,7 +58,7 @@ export function App({ initialLang, initialDict }: { initialLang: Lang; initialDi
               <NavMemoryProvider>
                 <HashRouter>
                   <RoutePreloadHints />
-                  <RoutedPages />
+                  <RoutePendingProvider><RoutedPages /></RoutePendingProvider>
                 </HashRouter>
               </NavMemoryProvider>
             </RoleProvider>

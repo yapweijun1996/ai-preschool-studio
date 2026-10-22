@@ -15,6 +15,7 @@ import { DEMO_ROLES, demoRole } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { Capability } from '../roles';
 import { now } from '../utils/clock';
+import { useRoutePending } from '../routes/RoutePending';
 
 export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'settings';
 
@@ -413,6 +414,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
   const { t } = useI18n();
   const roleContext = useRole();
   const pwa = usePwa();
+  const routePending = useRoutePending();
   // Read synchronously so the panel state is right on first paint (no flash).
   const [desktopOpen, setDesktopOpen] = useState(readPanelOpen);
   const [overlayOpen, setOverlayOpen] = useState(false);
@@ -470,7 +472,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
         </header>
         <DemoStrip compact />
         <UpdateError />
-        <main className="main" id="main">{content}</main>
+        <main className="main" id="main" aria-busy={routePending || undefined}>{content}</main>
         {showBanner && (
           <div className={`update-banner${mobileActions ? ' above-actions' : ''}`}>
             <Icon name="download" size={18} className="ic-primary" />
@@ -500,7 +502,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
           <ThemeMenu />
           <AccountMenu />
         </header>
-        <main className="main" id="main" tabIndex={-1}>
+        <main className="main" id="main" tabIndex={-1} aria-busy={routePending || undefined}>
           <DemoStrip />
           <UpdateError />
           {content}
@@ -565,7 +567,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
             <ModulePanel module={module} currentStudentId={currentStudentId} onToggle={toggle} searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
           </aside>
         )}
-        <main className="main" id="main" tabIndex={-1}>
+        <main className="main" id="main" tabIndex={-1} aria-busy={routePending || undefined}>
           <DemoStrip />
           <UpdateError />
           {content}

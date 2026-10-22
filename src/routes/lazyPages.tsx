@@ -59,8 +59,11 @@ export function pageKindForPath(pathname: string): PageKind | undefined {
 }
 
 export function RouteChunkSuccess({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
-  useEffect(() => clearChunkReloadAttempt(), [pathname]);
+  const location = useLocation();
+  useEffect(() => {
+    clearChunkReloadAttempt();
+    window.dispatchEvent(new Event('route-content-ready'));
+  }, [location.pathname, location.search, location.key]);
   return children;
 }
 

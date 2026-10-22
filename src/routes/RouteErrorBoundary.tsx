@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useEffect, type ErrorInfo, type ReactNode } from 'react';
 import { AppShell } from '../components/AppShell';
 import { useI18n } from '../i18n';
 import { isChunkLoadError, reloadForChunkFailure } from './chunkRecovery';
@@ -22,6 +22,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
 function RouteLoadRecovery() {
   const { t } = useI18n();
+  useEffect(() => { window.dispatchEvent(new Event('route-content-ready')); }, []);
   return <AppShell module="students" mobileTitle={t('shell.routeLoad.title')}>
     {() => <section className="page" role="alert">
       <div className="card card-pad stack">

@@ -55,6 +55,10 @@ button, input, textarea, select { font: inherit; color: inherit; }
 
 /* App shell */
 .app { min-height: 100vh; display: flex; flex-direction: column; }
+.route-pending { position: fixed; z-index: 1000; inset: 0 0 auto; height: 2px; overflow: hidden; pointer-events: none; background: transparent; }
+.route-pending > span { display: block; width: 28%; height: 100%; background: var(--color-primary); animation: route-pending-slide 1s ease-in-out infinite; }
+@keyframes route-pending-slide { from { transform: translateX(-110%); } to { transform: translateX(460%); } }
+@media (prefers-reduced-motion: reduce) { .route-pending > span { width: 100%; animation: none; } }
 .topbar { position: sticky; top: 0; z-index: 30; height: var(--header-height); flex: none; display: flex; align-items: center; gap: var(--space-2); padding: 0 calc(var(--space-4) + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left)); background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
 .brand { display: inline-flex; align-items: center; gap: 10px; min-height: var(--touch-target); padding: 0 var(--space-2); color: var(--color-text); text-decoration: none; font-weight: 600; border-radius: var(--radius-md); }
 .brand-mark { display: block; flex: none; border-radius: var(--radius-sm); }
