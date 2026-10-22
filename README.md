@@ -40,6 +40,15 @@ npm run e2e          # Playwright journey at 1440 / 1024 / 390
 If Chromium is already installed elsewhere, point Playwright at it:
 `PW_CHROMIUM=/path/to/chrome npm run e2e`.
 
+## Deploy (GitHub Pages)
+
+`.github/workflows/deploy-pages.yml` runs on every push to `main` (and on demand from the
+Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages.
+
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pages on a
+private repository needs a paid GitHub plan; on the free plan, make the repo public first.
+
 ## Structure
 
 ```
