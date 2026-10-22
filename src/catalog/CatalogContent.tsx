@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { Menu } from '../components/Menu';
 import { ReadinessList, ReportFlow } from '../components/ReportFlow';
+import designTokens from '../../design/tokens.json';
 import {
   Avatar,
   MilestoneDots,
@@ -38,27 +39,7 @@ const sections = [
   'Empty state',
   'Skeleton',
 ];
-const names = [
-  '--color-primary',
-  '--color-primary-hover',
-  '--color-primary-text',
-  '--color-primary-soft',
-  '--color-bg',
-  '--color-surface',
-  '--color-surface-muted',
-  '--color-text',
-  '--color-text-muted',
-  '--color-border',
-  '--color-border-strong',
-  '--color-danger',
-  '--color-danger-soft',
-  '--color-warning',
-  '--color-warning-soft',
-  '--color-success',
-  '--color-info',
-  '--color-info-soft',
-  '--color-focus',
-];
+const names = designTokens.color.tokens.map(({ name }) => `--${name}`);
 const statuses: ReportStatus[] = ['notStarted', 'draft', 'review', 'changes', 'approved'];
 const readinessExamples: { title: string; readiness: Readiness }[] = [
   {
