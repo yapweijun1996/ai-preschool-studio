@@ -22,7 +22,7 @@ the heaviest page and worst run are checked despite that grouping.
 
 | Assertion | Threshold | Severity |
 |---|---:|---|
-| Script resource size | ≤ 174,080 bytes (170 KB) | Error |
+| Script resource size | ≤ 159,923 bytes (156.2 KiB) | Error |
 | Stylesheet resource size | ≤ 10,978 bytes (10.7 KiB) | Error |
 | Total resource size | ≤ 274,597 bytes (268.2 KiB) | Error |
 | Accessibility score | ≥ 0.95 | Error |
@@ -63,11 +63,69 @@ Before splitting, `npm run build` emitted the following JavaScript:
 | `FamilyEnrolment-CATie8JD.js` | 14,330 B | 3,460 B |
 | `CatalogContent-BPPWBrZz.js` | 20,120 B | 6,630 B |
 
-The three locale dictionaries account for 86,914 bytes of TypeScript source
-(English 31,792; Chinese 31,439; Malay 34,029), with page copy alone accounting
+The three locale dictionaries account for 97,424 bytes of TypeScript source
+(English 31,792; Chinese 31,606; Malay 34,026), with page copy alone accounting
 for 67,145 bytes. Page components total 125,690 bytes of source, before their
 shared components. `src/data/demo.ts` is 15,697 bytes. Vite's initial entry is
 above its 500 KB warning threshold and close to the Lighthouse script budget.
+
+## Route splitting (2026-10-23)
+
+The build now loads page modules on their route, the active locale before the
+first render, and other locales when selected. Pointer hover, keyboard focus,
+and touch start preload the matching route. After the app becomes idle, the
+Students route is preloaded. The persistent AppShell surrounds both the route
+content and its skeleton fallback.
+
+| Chunk | Before raw / gzip | After raw / gzip |
+|---|---:|---:|
+| Entry | 554,710 / 163,560 B | 19,954 / 5,529 B |
+| React and Router vendor | included in entry | 261,449 / 83,134 B |
+| Shared AppShell | included in entry | 92,781 / 28,911 B |
+| English locale | included in entry | 26,960 / 9,080 B |
+| Chinese locale | included in entry | 27,241 / 10,421 B |
+| Malay locale | included in entry | 29,636 / 9,555 B |
+| useStudentLabels | included in entry | 430 / 215 B |
+| AccessDenied | included in entry | 496 / 308 B |
+| NotFound | included in entry | 639 / 358 B |
+| StudentTabs | included in entry | 646 / 346 B |
+| Catalog page | included in entry | 1,536 / 749 B |
+| Modal | included in entry | 1,537 / 754 B |
+| ReportFlow | included in entry | 1,862 / 864 B |
+| EmptyIllustration | included in entry | 1,866 / 833 B |
+| FamilyReport page | included in entry | 3,723 / 1,320 B |
+| Reviews | included in entry | 3,768 / 1,286 B |
+| Classes | 4,210 / 1,380 B | 4,338 / 1,442 B |
+| LearningProgress | included in entry | 4,839 / 1,850 B |
+| Students | included in entry | 5,529 / 1,986 B |
+| AuditLog | included in entry | 5,648 / 1,609 B |
+| Coverage | included in entry | 6,946 / 2,110 B |
+| StudentProfile | included in entry | 7,716 / 2,541 B |
+| AddObservation | included in entry | 9,375 / 3,081 B |
+| Settings | included in entry | 11,445 / 3,142 B |
+| FamilyEnrolment | 14,330 / 3,460 B | 14,405 / 3,511 B |
+| ReportPreview | included in entry | 15,493 / 4,325 B |
+| CatalogContent | 20,120 / 6,630 B | 20,278 / 6,700 B |
+| PortfolioStudio | included in entry | 26,186 / 7,621 B |
+
+Each current JS chunk is at most 261,449 B raw, so Vite emits no large-chunk
+warning. The production preview requested scripts for each route; sizes below
+are the sum of each requested JS file's gzip size (equivalent to the compressed
+script transfer budget):
+
+| Page | Before scripts | After scripts |
+|---|---:|---:|
+| `#/` | 149,635 B | 129,996 B |
+| `#/students` | 149,635 B | 129,996 B |
+| `#/students/aria/studio` | 149,635 B | 138,839 B |
+| `#/students/aria/report` | 149,635 B | 136,297 B |
+| `#/catalog` | 156,488 B | 139,063 B |
+| `#/coverage` | 149,635 B | 132,106 B |
+
+The dashboard total includes the idle Students preload. The largest configured
+Lighthouse route is now Catalog at 139,063 B; its script budget is 159,923 B,
+15% higher rounded up. The dashboard script transfer is 19,639 B lower than
+before, and the heaviest configured page is 17,425 B lower.
 
 ## Local route transfer measurement (2026-10-22)
 
@@ -86,7 +144,8 @@ report page's larger total. Pessimistic error assertions now cover this case.
 
 The stylesheet budget is 10,978 B, 15% above the catalog's 9,546 B. The total
 resource budget remains 274,597 B, 15% above the largest observed route total
-(244,309 B, rounded up). The script limit remains 174,080 B.
+(244,309 B, rounded up). The script limit is now 159,923 B based on the
+heaviest measured page after route splitting.
 
 The same local mobile Lighthouse run scored `#/` 0.92, `#/students` 0.97,
 `#/students/aria/report` 0.96, `#/catalog` 0.94, and `#/coverage` 0.87 for
@@ -142,7 +201,8 @@ MB. The Inter-only build emits one WOFF2, a 38.75 KB main CSS file (7.19 KB
 gzip), and a 612,091-byte `dist` directory. Current Lighthouse measurements
 are 8,217 B for the main stylesheet and 9,546 B for the catalog stylesheet;
 see the route measurement table above for the active stylesheet and total
-budgets. The script limit remains 174,080 bytes.
+budgets. The script limit is 159,923 bytes, based on the measured post-split
+Catalog script transfer plus 15%.
 
 ## Reading the CI report
 
