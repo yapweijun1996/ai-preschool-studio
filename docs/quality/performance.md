@@ -52,6 +52,23 @@ are baseline observations, not CI medians:
 The largest improvement lever is the single entry chunk, about 460 KB raw / 140
 KB gzip. Route-level code splitting is a follow-up.
 
+## Route-splitting baseline (2026-10-23)
+
+Before splitting, `npm run build` emitted the following JavaScript:
+
+| Chunk | Raw | Gzip |
+|---|---:|---:|
+| `index-CQ1e-SDb.js` (entry and all eager routes/locales) | 554,710 B | 163,560 B |
+| `Classes-sQsQvzN8.js` | 4,210 B | 1,380 B |
+| `FamilyEnrolment-CATie8JD.js` | 14,330 B | 3,460 B |
+| `CatalogContent-BPPWBrZz.js` | 20,120 B | 6,630 B |
+
+The three locale dictionaries account for 86,914 bytes of TypeScript source
+(English 31,792; Chinese 31,439; Malay 34,029), with page copy alone accounting
+for 67,145 bytes. Page components total 125,690 bytes of source, before their
+shared components. `src/data/demo.ts` is 15,697 bytes. Vite's initial entry is
+above its 500 KB warning threshold and close to the Lighthouse script budget.
+
 ## Local route transfer measurement (2026-10-22)
 
 The manager measured per-page transfers with `@lhci/cli` 0.15.1 against a local
