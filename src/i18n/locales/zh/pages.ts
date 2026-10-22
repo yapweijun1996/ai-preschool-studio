@@ -105,6 +105,7 @@ export const pages: Dict['pages'] = {
     save: '保存观察记录',
     saving: '正在保存…',
     tooShort: '请至少用一句话描述您观察到的情况。',
+    dateRange: '请选择第 4 学期内的日期（{from} 至 {to}）。',
     failedBody: '这条观察记录未能保存。您的文字仍在这里。请检查网络连接后重试。',
     savedAs: '观察记录已保存，编号',
     savedBody: '它现已作为{name}学习进展和学习档案的佐证。',

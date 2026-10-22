@@ -105,6 +105,7 @@ export const pages: Dict['pages'] = {
     save: 'Simpan pemerhatian',
     saving: 'Menyimpan…',
     tooShort: 'Terangkan apa yang anda perhatikan dalam sekurang-kurangnya satu ayat.',
+    dateRange: 'Pilih tarikh dalam Penggal 4, dari {from} hingga {to}.',
     failedBody: 'Pemerhatian ini tidak dapat disimpan. Teks anda masih ada di sini. Semak sambungan anda dan cuba lagi.',
     savedAs: 'Pemerhatian disimpan sebagai',
     savedBody: 'Pemerhatian ini kini dikira sebagai bukti untuk kemajuan pembelajaran dan portfolio {name}.',

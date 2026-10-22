@@ -12,7 +12,10 @@ export interface NarrativeProps {
   observations: Observation[];
   pendingParagraphId?: string;
   appliedParagraphId?: string;
+  /** Wording locked (in review or approved). */
   locked: boolean;
+  /** Evidence linking locked (approved only): a reviewer can still clear a claim during review. */
+  linkLocked: boolean;
   reflection: string;
   onReflection: (text: string) => void;
   onLink: (sentenceId: string, obsId: string) => void;
@@ -76,14 +79,14 @@ export function NarrativePanel(p: NarrativeProps) {
                   <div key={s.id} className="notice notice-warning" data-claim tabIndex={-1} style={{ marginTop: 12, flexDirection: 'column', gap: 8 }}>
                     <VerifyLabel />
                     <p className="body-text">{t('pages.studio.nar.noLink', { text: s.text })}</p>
-                    {!p.locked && (
+                    {!p.linkLocked && (
                       <div className="row">
                         {candidates.map((c) => (
                           <button key={c.id} className="btn btn-secondary" type="button" onClick={() => p.onLink(s.id, c.id)}>
                             <Icon name="link" size={18} />{t('pages.studio.nar.link', { id: c.id })}
                           </button>
                         ))}
-                        <button className="btn btn-ghost" type="button" onClick={() => p.onRemove(s.id)}>{t('pages.studio.nar.removeClaim')}</button>
+                        {!p.locked && <button className="btn btn-ghost" type="button" onClick={() => p.onRemove(s.id)}>{t('pages.studio.nar.removeClaim')}</button>}
                       </div>
                     )}
                   </div>

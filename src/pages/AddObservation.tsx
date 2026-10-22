@@ -43,6 +43,7 @@ export function AddObservation() {
   // The form as first shown (prefilled demo), last saved, or last cleared: only changes from it are unsaved work.
   const [baseline, setBaseline] = useState(() => formKey({ date: TODAY, domain: 'ma', milestone: 'developing', text: DEMO_TEXT }));
   const [error, setError] = useState(false);
+  const [dateError, setDateError] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -57,6 +58,13 @@ export function AddObservation() {
 
   const save = () => {
     if (phase.kind === 'saving' || phase.kind === 'saved') return;
+    // The picker limits the range, but a typed or cleared date must not slip through.
+    if (!date || date < TERM4_START || date > TODAY) {
+      setDateError(true);
+      document.getElementById('obs-date')?.focus();
+      return;
+    }
+    setDateError(false);
     if (text.trim().length < 10) {
       setError(true);
       textRef.current?.focus();
@@ -152,11 +160,14 @@ export function AddObservation() {
                           value={date}
                           min={TERM4_START}
                           max={TODAY}
-                          onChange={(e) => setDate(e.target.value)}
+                          onChange={(e) => { setDate(e.target.value); setDateError(false); }}
+                          aria-invalid={dateError}
+                          aria-describedby={dateError ? 'obs-date-error' : undefined}
                           onClick={(e) => openPicker(e.currentTarget)}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(e.currentTarget); } }}
                         />
                       </div>
+                      {dateError && <p id="obs-date-error" className="sec" style={{ color: 'var(--color-danger)' }}><Icon name="alertCircle" size={14} /> {t('pages.observation.dateRange', { from: fmtDate(TERM4_START), to: fmtDate(TODAY) })}</p>}
                     </div>
                   </div>
                   <fieldset>

@@ -183,6 +183,7 @@ export function PortfolioStudio() {
         pendingParagraphId={pendingId}
         appliedParagraphId={appliedId}
         locked={locked}
+        linkLocked={report.status === 'approved'}
         reflection={reflection}
         onReflection={setReflection}
         onLink={(sentenceId, obsId) => dispatch({ type: 'linkSource', studentId: id, sentenceId, obsId })}

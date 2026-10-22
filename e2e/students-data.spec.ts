@@ -119,6 +119,38 @@ test.describe('review fixes · desktop 1440', () => {
   });
 });
 
+test.describe('re-review fixes · desktop 1440', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('keyboard focus stays on the sidebar link when switching child from a profile', async ({ page }) => {
+    await page.goto('./#/students/aria');
+    const link = page.getByRole('complementary', { name: 'Students sidebar' }).getByRole('link', { name: 'Ethan Koh' });
+    await link.focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/#\/students\/ethan$/);
+    await expect(page.getByRole('complementary', { name: 'Students sidebar' }).getByRole('link', { name: 'Ethan Koh' })).toBeFocused();
+  });
+
+  test('in review, the Studio still offers evidence links (wording stays paused)', async ({ page }) => {
+    await page.goto('./#/students/aria/studio');
+    await page.getByRole('button', { name: 'Submit for review' }).click();
+    await page.goto('./#/students/aria/studio');
+    const claim = page.locator('[data-claim]').first();
+    await expect(claim.getByRole('button', { name: /^Link OBS-/ }).first()).toBeVisible();
+    await expect(claim.getByRole('button', { name: 'Remove claim' })).toHaveCount(0);
+    await claim.getByRole('button', { name: /^Link OBS-/ }).first().click();
+    await expect(page.locator('[data-claim]')).toHaveCount(1);
+  });
+
+  test('an observation dated outside Term 4 is not saved', async ({ page }) => {
+    await page.goto('./#/students/kai/observe');
+    await page.getByLabel('Date observed').fill('2026-08-10');
+    await page.getByRole('button', { name: 'Save observation' }).click();
+    await expect(page.getByText(/Choose a date in Term 4/)).toBeVisible();
+    await expect(page.getByText(/Observation saved as/)).toHaveCount(0);
+  });
+});
+
 test.describe('all students · mobile 390', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
   test('student list status labels hug their text; report checks fold into one line', async ({ page }) => {

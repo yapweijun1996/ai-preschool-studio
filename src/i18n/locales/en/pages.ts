@@ -104,6 +104,7 @@ export const pages = {
     save: 'Save observation',
     saving: 'Saving…',
     tooShort: 'Describe what you observed in at least one sentence.',
+    dateRange: 'Choose a date in Term 4, from {from} to {to}.',
     failedBody: 'We couldn’t save this observation. Your text is still here. Check your connection and retry.',
     savedAs: 'Observation saved as',
     savedBody: 'It now counts as evidence for {name}’s learning progress and portfolio.',

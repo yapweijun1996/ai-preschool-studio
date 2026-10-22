@@ -16,7 +16,10 @@ import { Students } from './pages/Students';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 
-/** Remounts a student page when the child changes, so no draft, AI or form state carries over to another child. */
+/**
+ * Remounts a stateful student page (Studio, Add observation, Report) when the child changes, so no draft,
+ * AI or form state carries over. Profile and Progress hold no per-child state and keep focus on navigation.
+ */
 function PerStudent({ children }: { children: ReactNode }) {
   const { id } = useParams();
   return <Fragment key={id}>{children}</Fragment>;
@@ -35,9 +38,9 @@ export function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
-            <Route path="/students/:id" element={<PerStudent><StudentProfile /></PerStudent>} />
+            <Route path="/students/:id" element={<StudentProfile />} />
             <Route path="/students/:id/observe" element={<PerStudent><AddObservation /></PerStudent>} />
-            <Route path="/students/:id/progress" element={<PerStudent><LearningProgress /></PerStudent>} />
+            <Route path="/students/:id/progress" element={<LearningProgress />} />
             <Route path="/students/:id/studio" element={<PerStudent><PortfolioStudio /></PerStudent>} />
             <Route path="/students/:id/report" element={<PerStudent><ReportPreview /></PerStudent>} />
             <Route path="/settings" element={<Navigate to="/settings/appearance" replace />} />
