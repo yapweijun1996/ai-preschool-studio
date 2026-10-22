@@ -13,7 +13,9 @@ test('class roster filters active and withdrawn children and opens a child profi
   await expect(page.locator('.family-section')).toBeVisible();
 });
 
-test('admin validates and saves guardian, updates collector and child, then audit stays free of sensitive values', async ({ page }) => {
+test(
+  'admin validates and saves guardian, updates collector and child, then audit stays free of sensitive values',
+  async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
   await page.goto('./#/students/aria');
   const family = page.locator('.family-section');
@@ -38,7 +40,9 @@ test('admin validates and saves guardian, updates collector and child, then audi
   await expect(family.getByText('Fictional Guardian E2E')).toBeVisible();
   await expect(family.getByText('private-contact@example.com')).toBeVisible();
 
-  const collectors = family.locator('.family-subsection').filter({ has: page.getByRole('heading', { name: 'Authorised collectors' }) });
+  const collectors = family.locator('.family-subsection').filter({
+    has: page.getByRole('heading', { name: 'Authorised collectors' })
+  });
   await collectors.getByRole('button', { name: 'Edit' }).click();
   const collectorDialog = page.getByRole('dialog', { name: 'Authorised collector details' });
   await collectorDialog.getByLabel('Collector name').fill('Fictional Collector E2E updated');
@@ -54,7 +58,8 @@ test('admin validates and saves guardian, updates collector and child, then audi
   await expect(table).not.toContainText('Private allergy value e2e only');
   await expect(table).not.toContainText('private-contact@example.com');
   await expect(table).not.toContainText('+65 9000 8888');
-});
+  }
+);
 
 test('school admin sees the typed reason when withdrawal is blocked by an in-review report', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));

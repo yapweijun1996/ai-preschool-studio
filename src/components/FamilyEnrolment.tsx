@@ -151,7 +151,9 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
         phone: fields.phone,
         email: fields.email,
         preferredLanguage: fields.preferredLanguage,
-        isPrimary: fields.isPrimary ? fields.isPrimary === 'true' : selectedGuardian?.isPrimary ?? guardians.length === 0
+        isPrimary: fields.isPrimary
+          ? fields.isPrimary === 'true'
+          : selectedGuardian?.isPrimary ?? guardians.length === 0
       };
       const validation = validateGuardian(guardian);
       setErrors(validation);
@@ -195,69 +197,297 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
   const familyCanView = role.can('contacts.view');
   const canViewHealth = role.can('health.view');
   const activeDialog = dialog !== null;
-  const dialogTitle: TKey = dialog === 'child' ? 'pages.children.dialog.child' : dialog === 'guardian' ? 'pages.children.dialog.guardian' : dialog === 'collector' ? 'pages.children.dialog.collector' : dialog === 'withdraw' ? 'pages.children.dialog.withdraw' : 'pages.children.dialog.remove';
+  const dialogTitle: TKey = dialog === 'child'
+    ? 'pages.children.dialog.child'
+    : dialog === 'guardian'
+      ? 'pages.children.dialog.guardian'
+      : dialog === 'collector'
+        ? 'pages.children.dialog.collector'
+        : dialog === 'withdraw'
+          ? 'pages.children.dialog.withdraw'
+          : 'pages.children.dialog.remove';
 
   return (
     <section className="card family-section stack" aria-labelledby="family-heading">
       <div className="card-head row">
         <h2 className="h2 grow" id="family-heading">{t('pages.children.familyTitle')}</h2>
-        {editable && child.status === 'active' && <button className="btn btn-secondary" type="button" onClick={(event) => openDialog('child', event.currentTarget)}><Icon name="edit" size={16} />{t('pages.children.editChild')}</button>}
+        {editable && child.status === 'active' && (
+          <button
+            className="btn btn-secondary"
+            type="button"
+            onClick={(event) => openDialog('child', event.currentTarget)}
+          >
+            <Icon name="edit" size={16} />{t('pages.children.editChild')}
+          </button>
+        )}
       </div>
       <div className="family-facts">
-        <div><span className="cap muted">{t('pages.children.class')}</span><strong>{classRecord?.name ?? '—'}</strong></div>
-        <div><span className="cap muted">{t('pages.children.levelYear', { level: classRecord?.level ?? '', year: classRecord?.year ?? '' })}</span><strong>{t(`pages.children.${child.status}`)}</strong></div>
-        <div><span className="cap muted">{t('pages.children.dateOfBirth')}</span><strong>{fmtDate(child.dateOfBirth)}</strong></div>
-        <div><span className="cap muted">{t('pages.children.enrolledOn')}</span><strong>{fmtDate(child.enrolledOn)}</strong></div>
-        <div><span className="cap muted">{t('pages.children.homeLanguages')}</span><strong>{child.homeLanguages}</strong></div>
+        <div>
+          <span className="cap muted">{t('pages.children.class')}</span>
+          <strong>{classRecord?.name ?? '—'}</strong>
+        </div>
+        <div>
+          <span className="cap muted">
+            {t('pages.children.levelYear', {
+              level: classRecord?.level ?? '',
+              year: classRecord?.year ?? ''
+            })}
+          </span>
+          <strong>{t(`pages.children.${child.status}`)}</strong>
+        </div>
+        <div>
+          <span className="cap muted">{t('pages.children.dateOfBirth')}</span>
+          <strong>{fmtDate(child.dateOfBirth)}</strong>
+        </div>
+        <div>
+          <span className="cap muted">{t('pages.children.enrolledOn')}</span>
+          <strong>{fmtDate(child.enrolledOn)}</strong>
+        </div>
+        <div>
+          <span className="cap muted">{t('pages.children.homeLanguages')}</span>
+          <strong>{child.homeLanguages}</strong>
+        </div>
       </div>
       {!editable && <p className="cap muted">{t('pages.children.readOnlyReason')}</p>}
       <section className="family-subsection" aria-labelledby="guardians-heading">
-        <div className="row"><h3 className="h3 grow" id="guardians-heading">{t('pages.children.guardians')}</h3>{familyCanView && editable && <button className="btn btn-ghost" type="button" onClick={(event) => openDialog('guardian', event.currentTarget)}><Icon name="plus" size={16} />{t('pages.children.addGuardian')}</button>}</div>
-        {!familyCanView ? <p className="sec muted">{t('pages.children.contactsRestricted')}</p> : guardians.length ? guardians.map((guardian) => (
+        <div className="row">
+          <h3 className="h3 grow" id="guardians-heading">{t('pages.children.guardians')}</h3>
+          {familyCanView && editable && (
+            <button
+              className="btn btn-ghost"
+              type="button"
+              onClick={(event) => openDialog('guardian', event.currentTarget)}
+            >
+              <Icon name="plus" size={16} />{t('pages.children.addGuardian')}
+            </button>
+          )}
+        </div>
+        {!familyCanView ? (
+          <p className="sec muted">{t('pages.children.contactsRestricted')}</p>
+        ) : guardians.length ? guardians.map((guardian) => (
           <div className="family-record" key={guardian.id}>
-            <div className="grow"><strong>{guardian.name}</strong><p className="sec muted">{guardian.relationship}{guardian.isPrimary ? ` · ${t('pages.children.primary')}` : ''}</p><p className="sec num">{role.can('contacts.view') ? guardian.phone : maskedPhone(guardian.phone)} · {guardian.email}</p></div>
-            {editable && <div className="row"><button className="btn btn-ghost" type="button" onClick={(event) => openDialog('guardian', event.currentTarget, guardian)}>{t('pages.children.edit')}</button><button className="icon-btn" type="button" aria-label={t('pages.children.removeGuardianFor', { name: guardian.name })} onClick={(event) => openDialog('removeGuardian', event.currentTarget, guardian)}><Icon name="trash" /></button></div>}
+            <div className="grow">
+              <strong>{guardian.name}</strong>
+              <p className="sec muted">
+                {guardian.relationship}{guardian.isPrimary ? ` · ${t('pages.children.primary')}` : ''}
+              </p>
+              <p className="sec num">
+                {role.can('contacts.view') ? guardian.phone : maskedPhone(guardian.phone)} · {guardian.email}
+              </p>
+            </div>
+            {editable && (
+              <div className="row">
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  onClick={(event) => openDialog('guardian', event.currentTarget, guardian)}
+                >
+                  {t('pages.children.edit')}
+                </button>
+                <button
+                  className="icon-btn"
+                  type="button"
+                  aria-label={t('pages.children.removeGuardianFor', { name: guardian.name })}
+                  onClick={(event) => openDialog('removeGuardian', event.currentTarget, guardian)}
+                >
+                  <Icon name="trash" />
+                </button>
+              </div>
+            )}
           </div>
         )) : <p className="sec muted">{t('pages.children.noGuardians')}</p>}
       </section>
       <section className="family-subsection" aria-labelledby="collectors-heading">
-        <div className="row"><h3 className="h3 grow" id="collectors-heading">{t('pages.children.collectors')}</h3>{familyCanView && editable && <button className="btn btn-ghost" type="button" onClick={(event) => openDialog('collector', event.currentTarget)}><Icon name="plus" size={16} />{t('pages.children.addCollector')}</button>}</div>
-        {!familyCanView ? <p className="sec muted">{t('pages.children.contactsRestricted')}</p> : collectors.length ? collectors.map((collector) => (
+        <div className="row">
+          <h3 className="h3 grow" id="collectors-heading">{t('pages.children.collectors')}</h3>
+          {familyCanView && editable && (
+            <button
+              className="btn btn-ghost"
+              type="button"
+              onClick={(event) => openDialog('collector', event.currentTarget)}
+            >
+              <Icon name="plus" size={16} />{t('pages.children.addCollector')}
+            </button>
+          )}
+        </div>
+        {!familyCanView ? (
+          <p className="sec muted">{t('pages.children.contactsRestricted')}</p>
+        ) : collectors.length ? collectors.map((collector) => (
           <div className="family-record" key={collector.id}>
-            <div className="grow"><strong>{collector.name}</strong><p className="sec muted">{collector.relationship} · {fmtDate(collector.validFrom)}{collector.validTo ? ` – ${fmtDate(collector.validTo)}` : ` · ${t('pages.children.noExpiry')}`}</p><p className="cap muted">{t('pages.children.photoIdNote')}</p></div>
-            {editable && <div className="row"><button className="btn btn-ghost" type="button" onClick={(event) => openDialog('collector', event.currentTarget, undefined, collector)}>{t('pages.children.edit')}</button><button className="icon-btn" type="button" aria-label={t('pages.children.removeCollectorFor', { name: collector.name })} onClick={(event) => openDialog('removeCollector', event.currentTarget, undefined, collector)}><Icon name="trash" /></button></div>}
+            <div className="grow">
+              <strong>{collector.name}</strong>
+              <p className="sec muted">
+                {collector.relationship} · {fmtDate(collector.validFrom)}
+                {collector.validTo
+                  ? ` – ${fmtDate(collector.validTo)}`
+                  : ` · ${t('pages.children.noExpiry')}`}
+              </p>
+              <p className="cap muted">{t('pages.children.photoIdNote')}</p>
+            </div>
+            {editable && (
+              <div className="row">
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  onClick={(event) => openDialog('collector', event.currentTarget, undefined, collector)}
+                >
+                  {t('pages.children.edit')}
+                </button>
+                <button
+                  className="icon-btn"
+                  type="button"
+                  aria-label={t('pages.children.removeCollectorFor', { name: collector.name })}
+                  onClick={(event) => openDialog('removeCollector', event.currentTarget, undefined, collector)}
+                >
+                  <Icon name="trash" />
+                </button>
+              </div>
+            )}
           </div>
         )) : <p className="sec muted">{t('pages.children.noCollectors')}</p>}
       </section>
       <section className="family-health" aria-labelledby="health-heading">
         <h3 className="h3" id="health-heading">{t('pages.children.healthNotes')}</h3>
-        {canViewHealth ? <div className="stack"><p className="sec"><strong>{t('pages.children.allergies')}:</strong> {child.notes.allergies || t('pages.children.noneRecorded')}</p><p className="sec"><strong>{t('pages.children.medical')}:</strong> {child.notes.medical || t('pages.children.noneRecorded')}</p></div> : <p className="sec muted">{t('pages.children.healthRestricted')}</p>}
+        {canViewHealth ? (
+          <div className="stack">
+            <p className="sec">
+              <strong>{t('pages.children.allergies')}:</strong>
+              {' '}{child.notes.allergies || t('pages.children.noneRecorded')}
+            </p>
+            <p className="sec">
+              <strong>{t('pages.children.medical')}:</strong>
+              {' '}{child.notes.medical || t('pages.children.noneRecorded')}
+            </p>
+          </div>
+        ) : <p className="sec muted">{t('pages.children.healthRestricted')}</p>}
       </section>
-      {editable && child.status === 'active' && <button className="btn btn-ghost danger-text" type="button" onClick={(event) => openDialog('withdraw', event.currentTarget)}>{t('pages.children.withdraw')}</button>}
+      {editable && child.status === 'active' && (
+        <button
+          className="btn btn-ghost danger-text"
+          type="button"
+          onClick={(event) => openDialog('withdraw', event.currentTarget)}
+        >
+          {t('pages.children.withdraw')}
+        </button>
+      )}
       {saved && <Notice tone="success" icon="check" role="status">{t('pages.children.saved')}</Notice>}
       {activeDialog && (
-        <div className="dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-          <section className="card stack family-dialog" role="dialog" aria-modal="true" aria-labelledby="family-dialog-title" onKeyDown={(event) => { if (event.key === 'Escape') close(); }}>
-            <div className="row"><h2 id="family-dialog-title" className="h2 grow">{t(dialogTitle)}</h2><button className="icon-btn" type="button" aria-label={t('pages.children.close')} onClick={close}><Icon name="close" /></button></div>
-            {formError && <div role="alert" className="notice notice-danger"><Icon name="alert" /><div><strong>{t('pages.children.formError')}</strong><p className="sec">{formError}</p></div></div>}
-            {dialog === 'removeGuardian' && <p className="sec">{t('pages.children.confirmRemoveGuardian', { name: selectedGuardian?.name ?? '' })}</p>}
-            {dialog === 'removeCollector' && <p className="sec">{t('pages.children.confirmRemoveCollector', { name: selectedCollector?.name ?? '' })}</p>}
-            {dialog === 'withdraw' && <p className="sec">{t('pages.children.confirmWithdraw', { name: child.name })}</p>}
+        <div
+          className="dialog-backdrop"
+          onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}
+        >
+          <section
+            className="card stack family-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="family-dialog-title"
+            onKeyDown={(event) => { if (event.key === 'Escape') close(); }}
+          >
+            <div className="row">
+              <h2 id="family-dialog-title" className="h2 grow">{t(dialogTitle)}</h2>
+              <button
+                className="icon-btn"
+                type="button"
+                aria-label={t('pages.children.close')}
+                onClick={close}
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+            {formError && (
+              <div role="alert" className="notice notice-danger">
+                <Icon name="alert" />
+                <div>
+                  <strong>{t('pages.children.formError')}</strong>
+                  <p className="sec">{formError}</p>
+                </div>
+              </div>
+            )}
+            {dialog === 'removeGuardian' && (
+              <p className="sec">
+                {t('pages.children.confirmRemoveGuardian', { name: selectedGuardian?.name ?? '' })}
+              </p>
+            )}
+            {dialog === 'removeCollector' && (
+              <p className="sec">
+                {t('pages.children.confirmRemoveCollector', { name: selectedCollector?.name ?? '' })}
+              </p>
+            )}
+            {dialog === 'withdraw' && (
+              <p className="sec">{t('pages.children.confirmWithdraw', { name: child.name })}</p>
+            )}
             {dialog === 'child' && <form className="stack" onSubmit={(event) => void submit(event)} noValidate>
-              {field('name', t('pages.children.childName'))}{field('dateOfBirth', t('pages.children.dateOfBirth'), 'date')}{field('enrolledOn', t('pages.children.enrolledOn'), 'date')}{field('homeLanguages', t('pages.children.homeLanguages'))}{field('allergies', t('pages.children.allergies'))}{field('medical', t('pages.children.medical'))}
-              <div className="row"><button className="btn btn-secondary" type="button" onClick={close}>{t('pages.shared.cancel')}</button><button className="btn btn-primary" type="submit" disabled={saving}>{saving ? t('pages.children.saving') : t('pages.shared.save')}</button></div>
+              {field('name', t('pages.children.childName'))}
+              {field('dateOfBirth', t('pages.children.dateOfBirth'), 'date')}
+              {field('enrolledOn', t('pages.children.enrolledOn'), 'date')}
+              {field('homeLanguages', t('pages.children.homeLanguages'))}
+              {field('allergies', t('pages.children.allergies'))}
+              {field('medical', t('pages.children.medical'))}
+              <div className="row">
+                <button className="btn btn-secondary" type="button" onClick={close}>
+                  {t('pages.shared.cancel')}
+                </button>
+                <button className="btn btn-primary" type="submit" disabled={saving}>
+                  {saving ? t('pages.children.saving') : t('pages.shared.save')}
+                </button>
+              </div>
             </form>}
             {dialog === 'guardian' && <form className="stack" onSubmit={(event) => void submit(event)} noValidate>
-              {field('name', t('pages.children.guardianName'))}{field('relationship', t('pages.children.relationship'))}{field('phone', t('pages.children.phone'))}{field('email', t('pages.children.email'))}{field('preferredLanguage', t('pages.children.preferredLanguage'))}
-              <label className="row sec"><input type="checkbox" checked={fields.isPrimary ? fields.isPrimary === 'true' : selectedGuardian?.isPrimary ?? guardians.length === 0} onChange={(event) => setField('isPrimary', String(event.target.checked))} />{t('pages.children.primaryGuardian')}</label>
-              <div className="row"><button className="btn btn-secondary" type="button" onClick={close}>{t('pages.shared.cancel')}</button><button className="btn btn-primary" type="submit" disabled={saving}>{saving ? t('pages.children.saving') : t('pages.shared.save')}</button></div>
+              {field('name', t('pages.children.guardianName'))}
+              {field('relationship', t('pages.children.relationship'))}
+              {field('phone', t('pages.children.phone'))}
+              {field('email', t('pages.children.email'))}
+              {field('preferredLanguage', t('pages.children.preferredLanguage'))}
+              <label className="row sec">
+                <input
+                  type="checkbox"
+                  checked={fields.isPrimary
+                    ? fields.isPrimary === 'true'
+                    : selectedGuardian?.isPrimary ?? guardians.length === 0}
+                  onChange={(event) => setField('isPrimary', String(event.target.checked))}
+                />
+                {t('pages.children.primaryGuardian')}
+              </label>
+              <div className="row">
+                <button className="btn btn-secondary" type="button" onClick={close}>
+                  {t('pages.shared.cancel')}
+                </button>
+                <button className="btn btn-primary" type="submit" disabled={saving}>
+                  {saving ? t('pages.children.saving') : t('pages.shared.save')}
+                </button>
+              </div>
             </form>}
             {dialog === 'collector' && <form className="stack" onSubmit={(event) => void submit(event)} noValidate>
-              {field('name', t('pages.children.collectorName'))}{field('relationship', t('pages.children.relationship'))}{field('validFrom', t('pages.children.validFrom'), 'date')}{field('validTo', t('pages.children.validToOptional'), 'date')}{field('note', t('pages.children.note'))}
+              {field('name', t('pages.children.collectorName'))}
+              {field('relationship', t('pages.children.relationship'))}
+              {field('validFrom', t('pages.children.validFrom'), 'date')}
+              {field('validTo', t('pages.children.validToOptional'), 'date')}
+              {field('note', t('pages.children.note'))}
               <p className="cap muted">{t('pages.children.noIdentityNumbers')}</p>
-              <div className="row"><button className="btn btn-secondary" type="button" onClick={close}>{t('pages.shared.cancel')}</button><button className="btn btn-primary" type="submit" disabled={saving}>{saving ? t('pages.children.saving') : t('pages.shared.save')}</button></div>
+              <div className="row">
+                <button className="btn btn-secondary" type="button" onClick={close}>
+                  {t('pages.shared.cancel')}
+                </button>
+                <button className="btn btn-primary" type="submit" disabled={saving}>
+                  {saving ? t('pages.children.saving') : t('pages.shared.save')}
+                </button>
+              </div>
             </form>}
-            {['removeGuardian', 'removeCollector', 'withdraw'].includes(dialog) && <div className="row"><button className="btn btn-secondary" type="button" onClick={close}>{t('pages.shared.cancel')}</button><button className="btn btn-primary" type="button" disabled={saving} onClick={() => void removeOrWithdraw()}>{saving ? t('pages.children.saving') : t('pages.children.confirm')}</button></div>}
+            {['removeGuardian', 'removeCollector', 'withdraw'].includes(dialog) && (
+              <div className="row">
+                <button className="btn btn-secondary" type="button" onClick={close}>
+                  {t('pages.shared.cancel')}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void removeOrWithdraw()}
+                >
+                  {saving ? t('pages.children.saving') : t('pages.children.confirm')}
+                </button>
+              </div>
+            )}
           </section>
         </div>
       )}

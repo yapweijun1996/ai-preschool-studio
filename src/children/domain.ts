@@ -81,7 +81,9 @@ export function validateCollector(collector: CollectorFields): ValidationErrors<
   if (!required(collector.relationship)) errors.relationship = 'required';
   if (!isDate(collector.validFrom)) errors.validFrom = collector.validFrom ? 'date-format' : 'required';
   if (collector.validTo && !isDate(collector.validTo)) errors.validTo = 'date-format';
-  else if (collector.validTo && isDate(collector.validFrom) && collector.validTo < collector.validFrom) errors.validTo = 'date-order';
+  else if (collector.validTo && isDate(collector.validFrom) && collector.validTo < collector.validFrom) {
+    errors.validTo = 'date-order';
+  }
   return errors;
 }
 
