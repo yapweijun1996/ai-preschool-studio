@@ -27,6 +27,7 @@ type PageModule = { default: ComponentType<any> };
 type PageLoader = () => Promise<PageModule>;
 const loadedPages = new Map<PageKind, ComponentType<any>>();
 const pendingPages = new Map<PageKind, Promise<PageModule>>();
+const failedPages = new Map<PageKind, unknown>();
 
 export const pageLoaders = Object.fromEntries(
   (Object.entries(rawPageLoaders) as [PageKind, PageLoader][]).map(([kind, load]) => [kind, () => {
@@ -37,6 +38,9 @@ export const pageLoaders = Object.fromEntries(
     const request = load().then((module) => {
       loadedPages.set(kind, module.default);
       return module;
+    }, (error: unknown) => {
+      failedPages.set(kind, error);
+      throw error;
     });
     pendingPages.set(kind, request);
     return request;
@@ -46,6 +50,7 @@ export const pageLoaders = Object.fromEntries(
 function routePage(kind: PageKind): ComponentType<any> {
   return function PreloadedRoutePage(props) {
     const Page = loadedPages.get(kind);
+    if (failedPages.has(kind)) throw failedPages.get(kind);
     if (!Page) throw pageLoaders[kind]();
     return createElement(Page, props);
   };
