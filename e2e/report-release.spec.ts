@@ -36,6 +36,10 @@ test('approve, release, reopen, resubmit and approve v2 with immutable family co
   await expect(page.getByText(/v2 · Approved/)).toBeVisible();
   await expect(page.getByText('Correct the reflection')).toBeVisible();
   await expect(page.getByText('Report submitted').last()).toBeVisible();
+  const versions = page.getByLabel('Report versions');
+  await versions.selectOption('1');
+  await expect(page.locator('.a4')).not.toContainText('Updated after review.');
+  await versions.selectOption('2');
 
   await page.getByRole('button', { name: 'Release to family' }).click();
   await page.getByRole('link', { name: 'Family copy' }).click();

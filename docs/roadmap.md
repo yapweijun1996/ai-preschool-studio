@@ -22,7 +22,7 @@ Status values: **done**, **in progress**, **planned**, **deferred by owner**.
 | Module | Status |
 |---|---|
 | Evidence Coverage & Review Queue | done (v0.8.0) |
-| Report Release & History (frozen version, decision history, family export) + Audit Log | planned |
+| Report Release & History (frozen version, decision history, family export) + Audit Log | done (v0.9.0) |
 | Children & Classes (enrolment, guardians, authorised collectors) | planned |
 | AI Provider: Demo Gateway adapter with Mock fallback and provider labelling | deferred by owner (2026-10-22): the public demo keeps the labelled Mock provider |
 

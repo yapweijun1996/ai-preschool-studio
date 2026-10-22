@@ -3,7 +3,7 @@
 - Tier: Platform
 - Owns: Append-only demo audit events and audit-log selectors
 - Reads: Portfolio lifecycle events and role state (Report Release & History, Observations, Demo roles)
-- Status: in progress (roadmap Phase 1)
+- Status: done (v0.9.0)
 
 ## Purpose
 

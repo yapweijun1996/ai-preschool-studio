@@ -3,7 +3,7 @@
 - Tier: Core
 - Owns: Immutable approved report versions, release state and per-report decision history
 - Reads: Draft narrative and claims (Portfolio Studio), observations (Observations), framework (Learning Framework), child (Children & Classes), audit events (Audit Log)
-- Status: in progress (roadmap Phase 1)
+- Status: done (v0.9.0)
 
 ## Purpose
 

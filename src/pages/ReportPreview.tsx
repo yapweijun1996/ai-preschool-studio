@@ -240,7 +240,12 @@ export function ReportPreview() {
         {status === 'approved' && (
           <Notice tone="success" icon="check" role="status">
             <p className="semibold">{statusLabel('approved')}</p>
-            <p className="body-text num">{t('pages.report.approvedBy', { date: fmtDate(report.approvedAt ?? TODAY), name: report.approvedBy ?? REVIEWER })}</p>
+            <p className="body-text num">
+              {t('pages.report.approvedBy', {
+                date: fmtDate(viewingVersion?.approvedAt ?? report.approvedAt ?? TODAY),
+                name: viewingVersion?.approvedBy ?? report.approvedBy ?? REVIEWER
+              })}
+            </p>
           </Notice>
         )}
         {!mobile && <div className="row">{actions(false)}</div>}
@@ -286,8 +291,8 @@ export function ReportPreview() {
         </section>
         <div className="grow" />
         <div className="row" style={{ justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
-          <p className="cap muted">{t('pages.report.preparedBy', { teacher: TEACHER })} · {status === 'approved' ? t('pages.report.approvedByLine', { name: REVIEWER }) : t('pages.report.notApproved')}</p>
-          <p className="cap muted num">{t('pages.report.frameworkLine', { name: fw.name[lang], version: report.status === 'approved' ? (report.frameworkVersion ?? '—') : fw.version })} · {t('pages.report.pageOf', { page: 1, total: 1 })}</p>
+          <p className="cap muted">{t('pages.report.preparedBy', { teacher: TEACHER })} · {status === 'approved' ? t('pages.report.approvedByLine', { name: viewingVersion?.approvedBy ?? report.approvedBy ?? REVIEWER }) : t('pages.report.notApproved')}</p>
+          <p className="cap muted num">{t('pages.report.frameworkLine', { name: fw.name[lang], version: viewingVersion?.frameworkVersion ?? report.frameworkVersion ?? fw.version })} · {t('pages.report.pageOf', { page: 1, total: 1 })}</p>
         </div>
       </div>
     </article>

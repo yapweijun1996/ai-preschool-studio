@@ -52,7 +52,7 @@ Status: **exists**, **partial**, **missing**, **out of scope** (by brief), **pla
 | Core | **Learning Framework** | Learning areas, milestone scale, reporting periods | exists (v0.4.0, read-only, versioned) | to align |
 | Core | Learning Progress | derived view | exists | in progress |
 | Core | Portfolio Studio | Draft, paragraph, sentence, source link, reflection | exists | in progress |
-| Core | Report Review & Release | Report version, review decision, comment | partial (no frozen version or history) | in progress |
+| Core | Report Review & Release | Report version, review decision, comment | exists (v0.9.0; release/history) | in progress |
 | Core | Evidence Coverage & Review Queue | derived view | partial | to decide |
 | Operations | Attendance (+ optional face-match adapter) | Attendance record, amendment | out of scope | planned |
 | Operations | Daily Health Check | Health check, return clearance | out of scope | planned |
@@ -63,7 +63,7 @@ Status: **exists**, **partial**, **missing**, **out of scope** (by brief), **pla
 | Administration | Schools & Accounts | School, user, role, invitation | out of scope | in progress |
 | Administration | Privacy Centre, Retention, Incidents | Consent, data request, breach, retention rule, incident | out of scope | planned |
 | Administration | Principal Reports | derived view | out of scope | planned |
-| Platform | Audit Log | Audit event | missing (needed by Report Release) | in progress |
+| Platform | Audit Log | Audit event | exists (v0.9.0, demo append-only trail) | in progress |
 | Platform | AI Provider Gateway | Provider config, prompt policy | exists (Mock only) | in progress |
 | Platform | i18n, App Shell & PWA, Print & Export, Settings | — | exists | in progress |
 
