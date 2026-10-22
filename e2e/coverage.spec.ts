@@ -63,3 +63,17 @@ test('parent cannot open coverage or review data', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Review queue' })).toHaveCount(0);
   }
 });
+
+test('switching to Parent on coverage and reviews does not trigger a React error', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  for (const path of ['./#/coverage', './#/reviews']) {
+    await page.goto(path);
+    await page.getByRole('button', { name: /account/i }).click();
+    await page.getByRole('menuitemradio', { name: 'Parent', exact: true }).click();
+    await expect(page.getByRole('main')).toBeVisible();
+    await expect(pageErrors).toEqual([]);
+    await page.getByRole('button', { name: /account/i }).click();
+    await page.getByRole('menuitemradio', { name: 'Teacher', exact: true }).click();
+  }
+});
