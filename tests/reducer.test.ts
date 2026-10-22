@@ -17,6 +17,15 @@ describe('portfolio reducer', () => {
     expect(event.summaryKey).not.toContain('private narrative note');
     expect('summary' in event).toBe(false);
   });
+  it('clears frozen report labels when reopening while retaining frozen versions', () => {
+    const frozen = initialState().reports.meiling.versions[0];
+    const reopened = reducer(initialState(), { type: 'reopen', studentId: 'meiling', reason: 'Update', reopenedBy: 'Ms. Tan', at: '2026-10-22T10:00:00.000Z' }).reports.meiling;
+    expect(reopened).toMatchObject({ status: 'draft', versions: [frozen] });
+    expect(reopened.approvedAt).toBeUndefined();
+    expect(reopened.approvedBy).toBeUndefined();
+    expect(reopened.frameworkVersion).toBeUndefined();
+    expect(reopened.milestones).toBeUndefined();
+  });
   it('stores audit and decision timestamps as full instants and sorts same-time events by sequence', () => {
     const seeded = initialState();
     expect(seeded.auditEvents.every((event) => /^\d{4}-\d\d-\d\dT/.test(event.at))).toBe(true);

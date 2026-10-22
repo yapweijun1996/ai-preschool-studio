@@ -326,6 +326,10 @@ export function reducer(state: State, action: Action): State {
       const decision: DecisionEvent = { type: 'reopened', at, by: action.reopenedBy, reason, version: (report.versions.at(-1)?.version ?? 0) + 1 };
       const reopened = setReport(state, action.studentId, {
         status: 'draft', reopenedAt: at,
+        approvedAt: undefined,
+        approvedBy: undefined,
+        frameworkVersion: undefined,
+        milestones: undefined,
         decisions: [...report.decisions, decision]
       });
       return appendAudit(reopened, { at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReopened', decision });
