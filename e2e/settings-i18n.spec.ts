@@ -12,7 +12,7 @@ test.describe('language menu · desktop 1440', () => {
     const html = page.locator('html');
     await expect(html).toHaveAttribute('lang', 'en');
 
-    const trigger = page.getByRole('button', { name: 'Language: English' });
+    const trigger = page.getByRole('button', { name: /Language: English/ });
     await trigger.click();
     const menu = page.getByRole('menu', { name: 'Language' });
     await expect(menu.getByRole('menuitemradio', { name: 'English' })).toBeFocused();
@@ -53,7 +53,7 @@ test.describe('language menu · desktop 1440', () => {
     await page.getByRole('menu', { name: 'Bahasa' }).getByRole('menuitemradio', { name: 'English' }).click();
     await expect(html).toHaveAttribute('lang', 'en');
     await expect(page.getByRole('complementary', { name: 'Students sidebar' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Language: English' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Language: English/ })).toBeVisible();
   });
 });
 

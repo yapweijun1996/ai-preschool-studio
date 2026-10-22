@@ -108,7 +108,7 @@ function LanguageMenu() {
       label={t('shell.language.label')}
       style={{ top: 'calc(100% + 8px)', right: 0 }}
       trigger={({ onClick, expanded, ref }) => (
-        <button ref={ref} className="btn btn-ghost lang-btn" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={t('shell.language.current', { name: meta.label })}>
+        <button ref={ref} className="btn btn-ghost lang-btn" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={`${meta.short}, ${t('shell.language.current', { name: meta.label })}`}>
           <Icon name="languages" />
           <span lang={meta.htmlLang}>{meta.short}</span>
         </button>
@@ -136,7 +136,7 @@ function AccountMenu() {
       label={t('shell.account.label')}
       style={{ top: 'calc(100% + 8px)', right: 0, minWidth: 280 }}
       trigger={({ onClick, expanded, ref }) => (
-        <button ref={ref} className="avatar" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={t('shell.account.trigger', { name: TEACHER })}>ML</button>
+        <button ref={ref} className="avatar" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={`ML, ${t('shell.account.trigger', { name: TEACHER })}`}>ML</button>
       )}
     >
       {(close) => (

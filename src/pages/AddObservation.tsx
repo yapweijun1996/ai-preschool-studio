@@ -143,7 +143,7 @@ export function AddObservation() {
                     <div className="field">
                       <span className="field-label">{t('pages.observation.student')}</span>
                       <div className="row" style={{ minHeight: 44, padding: '0 12px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface-muted)', flexWrap: 'nowrap' }}>
-                        <Avatar initials={student.initials} size="sm" /><span>{student.name}</span><span className="cap muted">{demo}</span>
+                        <Avatar initials={student.initials} size="sm" /><span>{student.name}</span><span className="cap">{demo}</span>
                       </div>
                     </div>
                     <div className="field">
