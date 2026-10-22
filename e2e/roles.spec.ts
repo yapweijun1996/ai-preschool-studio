@@ -25,7 +25,7 @@ test('reviewer can approve a ready report and sees Studio read-only', async ({ p
   await page.getByRole('button', { name: 'Approve', exact: true }).click();
   await expect(page.getByText('Approved', { exact: true }).first()).toBeVisible();
   await page.goto('./#/students/aria/studio');
-  await expect(page.getByText('Reviewer access is read-only. Only the teacher can edit this draft.')).toBeVisible();
+  await expect(page.getByText('Reviewer / Principal access is read-only. Only the teacher can edit this draft.')).toBeVisible();
   await expect(page.getByLabel('Teacher reflection')).toHaveAttribute('readonly');
 });
 
@@ -35,6 +35,34 @@ test('parent has a planned landing page and no Students navigation', async ({ pa
   await expect(page.getByRole('heading', { name: 'Parent view planned' })).toBeVisible();
   await expect(page.getByText('Family Portal — Phase 3')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Students', exact: true })).toHaveCount(0);
+});
+
+test('all roles can open personal settings while restricted demo settings explain access', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'parent'));
+  await page.goto('./#/');
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Settings' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Appearance' })).toBeVisible();
+  await page.goto('./#/settings/framework');
+  await expect(page.getByRole('heading', { level: 1, name: 'Learning framework' })).toBeVisible();
+  await page.goto('./#/settings/demo');
+  await expect(page.getByText('Demo data controls are available to teachers and school admins.')).toBeVisible();
+  await expect(page.locator('#main').getByRole('link', { name: 'Appearance' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'AI unavailable' })).toHaveCount(0);
+});
+
+test('non-teachers get an explanation and teacher switch on draft reports', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
+  await page.goto('./#/students/aria/report');
+  await expect(page.getByText('Only the teacher can edit or submit this draft.')).toBeVisible();
+  await page.getByRole('button', { name: 'Switch to teacher (demo)' }).click();
+  await expect(page.getByRole('button', { name: 'Submit for review' })).toBeVisible();
+});
+
+test('Studio read-only explanation names the active role', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
+  await page.goto('./#/students/aria/studio');
+  await expect(page.getByText('School admin access is read-only. Only the teacher can edit this draft.')).toBeVisible();
 });
 
 test('mobile More sheet switches to parent', async ({ page }) => {

@@ -8,15 +8,17 @@ export type Capability =
   | 'report.submit'
   | 'report.review'
   | 'report.view'
-  | 'settings.demo'
+  | 'dashboard.view'
+  | 'settings.view'
+  | 'demo.controls'
   | 'catalog.view'
   | 'students.view';
 
 export const ROLE_CAPABILITIES: Readonly<Record<Role, readonly Capability[]>> = {
-  teacher: ['observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.demo', 'catalog.view', 'students.view'],
-  reviewer: ['report.review', 'report.view', 'catalog.view', 'students.view'],
-  admin: ['students.view', 'settings.demo', 'catalog.view'],
-  parent: []
+  teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view'],
+  reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view'],
+  admin: ['dashboard.view', 'students.view', 'settings.view', 'demo.controls', 'catalog.view'],
+  parent: ['dashboard.view', 'settings.view']
 };
 
 export function can(role: Role, capability: Capability): boolean {
@@ -24,11 +26,11 @@ export function can(role: Role, capability: Capability): boolean {
 }
 
 export const DEMO_ROLES = [
-  { role: 'teacher', name: TEACHER, labelKey: 'shell.roles.teacher' },
-  { role: 'reviewer', name: REVIEWER, labelKey: 'shell.roles.reviewer' },
-  { role: 'admin', name: ADMIN, labelKey: 'shell.roles.admin' },
-  { role: 'parent', name: PARENT, labelKey: 'shell.roles.parent' }
-] as const satisfies readonly { role: Role; name: string; labelKey: `shell.roles.${Role}` }[];
+  { role: 'teacher', name: TEACHER, initials: 'ML', labelKey: 'shell.roles.teacher' },
+  { role: 'reviewer', name: REVIEWER, initials: 'MT', labelKey: 'shell.roles.reviewer' },
+  { role: 'admin', name: ADMIN, initials: 'MW', labelKey: 'shell.roles.admin' },
+  { role: 'parent', name: PARENT, initials: 'AG', labelKey: 'shell.roles.parent' }
+] as const satisfies readonly { role: Role; name: string; initials: string; labelKey: `shell.roles.${Role}` }[];
 
 export function isRole(value: string | null): value is Role {
   return DEMO_ROLES.some((item) => item.role === value);

@@ -12,6 +12,7 @@ import { Menu } from './Menu';
 import { ModulePanel } from './ModulePanel';
 import { DEMO_ROLES } from '../roles';
 import { useRole } from '../roles/RoleContext';
+import type { Capability } from '../roles';
 
 export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'settings';
 
@@ -29,12 +30,14 @@ export const ShellPanelContext = createContext<{ panelOpen: boolean; setPanelOpe
 export const useShellPanel = () => useContext(ShellPanelContext);
 
 type NavModule = Exclude<Module, 'settings'>;
-const NAV: { key: NavModule; to: string; icon: IconName; capability: 'students.view' | 'observation.add' | 'report.view' }[] = [
-  { key: 'dashboard', to: '/', icon: 'home', capability: 'students.view' },
+const NAV: { key: NavModule; to: string; icon: IconName; capability: Capability }[] = [
+  { key: 'dashboard', to: '/', icon: 'home', capability: 'dashboard.view' },
   { key: 'students', to: '/students', icon: 'users', capability: 'students.view' },
   { key: 'observations', to: '/students/aria/observe', icon: 'clipboard', capability: 'observation.add' },
   { key: 'reports', to: '/students?status=review', icon: 'fileText', capability: 'report.view' }
 ];
+
+const visibleNav = (hasCapability: (capability: Capability) => boolean) => NAV.filter((item) => hasCapability(item.capability));
 
 export const PANEL_KEY = 'aps-panel-open';
 
@@ -135,7 +138,7 @@ function AccountMenu() {
   const { t } = useI18n();
   const { role, setRole, can: hasCapability } = useRole();
   const account = DEMO_ROLES.find((item) => item.role === role)!;
-  const initials = account.name === 'Ms. Lim' ? 'ML' : account.name === 'Ms. Tan' ? 'MT' : account.name === 'Mr. Wong' ? 'MW' : 'AG';
+  const initials = account.initials;
   return (
     <Menu
       label={t('shell.account.label')}
@@ -155,7 +158,7 @@ function AccountMenu() {
             <Icon name="info" size={16} />
             <p className="body-text">{t('shell.account.demoNote')}</p>
           </div>
-          {hasCapability('settings.demo') && <SettingsLink close={close} labelKey="shell.account.settings" />}
+          {hasCapability('settings.view') && <SettingsLink close={close} labelKey="shell.account.settings" />}
           <button className="menu-item" type="button" role="menuitem" aria-disabled="true">
             <Icon name="lock" size={18} />{t('shell.account.signOut')}
           </button>
@@ -321,7 +324,7 @@ function TabBar({ active }: { active: Module }) {
   const roleContext = useRole();
   return (
     <nav className="tabbar" aria-label={t('shell.nav.main')}>
-      {NAV.filter((n) => n.key === 'dashboard' || roleContext.can(n.capability)).map((n) => (
+      {visibleNav(roleContext.can).map((n) => (
         <Link key={n.key} className="tabbar-item" to={n.to} aria-current={active === n.key ? 'page' : undefined}>
           <span className="tab-pill"><Icon name={n.icon} /></span>
           <span className="tab-label">{t(`shell.nav.${n.key}`)}</span>
@@ -339,12 +342,12 @@ function TabBar({ active }: { active: Module }) {
       >
         {(close) => (
           <>
-            {roleContext.can('settings.demo') && <SettingsLink close={close} labelKey="shell.more.settings" />}
+            {roleContext.can('settings.view') && <SettingsLink close={close} labelKey="shell.more.settings" />}
             {roleContext.can('catalog.view') && <Link className="menu-item" role="menuitem" to="/catalog" onClick={close}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
             <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
             <p className="cap muted menu-head">{t('shell.more.language')}</p>
             <LanguageItems close={close} />
-            {roleContext.can('settings.demo') && <DemoMenuItems close={close} />}
+            {roleContext.can('demo.controls') && <DemoMenuItems close={close} />}
           </>
         )}
       </Menu>
@@ -521,7 +524,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
               <Icon name="panel" />
             </button>
           )}
-          {NAV.filter((n) => n.key === 'dashboard' || roleContext.can(n.capability)).map((n) => (
+          {visibleNav(roleContext.can).map((n) => (
             <Link key={n.key} className="rail-item has-tip" to={n.to} aria-label={t(`shell.nav.${n.key}`)} data-tip={t(`shell.nav.${n.key}`)} aria-current={module === n.key ? 'page' : undefined}>
               <Icon name={n.icon} />
             </Link>
@@ -537,10 +540,10 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
           >
             {(close) => (
               <>
-                {roleContext.can('settings.demo') && <SettingsLink close={close} labelKey="shell.more.settings" />}
+                {roleContext.can('settings.view') && <SettingsLink close={close} labelKey="shell.more.settings" />}
                 {roleContext.can('catalog.view') && <Link className="menu-item" role="menuitem" to="/catalog" onClick={close}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
                 <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
-                {roleContext.can('settings.demo') && <DemoMenuItems close={close} />}
+                {roleContext.can('demo.controls') && <DemoMenuItems close={close} />}
               </>
             )}
           </Menu>

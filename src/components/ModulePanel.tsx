@@ -130,8 +130,8 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             )}
           </>
         )}
-        {module === 'settings' && role.can('settings.demo') && <>
-          {SETTINGS_SECTIONS.map((sec) => (
+        {module === 'settings' && role.can('settings.view') && <>
+          {SETTINGS_SECTIONS.filter((sec) => sec.key !== 'demo' || role.can('demo.controls')).map((sec) => (
             <Link key={sec.key} className="nav-link" to={`/settings/${sec.key}`} aria-current={path === `/settings/${sec.key}` ? 'page' : undefined}>
               <Icon name={sec.icon} size={18} />
               {t(`shell.settings.sections.${sec.key}`)}
