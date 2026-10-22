@@ -105,6 +105,8 @@ private repository needs a paid GitHub plan; on the free plan, make the repo pub
 
 ## Structure
 
+Brand mark and illustration rules, exact image prompts, and asset workflow: [docs/brand.md](docs/brand.md). The [component catalog guide](docs/catalog.md) covers the Brand and Illustrations catalog sections.
+
 Font credits: Inter by Rasmus Andersson and Noto Sans SC by Google, both distributed under the SIL Open Font License 1.1.
 
 ```
