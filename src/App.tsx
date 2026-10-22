@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { ThemeContext } from './components/AppShell';
 import { NavMemoryProvider } from './hooks/useNavMemory';
@@ -15,6 +15,8 @@ import { StudentProfile } from './pages/StudentProfile';
 import { Students } from './pages/Students';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
+
+const Catalog = lazy(() => import('./pages/Catalog').then((m) => ({ default: m.Catalog })));
 
 /**
  * Remounts a stateful student page (Studio, Add observation, Report) when the child changes, so no draft,
@@ -45,6 +47,14 @@ export function App() {
             <Route path="/students/:id/report" element={<PerStudent><ReportPreview /></PerStudent>} />
             <Route path="/settings" element={<Navigate to="/settings/appearance" replace />} />
             <Route path="/settings/:section" element={<Settings />} />
+            <Route
+              path="/catalog"
+              element={(
+                <Suspense fallback={<div className="skel" role="status" aria-label="Loading catalog" />}>
+                  <Catalog />
+                </Suspense>
+              )}
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

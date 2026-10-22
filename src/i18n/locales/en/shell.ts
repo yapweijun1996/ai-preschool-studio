@@ -41,6 +41,7 @@ export const shell = {
     search: 'Search students',
     noMatch: 'No students match “{query}”.',
     overview: 'Overview',
+    designReference: 'Design reference',
     addObservation: 'Add observation',
     latest: 'Latest',
     reportQueue: 'Report queue · {term}',
