@@ -3,7 +3,7 @@
 - Tier: Core
 - Owns: Child, Class, Enrolment, Guardian and AuthorisedCollector
 - Reads: Student portfolio and report status (Portfolio Studio / Report Review); staff identity references (Schools & Accounts, planned)
-- Status: in progress
+- Status: done (v0.10.0)
 
 ## Purpose
 

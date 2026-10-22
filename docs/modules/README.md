@@ -4,7 +4,7 @@ Status reflects the Studio Demo code and current roadmap. Links are provided for
 
 | Tier | ADR 0001 module | Studio Demo status | Spec |
 |---|---|---|---|
-| Core | Children & Classes | partial | — |
+| Core | Children & Classes | done (v0.10.0) | [Children & Classes](children-classes.md) |
 | Core | Observations (Evidence) | done (v0.4.0) | [Observations](observations.md) |
 | Core | Learning Framework | done (framework 2026.1; app v0.4.0) | [Learning Framework](learning-framework.md) |
 | Core | Learning Progress | done (v0.4.0) | [Learning Progress](learning-progress.md) |

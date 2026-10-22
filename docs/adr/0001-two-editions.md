@@ -47,7 +47,7 @@ Status: **exists**, **partial**, **missing**, **out of scope** (by brief), **pla
 
 | Tier | Module | Owns | Studio Demo | Studio Platform |
 |---|---|---|---|---|
-| Core | Children & Classes | Child, Class, Enrolment, Guardian | partial (fictional class of 20) | in progress |
+| Core | Children & Classes | Child, Class, Enrolment, Guardian, AuthorisedCollector | done (v0.10.0) | in progress |
 | Core | Observations (Evidence) | Observation, media reference | exists | in progress |
 | Core | **Learning Framework** | Learning areas, milestone scale, reporting periods | exists (v0.4.0, read-only, versioned) | to align |
 | Core | Learning Progress | derived view | exists | in progress |
