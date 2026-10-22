@@ -31,6 +31,7 @@ export async function openVisualPage(page: import('@playwright/test').Page, path
 
 /** Wait for asynchronous UI that can otherwise leave a screenshot on a fallback state. */
 export async function settleVisualPage(page: import('@playwright/test').Page, path: string) {
+  const main = page.locator('#main');
   // The catalog is a lazy route and Students has a short simulated fetch.
   await page.getByRole('status', { name: 'Loading catalog' }).waitFor({ state: 'hidden' });
   await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
@@ -45,8 +46,8 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
   // `main` is part of AppShell and appears before lazy route chunks and async page data.
   // Wait for the actual content represented by each visual target before capturing pixels.
   if (path.includes('/classes')) {
-    await expect(page.getByRole('heading', { name: 'Classes', exact: true })).toBeVisible();
-    await expect(page.locator('.class-roster .row-link').first()).toBeVisible();
+    await expect(main.getByRole('heading', { name: 'Classes', exact: true })).toBeVisible();
+    await expect(main.locator('.class-roster .row-link').first()).toBeVisible();
   } else if (path.includes('/catalog')) {
     await expect(page.locator('section.catalog-section h2').first()).toBeVisible();
   } else if (path.includes('/students/aria') && !path.includes('/studio') && !path.includes('/report')) {
