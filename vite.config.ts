@@ -24,7 +24,7 @@ function pwaRelease(): Plugin {
       const skip = new Set(['sw.js', 'version.json']);
       // index.html is listed explicitly in case Vite's HTML asset is emitted after this hook.
       // The install cache contains the app shell and public shell resources only.
-      // Bundled assets (including Unicode font slices) are cached on first use.
+      // Bundled assets, including the Inter Latin font, are cached on first use.
       const files = new Set(['index.html', ...listFiles(publicDir)]);
       const precache = [...files].filter((f) => !skip.has(f) && !f.endsWith('.map')).sort();
       const header =
