@@ -74,6 +74,51 @@ test.describe('all students · desktop 1440', () => {
   });
 });
 
+test.describe('review fixes · desktop 1440', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('switching child by URL never carries Studio state over', async ({ page }) => {
+    await page.goto('./#/students/aria/studio');
+    await expect(page.getByRole('button', { name: 'Apply' })).toBeVisible({ timeout: 5000 });
+    await page.evaluate(() => { location.hash = '#/students/ethan/studio'; });
+    await expect(page.locator('.studio-head')).toContainText('Ethan Koh');
+    await expect(page.locator('#reflection')).not.toHaveValue(/Aria/);
+    await expect(page.getByRole('region', { name: 'Narrative' })).not.toContainText('Aria');
+    await expect(page.getByRole('region', { name: 'AI Assistant' })).not.toContainText('Aria');
+  });
+
+  test('an incomplete draft can always be completed and submitted', async ({ page }) => {
+    // Sofia has no Social-Emotional observation: add one, fill the domain, write a reflection, submit.
+    await page.goto('./#/students/sofia/studio');
+    const missing = page.locator('.missing-domain');
+    await expect(missing).toContainText('not written yet');
+    await missing.getByRole('link', { name: 'Add observation' }).click();
+    await page.getByRole('radio', { name: /Social-Emotional/ }).click();
+    await page.getByRole('button', { name: 'Save observation' }).click();
+    await expect(page.getByText(/Observation saved as/)).toBeVisible({ timeout: 5000 });
+    await page.goto('./#/students/sofia/studio');
+    await page.getByRole('button', { name: 'Add sentences from observations' }).first().click();
+    await expect(page.locator('.missing-domain')).toHaveCount(0);
+    await page.locator('#reflection').fill('Sofia has grown in confidence this term.');
+    await expect(page.getByText(/Saved at/)).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: 'Submit for review' }).click();
+    await expect(page).toHaveURL(/#\/students\/sofia\/report$/);
+    await expect(page.getByRole('complementary', { name: 'Review' }).locator('.status').first()).toHaveText('In review');
+  });
+
+  test('removing a domain’s last claim is recoverable; review pauses wording', async ({ page }) => {
+    await page.goto('./#/students/aria/studio');
+    const se = page.getByRole('region', { name: 'Narrative' }).locator('article', { hasText: 'Aria is good at sharing' });
+    await se.getByRole('button', { name: 'Remove claim' }).click();
+    await expect(page.locator('.missing-domain')).toContainText('Social-Emotional');
+    await page.locator('.missing-domain').getByRole('button', { name: 'Add sentences from observations' }).click();
+    await expect(page.locator('.missing-domain')).toHaveCount(0);
+    await page.goto('./#/students/ethan/studio');
+    await expect(page.getByText(/Wording is paused/)).toBeVisible();
+    await expect(page.locator('#reflection')).toHaveAttribute('readonly', '');
+  });
+});
+
 test.describe('all students · mobile 390', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
   test('student list status labels hug their text; report checks fold into one line', async ({ page }) => {

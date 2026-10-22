@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { Avatar, Notice, SourceChip } from '../components/ui';
-import { CLASS_NAME, DOMAINS, MILESTONES, TODAY, type DomainKey, type Milestone } from '../data/demo';
+import { CLASS_NAME, DOMAINS, MILESTONES, TERM4_START, TODAY, type DomainKey, type Milestone } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDirtyGuard } from '../pwa';
@@ -150,6 +150,7 @@ export function AddObservation() {
                           className="date-native"
                           type="date"
                           value={date}
+                          min={TERM4_START}
                           max={TODAY}
                           onChange={(e) => setDate(e.target.value)}
                           onClick={(e) => openPicker(e.currentTarget)}

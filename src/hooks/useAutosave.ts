@@ -3,9 +3,10 @@ import { TODAY } from '../data/demo';
 import { useI18n } from '../i18n';
 
 /** `at` is the save time already formatted for the current language (HH:MM). */
-export type SaveStatus = { kind: 'saved'; at: string } | { kind: 'unsaved' } | { kind: 'saving' } | { kind: 'failed' };
+/** `idle`: nothing has been saved yet in this session, so no save time is shown. */
+export type SaveStatus = { kind: 'idle' } | { kind: 'saved'; at: string } | { kind: 'unsaved' } | { kind: 'saving' } | { kind: 'failed' };
 
-type InnerStatus = { kind: 'saved'; at: Date } | { kind: 'unsaved' } | { kind: 'saving' } | { kind: 'failed' };
+type InnerStatus = { kind: 'idle' } | { kind: 'saved'; at: Date } | { kind: 'unsaved' } | { kind: 'saving' } | { kind: 'failed' };
 
 /**
  * Debounced autosave for the demo. `persist` commits the value; `shouldFail`
@@ -13,9 +14,10 @@ type InnerStatus = { kind: 'saved'; at: Date } | { kind: 'unsaved' } | { kind: '
  * The save time is kept as a Date and formatted with fmtTime at render, so it
  * follows the current language.
  */
-export function useAutosave<T>(value: T, persist: (v: T) => void, shouldFail: boolean, initialAt = '10:42') {
+export function useAutosave<T>(value: T, persist: (v: T) => void, shouldFail: boolean, initialAt = '10:42', startSaved = true) {
   const { fmtTime } = useI18n();
-  const [inner, setInner] = useState<InnerStatus>(() => ({ kind: 'saved', at: new Date(`${TODAY}T${initialAt}:00`) }));
+  // Seeded content shows its demo save time; empty content shows nothing until the first real save.
+  const [inner, setInner] = useState<InnerStatus>(() => (startSaved ? { kind: 'saved', at: new Date(`${TODAY}T${initialAt}:00`) } : { kind: 'idle' }));
   const first = useRef(true);
   const timers = useRef<number[]>([]);
   const latest = useRef(value);

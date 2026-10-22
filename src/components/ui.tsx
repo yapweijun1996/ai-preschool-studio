@@ -91,6 +91,7 @@ export function SaveIndicator({ status, onRetry }: { status: SaveStatus; onRetry
       </span>
     );
   }
+  if (status.kind === 'idle') return null;
   return (
     <span className="save-state" role="status">
       {status.kind === 'saved' && <Icon name="check" size={16} className="ic-primary" />}
@@ -125,9 +126,13 @@ export function ScrollRow({ children, ...rest }: HTMLAttributes<HTMLDivElement>)
     el.addEventListener('scroll', update, { passive: true });
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : undefined;
     ro?.observe(el);
+    // Content changes (e.g. switching language) change the scroll width without resizing the row.
+    const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(update) : undefined;
+    mo?.observe(el, { childList: true, subtree: true, characterData: true });
     return () => {
       el.removeEventListener('scroll', update);
       ro?.disconnect();
+      mo?.disconnect();
     };
   }, []);
   return (

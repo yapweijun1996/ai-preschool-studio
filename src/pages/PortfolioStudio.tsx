@@ -7,7 +7,7 @@ import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
 import { ReadinessList } from '../components/ReportFlow';
 import { Avatar, MockProviderLabel, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME } from '../data/demo';
+import { CLASS_NAME, DOMAINS } from '../data/demo';
 import { useAutosave } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
 import { useDirtyGuard } from '../pwa';
@@ -44,9 +44,9 @@ export function PortfolioStudio() {
 
   const [reflection, setReflection] = useState(state.reflections[id] ?? '');
   const persist = useCallback((text: string) => dispatch({ type: 'setReflection', studentId: id, text }), [dispatch, id]);
-  const { status: saveStatus, retry } = useAutosave(reflection, persist, state.sim.saveFail);
+  const { status: saveStatus, retry } = useAutosave(reflection, persist, state.sim.saveFail, undefined, (state.reflections[id] ?? '').trim().length > 0);
   // Reflection edits not yet saved (unsaved, saving or failed) block PWA reloads.
-  useDirtyGuard(saveStatus.kind !== 'saved');
+  useDirtyGuard(saveStatus.kind === 'unsaved' || saveStatus.kind === 'saving' || saveStatus.kind === 'failed');
 
   const run = useCallback(
     async (action: AiAction, paragraphId: string, v: number) => {
@@ -99,7 +99,11 @@ export function PortfolioStudio() {
   const observations = observationsFor(state, id);
   const claims = unverifiedClaims(state, id);
   const linkedIds = new Set(paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.sources)));
-  const locked = report.status === 'approved';
+  // Approved: frozen. In review: wording paused until the reviewer responds.
+  const locked = report.status === 'approved' || report.status === 'review';
+  const written = new Set(paragraphs.filter((p) => p.sentences.length > 0).map((p) => p.domain));
+  const missing = DOMAINS.filter((d) => !written.has(d.key)).map((d) => ({ domain: d.key, hasObs: observations.some((o) => o.domain === d.key) }));
+  const fill = () => dispatch({ type: 'fillMissingDomains', studentId: id });
   const pendingId = ai.kind === 'ready' ? ai.suggestion.paragraphId : ai.kind === 'loading' ? targetId : undefined;
   const appliedId = ai.kind === 'applied' ? ai.previous.id : undefined;
 
@@ -184,6 +188,9 @@ export function PortfolioStudio() {
         onLink={(sentenceId, obsId) => dispatch({ type: 'linkSource', studentId: id, sentenceId, obsId })}
         onRemove={(sentenceId) => dispatch({ type: 'removeSentence', studentId: id, sentenceId })}
         onUndo={undo}
+        missing={missing}
+        onFill={fill}
+        observeHref={`/students/${id}/observe`}
       />
     );
   const assistant = (headerless?: boolean) => (
@@ -208,9 +215,12 @@ export function PortfolioStudio() {
         <p className="semibold">{t('pages.report.notReady')}</p>
         <p className="body-text">{t('pages.report.notReadyBody')}</p>
         <ReadinessList r={ready} />
+        {missing.some((m) => m.hasObs) && <button className="btn btn-secondary" type="button" onClick={fill} style={{ alignSelf: 'flex-start' }}>{t('pages.studio.nar.fillMissing')}</button>}
       </Notice>
     ) : report.status === 'approved' ? (
       <Notice tone="success" icon="lock"><p className="body-text">{t('pages.studio.approvedLocked')}</p></Notice>
+    ) : report.status === 'review' ? (
+      <Notice tone="info" icon="lock"><p className="body-text">{t('pages.studio.reviewLocked')}</p></Notice>
     ) : report.status === 'changes' && report.comment ? (
       <Notice tone="warning" icon="alert"><p className="body-text"><span className="semibold">{t('pages.studio.changesBy', { name: report.comment.by })}</span> {report.comment.text}</p></Notice>
     ) : null;

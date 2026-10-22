@@ -152,6 +152,7 @@ export const pages = {
     tabWrite: 'Write',
     tabAi: 'AI',
     approvedLocked: 'This report is approved and locked. Editing is turned off.',
+    reviewLocked: 'In review. Wording is paused until the reviewer approves or requests changes.',
     changesBy: 'Changes requested by {name}:',
     noNarrative: 'No narrative drafted yet',
     noNarrativeBody: 'The narrative cites this student’s observations as evidence.',
@@ -175,6 +176,9 @@ export const pages = {
       notLinked: 'Not linked yet'
     },
     nar: {
+      missingTitle: 'not written yet',
+      fillMissing: 'Add sentences from observations',
+      missingNoObs: 'No Term 4 observation in this domain yet. Add one first; the narrative cites it.',
       heading: 'Narrative',
       sub: 'Written by you. AI suggestions change nothing until you apply them.',
       waiting: 'Suggestion waiting in AI Assistant',

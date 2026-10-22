@@ -71,7 +71,9 @@ function genericOptions(paragraph: Paragraph, action: AiAction): Sentence[][] {
   const cited = paragraph.sentences.filter((x) => x.sources.length > 0);
   if (cited.length === 0) return [];
   if (action === 'shorten') return cited.length > 1 ? [[{ ...cited[0], id: `${cited[0].id}-short` }]] : [];
-  return LEADS.map((lead, v) => cited.map((x) => ({ id: `${x.id}-c${v}`, text: `${lead}${x.text}`, sources: x.sources })));
+  // Strip a lead-in from an earlier rewrite so repeated requests never stack them.
+  const bare = (t: string) => LEADS.reduce((acc, l) => (acc.startsWith(l) ? acc.slice(l.length) : acc), t);
+  return LEADS.map((lead, v) => cited.map((x) => ({ id: `${x.id.replace(/-c\d+$/, '')}-c${v}`, text: `${lead}${bare(x.text)}`, sources: x.sources })));
 }
 
 function optionsFor(studentId: string, paragraph: Paragraph, action: AiAction): Sentence[][] {

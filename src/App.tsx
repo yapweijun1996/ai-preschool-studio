@@ -1,4 +1,5 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Fragment, type ReactNode } from 'react';
+import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { ThemeContext } from './components/AppShell';
 import { NavMemoryProvider } from './hooks/useNavMemory';
 import { useTheme } from './hooks/useTheme';
@@ -15,6 +16,12 @@ import { Students } from './pages/Students';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 
+/** Remounts a student page when the child changes, so no draft, AI or form state carries over to another child. */
+function PerStudent({ children }: { children: ReactNode }) {
+  const { id } = useParams();
+  return <Fragment key={id}>{children}</Fragment>;
+}
+
 // Hash routing keeps deep links working on static hosts without rewrite rules.
 export function App() {
   const theme = useTheme();
@@ -28,11 +35,11 @@ export function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
-            <Route path="/students/:id" element={<StudentProfile />} />
-            <Route path="/students/:id/observe" element={<AddObservation />} />
-            <Route path="/students/:id/progress" element={<LearningProgress />} />
-            <Route path="/students/:id/studio" element={<PortfolioStudio />} />
-            <Route path="/students/:id/report" element={<ReportPreview />} />
+            <Route path="/students/:id" element={<PerStudent><StudentProfile /></PerStudent>} />
+            <Route path="/students/:id/observe" element={<PerStudent><AddObservation /></PerStudent>} />
+            <Route path="/students/:id/progress" element={<PerStudent><LearningProgress /></PerStudent>} />
+            <Route path="/students/:id/studio" element={<PerStudent><PortfolioStudio /></PerStudent>} />
+            <Route path="/students/:id/report" element={<PerStudent><ReportPreview /></PerStudent>} />
             <Route path="/settings" element={<Navigate to="/settings/appearance" replace />} />
             <Route path="/settings/:section" element={<Settings />} />
             <Route path="*" element={<NotFound />} />

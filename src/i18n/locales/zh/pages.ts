@@ -153,6 +153,7 @@ export const pages: Dict['pages'] = {
     tabWrite: '撰写',
     tabAi: 'AI',
     approvedLocked: '此报告已批准并锁定，无法再编辑。',
+    reviewLocked: '审核中。在审核人批准或要求修改之前，暂停编辑文字。',
     changesBy: '{name}要求修改：',
     noNarrative: '尚未撰写叙述',
     noNarrativeBody: '叙述以该学生的观察记录作为佐证。',
@@ -176,6 +177,9 @@ export const pages: Dict['pages'] = {
       notLinked: '尚未引用'
     },
     nar: {
+      missingTitle: '尚未撰写',
+      fillMissing: '用观察记录补写句子',
+      missingNoObs: '本领域在第 4 学期还没有观察记录。请先添加一条，叙述会引用它。',
       heading: '叙述',
       sub: '由您撰写。AI 建议在您应用之前不会改动任何内容。',
       waiting: '建议正在 AI 助手中等待处理',

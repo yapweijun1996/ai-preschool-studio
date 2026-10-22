@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import { TEACHER, type Milestone, type Observation, type Paragraph, type DomainKey } from '../../data/demo';
 import { useI18n } from '../../i18n';
 import { useLabels } from '../../i18n/labels';
@@ -17,6 +18,10 @@ export interface NarrativeProps {
   onLink: (sentenceId: string, obsId: string) => void;
   onRemove: (sentenceId: string) => void;
   onUndo: () => void;
+  /** Domains with no sentence yet; each either fills from observations or needs one first. */
+  missing: { domain: DomainKey; hasObs: boolean }[];
+  onFill: () => void;
+  observeHref: string;
   headerless?: boolean;
 }
 
@@ -87,6 +92,19 @@ export function NarrativePanel(p: NarrativeProps) {
             </article>
           );
         })}
+        {p.missing.map((m) => (
+          <article key={`missing-${m.domain}`} className="notice notice-warning missing-domain" style={{ flexDirection: 'column', gap: 8 }}>
+            <p className="strong">{domainFull(m.domain)} · {t('pages.studio.nar.missingTitle')}</p>
+            {m.hasObs ? (
+              !p.locked && <button className="btn btn-secondary" type="button" onClick={p.onFill} style={{ alignSelf: 'flex-start' }}>{t('pages.studio.nar.fillMissing')}</button>
+            ) : (
+              <>
+                <p className="body-text">{t('pages.studio.nar.missingNoObs')}</p>
+                {!p.locked && <Link className="btn btn-secondary" to={p.observeHref} style={{ alignSelf: 'flex-start' }}><Icon name="plus" size={18} />{t('pages.shared.addObservation')}</Link>}
+              </>
+            )}
+          </article>
+        ))}
         <article>
           <div className="domain-head">
             <h3 className="strong"><label htmlFor="reflection">{t('pages.studio.nar.reflection')}</label></h3>

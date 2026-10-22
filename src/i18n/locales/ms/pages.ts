@@ -153,6 +153,7 @@ export const pages: Dict['pages'] = {
     tabWrite: 'Tulis',
     tabAi: 'AI',
     approvedLocked: 'Laporan ini telah diluluskan dan dikunci. Penyuntingan dimatikan.',
+    reviewLocked: 'Dalam semakan. Suntingan ayat dijeda sehingga penyemak meluluskan atau meminta perubahan.',
     changesBy: 'Perubahan diminta oleh {name}:',
     noNarrative: 'Belum ada naratif',
     noNarrativeBody: 'Naratif memetik pemerhatian murid ini sebagai bukti.',
@@ -162,7 +163,7 @@ export const pages: Dict['pages'] = {
     startDraft: 'Mulakan draf daripada pemerhatian',
     noObsTitle: 'Belum ada pemerhatian',
     noObsBody: 'Tambah pemerhatian dahulu. Draf memetik pemerhatian sebagai bukti.',
-    aiEmpty: 'Mulakan draf dahulu. Selepas itu Penyedia simulasi boleh mencadangkan suntingan satu perenggan pada satu masa.',
+    aiEmpty: 'Mulakan draf dahulu. Selepas itu Penyedia simulasi (Mock provider) boleh mencadangkan suntingan satu perenggan pada satu masa.',
     aiNoSentences: 'Belum ada ayat untuk disemak.',
     ev: {
       count: '{count} pemerhatian · Penggal 4',
@@ -176,6 +177,9 @@ export const pages: Dict['pages'] = {
       notLinked: 'Belum dipautkan'
     },
     nar: {
+      missingTitle: 'belum ditulis',
+      fillMissing: 'Tambah ayat daripada pemerhatian',
+      missingNoObs: 'Belum ada pemerhatian Penggal 4 dalam bidang ini. Tambah satu dahulu; naratif akan memetiknya.',
       heading: 'Naratif',
       sub: 'Ditulis oleh anda. Cadangan AI tidak mengubah apa-apa sehingga anda menerapkannya.',
       waiting: 'Cadangan sedang menunggu dalam Pembantu AI',

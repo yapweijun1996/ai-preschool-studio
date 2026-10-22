@@ -34,6 +34,9 @@ export const TEACHER = 'Ms. Lim';
 export const REVIEWER = 'Ms. Tan';
 // Fixed "today" keeps relative dates stable in the demo and in tests.
 export const TODAY = '2026-10-22';
+/** First day of Term 4; earlier observations belong to Term 3. */
+export const TERM4_START = '2026-09-14';
+export const termOf = (date: string): 3 | 4 => (date >= TERM4_START ? 4 : 3);
 
 export interface Student {
   id: string;
@@ -208,15 +211,17 @@ function generateObservations(): Observation[] {
     KEYS.forEach((k, ki) => {
       if (st.id === 'aria' && k === 'en') return; // OBS-0101 is hand-written
       const pool = POOL[k];
-      t3.push({ studentId: st.id, date: shiftDate('2026-08-03', si + ki * 5), domain: k, milestone: plan.t3[ki], text: pool[(si + ki + 3) % pool.length], hasPhoto: false, term: 3 });
+      t3.push({ studentId: st.id, date: shiftDate('2026-08-03', si + ki * 5), domain: k, milestone: plan.t3[ki], text: pool[(si + 5) % pool.length], hasPhoto: false, term: 3 });
     });
     // Term 4: walk back from `last`, three days apart, cycling through the planned domains.
     const slots: { k: DomainKey; m: Milestone }[] = [];
     const left = KEYS.map((k) => plan.t4[k]?.[1] ?? 0);
     while (left.some((n) => n > 0)) KEYS.forEach((k, ki) => { if (left[ki] > 0) { left[ki]--; slots.push({ k, m: plan.t4[k]![0] }); } });
+    // Per-domain counter keeps a child's texts distinct (pools hold at least 7, plans use at most 3 + Term 3's offset 5).
+    const used: Record<DomainKey, number> = { en: 0, zh: 0, ma: 0, se: 0 };
     slots.forEach(({ k, m }, i) => {
       const pool = POOL[k];
-      t4.push({ studentId: st.id, date: shiftDate(plan.last, -3 * i), domain: k, milestone: m, text: pool[(si * 2 + i) % pool.length], hasPhoto: i % 4 === 1, term: 4 });
+      t4.push({ studentId: st.id, date: shiftDate(plan.last, -3 * i), domain: k, milestone: m, text: pool[(si + used[k]++) % pool.length], hasPhoto: i % 4 === 1, term: 4 });
     });
   });
   // Term 3 ids sit below Aria's OBS-0101; Term 4 ids start after the hand-written range.
@@ -242,7 +247,9 @@ export function draftFromObservations(student: Student, observations: Observatio
   return KEYS.flatMap((k) => {
     const list = observations.filter((x) => x.domain === k && x.term === 4).sort((a, b) => a.date.localeCompare(b.date)).slice(-2);
     if (list.length === 0) return [];
-    return [{ id: `p-${k}`, domain: k, sentences: list.map((x, i) => ({ id: `s-${student.id}-${k}-${i + 1}`, text: `${first} ${lcFirst(x.text)}`, sources: [x.id] })) }];
+    // A note that already starts with the child's name is used as written.
+    const sentence = (text: string) => (text.toLowerCase().startsWith(first.toLowerCase() + ' ') ? text : `${first} ${lcFirst(text)}`);
+    return [{ id: `p-${k}`, domain: k, sentences: list.map((x) => ({ id: `s-${student.id}-${x.id}`, text: sentence(x.text), sources: [x.id] })) }];
   });
 }
 

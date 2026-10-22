@@ -8,6 +8,7 @@ import {
   REVIEWER,
   STUDENTS,
   draftFromObservations,
+  termOf,
   seededDrafts,
   type Observation,
   type Paragraph,
@@ -35,6 +36,7 @@ export interface State {
 export type Action =
   | { type: 'addObservation'; obs: Omit<Observation, 'id'> }
   | { type: 'startDraft'; studentId: string }
+  | { type: 'fillMissingDomains'; studentId: string }
   | { type: 'linkSource'; studentId: string; sentenceId: string; obsId: string }
   | { type: 'removeSentence'; studentId: string; sentenceId: string }
   | { type: 'applySuggestion'; studentId: string; suggestion: Suggestion }
@@ -71,6 +73,12 @@ function mapSentences(state: State, studentId: string, fn: (s: Sentence) => Sent
   return { ...state, paragraphs: { ...state.paragraphs, [studentId]: next } };
 }
 
+const ownsObservation = (state: State, studentId: string, obsId: string) => state.observations.some((o) => o.id === obsId && o.studentId === studentId);
+/** Approved reports are frozen: no content action may change them. */
+const contentLocked = (state: State, studentId: string) => state.reports[studentId]?.status === 'approved';
+/** Wording is also paused while in review; linking evidence stays open so the reviewer can clear a blocked approval. */
+const editLocked = (state: State, studentId: string) => contentLocked(state, studentId) || state.reports[studentId]?.status === 'review';
+
 function setReport(state: State, studentId: string, patch: Partial<ReportState>): State {
   return { ...state, reports: { ...state.reports, [studentId]: { ...state.reports[studentId], ...patch } } };
 }
@@ -79,7 +87,23 @@ export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'addObservation': {
       const id = `OBS-${String(state.nextObsNumber).padStart(4, '0')}`;
-      return { ...state, observations: [{ ...action.obs, id }, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
+      // The term follows the date, so a back-dated note never counts toward the current term.
+      const obs = { ...action.obs, id, term: termOf(action.obs.date) };
+      return { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
+    }
+    case 'fillMissingDomains': {
+      const student = STUDENTS.find((x) => x.id === action.studentId);
+      const status = state.reports[action.studentId]?.status;
+      if (!student || (status !== 'draft' && status !== 'changes')) return state;
+      const paras = state.paragraphs[action.studentId] ?? [];
+      const written = new Set(paras.filter((p) => p.sentences.length > 0).map((p) => p.domain));
+      const fresh = draftFromObservations(student, observationsFor(state, action.studentId)).filter((p) => !written.has(p.domain));
+      if (fresh.length === 0) return state;
+      const order = DOMAINS.map((d) => d.key);
+      const merged = order
+        .map((k) => fresh.find((p) => p.domain === k) ?? paras.find((p) => p.domain === k))
+        .filter((p): p is Paragraph => !!p);
+      return { ...state, paragraphs: { ...state.paragraphs, [action.studentId]: merged } };
     }
     case 'startDraft': {
       const student = STUDENTS.find((x) => x.id === action.studentId);
@@ -90,22 +114,33 @@ export function reducer(state: State, action: Action): State {
       return setReport({ ...state, paragraphs: { ...state.paragraphs, [action.studentId]: paragraphs } }, action.studentId, { status: 'draft' });
     }
     case 'linkSource':
+      if (contentLocked(state, action.studentId) || !ownsObservation(state, action.studentId, action.obsId)) return state;
       return mapSentences(state, action.studentId, (s) =>
         s.id === action.sentenceId && !s.sources.includes(action.obsId) ? { ...s, sources: [...s.sources, action.obsId] } : s
       );
     case 'removeSentence':
+      if (editLocked(state, action.studentId)) return state;
       return mapSentences(state, action.studentId, (s) => (s.id === action.sentenceId ? null : s));
     case 'applySuggestion': {
       const paras = state.paragraphs[action.studentId] ?? [];
+      const cited = action.suggestion.after.flatMap((x) => x.sources);
+      if (
+        editLocked(state, action.studentId) ||
+        !paras.some((p) => p.id === action.suggestion.paragraphId) ||
+        !cited.every((id) => ownsObservation(state, action.studentId, id))
+      )
+        return state;
       const next = paras.map((p) => (p.id === action.suggestion.paragraphId ? { ...p, sentences: action.suggestion.after } : p));
       return { ...state, paragraphs: { ...state.paragraphs, [action.studentId]: next } };
     }
     case 'restoreParagraph': {
+      if (editLocked(state, action.studentId)) return state;
       const paras = state.paragraphs[action.studentId] ?? [];
       const next = paras.map((p) => (p.id === action.paragraph.id ? action.paragraph : p));
       return { ...state, paragraphs: { ...state.paragraphs, [action.studentId]: next } };
     }
     case 'setReflection':
+      if (editLocked(state, action.studentId)) return state;
       return { ...state, reflections: { ...state.reflections, [action.studentId]: action.text } };
     case 'submitForReview': {
       const r = state.reports[action.studentId];
