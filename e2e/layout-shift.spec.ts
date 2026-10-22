@@ -7,7 +7,8 @@ for (const route of [
   { path: '#/catalog', ready: '.catalog-page h2', name: 'catalog' },
   { path: '#/classes', ready: '.class-roster .row-link', name: 'classes' }
 ]) {
-  test(`${route.name} layout shift stays below 0.05 on a slow connection`, async ({ page }) => {
+  test(`${route.name} layout shift stays below 0.05 on a slow connection`, async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'CDP is Chromium-only');
     await page.addInitScript(() => {
       const measuredWindow = window as Window & { __layoutShiftTotal?: number };
       measuredWindow.__layoutShiftTotal = 0;
@@ -65,7 +66,8 @@ for (const role of ['teacher', 'reviewer'] as const) {
   });
 }
 
-test('in-app Dashboard to Coverage navigation stays below 0.05 CLS', async ({ page }) => {
+test('in-app Dashboard to Coverage navigation stays below 0.05 CLS', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'CDP is Chromium-only');
   await page.addInitScript(() => {
     const measuredWindow = window as Window & { __layoutShiftTotal?: number };
     measuredWindow.__layoutShiftTotal = 0;

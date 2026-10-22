@@ -35,14 +35,8 @@ export function clearChunkReloadAttempt(): void {
 }
 
 export function installChunkFailureRecovery(): void {
-  window.addEventListener('vite:preloadError', (event) => {
-    const payload = (event as Event & { payload?: unknown }).payload;
-    // Locale dictionaries and the shared entry chunk are index-* bundles; their failures have
-    // in-app fallbacks and should not force a full-page reload.
-    if (/\/index-[\w-]+\.js(?:\?|$)/i.test(String(payload))) return;
-    event.preventDefault();
-    reloadForChunkFailure();
-  });
+  // Route preload errors flow into the route boundary. Reloading from Vite's global preload
+  // event races pointer intent: a failed hover preload can reload before navigation commits.
   window.addEventListener('unhandledrejection', (event) => {
     if (isChunkLoadError(event.reason)) reloadForChunkFailure();
   });

@@ -92,7 +92,9 @@ export function pageKindForPath(pathname: string): PageKind | undefined {
 export function RouteChunkSuccess({ children }: { children: ReactNode }) {
   const location = useLocation();
   useEffect(() => {
-    clearChunkReloadAttempt();
+    // Keep the one-reload guard while the always-loaded dashboard is on screen. A failed
+    // lazy route can reload back to the dashboard before its own route renders successfully.
+    if (location.pathname !== '/') clearChunkReloadAttempt();
     window.dispatchEvent(new Event('route-content-ready'));
   }, [location.pathname, location.search, location.key]);
   return children;
@@ -161,7 +163,9 @@ export function RoutePreloadHints() {
     const preload = (raw: string) => {
       const path = raw.startsWith('#') ? raw.slice(1) : raw;
       const kind = pageKindForPath(path);
-      if (kind) void pageLoaders[kind]();
+      // A failed intent preload is retained for the route boundary to handle if the user
+      // navigates there; it must not become an unhandled rejection that reloads on hover.
+      if (kind) void pageLoaders[kind]().catch(() => {});
     };
     const onIntent = (event: Event) => {
       const target = event.target instanceof Element ? event.target.closest('a[href]') : null;

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+test.use({ serviceWorkers: 'block' });
+
 test('the app shell and navigation remain mounted while Coverage loads', async ({ page }) => {
   await page.addInitScript(() => {
     const state = window as Window & { __watchShell?: boolean; __shellWasMissing?: boolean };
