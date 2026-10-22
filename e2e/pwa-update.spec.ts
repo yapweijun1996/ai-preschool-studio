@@ -71,7 +71,7 @@ test.afterAll(async () => {
 test('a new release is detected, applied, and reloads exactly once', async ({ page }) => {
   await switchTo('a');
   let loads = 0;
-  page.on('load', () => loads++);
+  page.on('load', () => { if (page.url() !== 'about:blank') loads++; });
 
   await page.goto('./');
   await expect(page.locator('#root')).not.toBeEmpty();
@@ -152,7 +152,7 @@ test('offline navigation after the first load still renders the app shell', asyn
 test('visible update UI: dirty work blocks, then "Update to v…" installs the new release', async ({ page }) => {
   await switchTo('a');
   let loads = 0;
-  page.on('load', () => loads++);
+  page.on('load', () => { if (page.url() !== 'about:blank') loads++; });
 
   // Add observation's prefilled demo text is not unsaved work; once the teacher edits it, it is,
   // and updating must wait.
@@ -211,7 +211,7 @@ test('a failed service worker registration recovers through the visible Retry', 
 test('unknown new version: the button says "Update now", never "Update to v"', async ({ page }) => {
   await switchTo('a');
   let loads = 0;
-  page.on('load', () => loads++);
+  page.on('load', () => { if (page.url() !== 'about:blank') loads++; });
   await page.goto('./');
   await waitForController(page);
   await expect.poll(async () => (await snap(page)).status).toBe('current');
