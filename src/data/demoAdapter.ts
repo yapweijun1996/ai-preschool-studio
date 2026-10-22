@@ -70,7 +70,10 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     },
     async linkSource(studentId, sentenceId, obsId) {
       const state = getState();
-      if (!state.observations.some((obs) => obs.id === obsId && obs.studentId === studentId)) return refusal('wrong-child-observation');
+      const belongsToStudent = state.observations.some(
+        (obs) => obs.id === obsId && obs.studentId === studentId
+      );
+      if (!belongsToStudent) return refusal('wrong-child-observation');
       if (state.reports[studentId]?.status === 'approved') return refusal('report-locked');
       return run({ type: 'linkSource', studentId, sentenceId, obsId }, undefined, 'invalid-target');
     },
