@@ -1,36 +1,35 @@
-// Rasterises the "AP" monogram tile into the PWA / Apple touch icons in public/icons/.
+// Rasterises the shared speech-bubble and leaf mark into the PWA / Apple touch icons.
 // Usage: PW_CHROMIUM=/path/to/chrome node scripts/gen-icons.mjs   (or `npm run icons`)
 // The generated PNGs are committed; rerun only when the artwork changes.
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
 const outDir = fileURLToPath(new URL('../public/icons/', import.meta.url));
-const BRAND = '#167D68';
+const MINT = '#E7F3EF';
+const markSvg = readFileSync(fileURLToPath(new URL('../src/assets/brand/mark.svg', import.meta.url)), 'utf8');
+const markContents = markSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/)?.[1] ?? '';
 
 /**
  * @param {number} size  output edge in px
- * @param {{ radius: number, text: number }} o  corner radius and font size as fractions of size
+ * @param {{ radius: number, safeScale: number }} o  tile radius and mark scale
  */
-function tile(size, { radius, text }) {
+function tile(size, { radius, safeScale }) {
   const r = Math.round(size * radius);
-  const fs = Math.round(size * text);
+  const markSize = Math.round(size * safeScale);
+  const offset = Math.round((size - markSize) / 2);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}" fill="${BRAND}"/>
-  <text x="50%" y="50%" dy="0.36em" text-anchor="middle" fill="#FFFFFF"
-    font-family="Inter, 'Helvetica Neue', Arial, 'DejaVu Sans', sans-serif" font-weight="700"
-    font-size="${fs}" letter-spacing="${Math.round(fs * -0.02)}">AP</text>
+  <rect width="${size}" height="${size}" rx="${r}" ry="${r}" fill="${MINT}"/>
+  <svg x="${offset}" y="${offset}" width="${markSize}" height="${markSize}" viewBox="0 0 32 32">${markContents}</svg>
 </svg>`;
 }
 
 const icons = [
-  // "any" icons: rounded tile on transparent corners.
-  { file: 'icon-192.png', size: 192, radius: 0.22, text: 0.42 },
-  { file: 'icon-512.png', size: 512, radius: 0.22, text: 0.42 },
-  // Maskable: full-bleed background, monogram inside the 80% safe zone (platform applies its own mask).
-  { file: 'icon-maskable-512.png', size: 512, radius: 0, text: 0.3 },
-  // iOS draws its own rounded mask and shows transparency as black, so this one is a full square.
-  { file: 'apple-touch-icon.png', size: 180, radius: 0, text: 0.4 }
+  { file: 'icon-192.png', size: 192, radius: 0.22, safeScale: 0.72 },
+  { file: 'icon-512.png', size: 512, radius: 0.22, safeScale: 0.72 },
+  // The mark stays within the central 80% safe zone for maskable icons.
+  { file: 'icon-maskable-512.png', size: 512, radius: 0, safeScale: 0.72 },
+  { file: 'apple-touch-icon.png', size: 180, radius: 0, safeScale: 0.72 }
 ];
 
 mkdirSync(outDir, { recursive: true });
@@ -42,7 +41,7 @@ try {
     await page.setContent(
       `<html><body style="margin:0;background:transparent">${tile(icon.size, icon)}</body></html>`
     );
-    await page.locator('svg').screenshot({ path: outDir + icon.file, omitBackground: true });
+    await page.locator('body > svg').screenshot({ path: outDir + icon.file, omitBackground: true });
     console.log('wrote public/icons/' + icon.file);
   }
 } finally {
