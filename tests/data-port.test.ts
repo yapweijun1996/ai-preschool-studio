@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDemoAdapter } from '../src/data/demoAdapter';
+import { formatApprovalAt } from '../src/i18n';
 import { STUDENTS } from '../src/data/demo';
 import { CURRENT_FRAMEWORK, frameworkFor, periodOf } from '../src/framework';
 import { allSummaries, milestonesFor, studentSummary } from '../src/store/selectors';
@@ -82,7 +83,7 @@ describe('DataPort demo adapter', () => {
     const h = harness(seed);
     const result = await h.adapter.approve('ethan', 'Reviewer One', '2026-10-22T09:00:00.000Z');
     expect(result).toEqual({ ok: true, value: { approvedBy: 'Reviewer One', at: '2026-10-22T09:00:00.000Z' } });
-    expect(h.state().reports.ethan.approvedAt).toBe(new Date('2026-10-22T09:00:00.000Z').toLocaleString());
+    expect(h.state().reports.ethan.approvedAt).toBe(formatApprovalAt('2026-10-22T09:00:00.000Z'));
   });
 
   it('supports each remaining port write against reducer actions', async () => {

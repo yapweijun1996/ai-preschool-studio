@@ -2,6 +2,7 @@ import type { DataPort, Draft, ObservationInput, PortRefusal, PortResult } from 
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
+import { formatApprovalAt } from '../i18n';
 import {
   approvalBlock,
   observationsFor,
@@ -117,7 +118,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (block?.reason === 'claims') return refusal('unverified-claims');
       if (block?.reason === 'incomplete') return refusal('not-ready');
       if (block) return refusal('invalid-target');
-      dispatch({ type: 'approve', studentId, at: new Date(at).toLocaleString() });
+      dispatch({ type: 'approve', studentId, at: formatApprovalAt(at) });
       return success({ approvedBy, at });
     }
   };

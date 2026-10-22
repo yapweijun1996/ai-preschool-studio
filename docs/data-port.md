@@ -55,8 +55,8 @@ REST/RPC request and each write to a server command; the server remains authorit
 domain rules and assigns observation IDs. Translate structured API errors into `PortRefusal`
 values rather than throwing strings. `approve` accepts an ISO timestamp and reviewer identity.
 The current demo reducer stores approval time as a localized display string and does not store
-reviewer identity: the demo adapter converts ISO time at its boundary and returns `approvedBy` in
-the typed result; production should persist both fields as structured approval metadata.
+reviewer identity: the demo adapter formats the ISO timestamp with the same locale and translated
+template as `ReportPreview`, then returns `approvedBy` in the typed result.
 
 The adapter is framework-free. React consumers obtain the stable demo adapter through
 `useDataPort()` from `src/store/PortfolioContext.tsx`; replacing that binding with a platform
@@ -72,3 +72,8 @@ cannot be filled or has no unwritten domains; `linkSource` when the sentence ID 
 report is already in review, approved, or not started; and `approve` when the report is not in
 review. The adapter handles missing observation ownership, missing suggestion citations, edit
 locks, readiness failures, and approval claims with their more specific refusal reasons first.
+
+## Known gaps for step 2
+
+The reducer should store ISO `approvedAt` and `approvedBy`, then format approval metadata when it
+renders. This change needs a stored-state `SCHEMA` bump so older saved state is discarded.
