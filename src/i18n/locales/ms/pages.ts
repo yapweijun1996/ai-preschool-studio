@@ -280,7 +280,7 @@ export const pages: Dict['pages'] = {
     summary: '{children} kanak-kanak perlu diberi perhatian · {missing} bidang tanpa bukti · {stale} bidang dengan bukti lama',
     term: 'Penggal laporan', filters: 'Tapis liputan', all: 'Semua', attention: 'Perlu perhatian', missingFilter: 'Tiada bukti', staleFilter: 'Bukti lama',
     student: 'Kanak-kanak', count: '{count} pemerhatian', count_one: '{count} pemerhatian', latest: 'Terkini {date}', noLatest: 'Belum ada bukti',
-    statusMissing: 'Tiada bukti', statusThin: 'Bukti belum mencukupi', statusStale: 'Bukti lama', statusOk: 'Mencukupi', add: 'Tambah pemerhatian',
+    statusMissing: 'Tiada bukti', statusThin: 'Bukti belum mencukupi', statusStale: 'Bukti lama', statusOk: 'Mencukupi', add: 'Tambah pemerhatian', addFor: 'Tambah pemerhatian untuk {name}, {area}',
     emptyOk: 'Setiap kanak-kanak mempunyai bukti terkini yang mencukupi', noResults: 'Tiada kanak-kanak yang sepadan dengan penapis ini.',
     tableCaption: 'Liputan bukti mengikut kanak-kanak dan bidang pembelajaran', areaCount: '{count} pemerhatian · {status}', mobileAreas: 'Bidang pembelajaran untuk {name}',
     loading: 'Memuatkan liputan bukti…', error: 'Liputan bukti tidak dapat dimuatkan.', retry: 'Cuba lagi'

@@ -293,6 +293,7 @@ export const pages = {
     statusStale: 'Stale',
     statusOk: 'OK',
     add: 'Add observation',
+    addFor: 'Add observation for {name}, {area}',
     emptyOk: 'Every child has enough recent evidence',
     noResults: 'No children match this filter.',
     tableCaption: 'Evidence coverage by child and learning area',

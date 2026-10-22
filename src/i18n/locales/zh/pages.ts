@@ -280,7 +280,7 @@ export const pages: Dict['pages'] = {
     summary: '{children} 名幼儿有待跟进 · 缺少 {missing} 个领域的证据 · {stale} 个领域的证据已过时',
     term: '报告学期', filters: '筛选覆盖情况', all: '全部', attention: '需要跟进', missingFilter: '缺少证据', staleFilter: '证据已过时',
     student: '幼儿', count: '{count} 条观察', count_one: '{count} 条观察', latest: '最近：{date}', noLatest: '尚无证据',
-    statusMissing: '缺少证据', statusThin: '证据不足', statusStale: '证据已过时', statusOk: '充足', add: '添加观察',
+    statusMissing: '缺少证据', statusThin: '证据不足', statusStale: '证据已过时', statusOk: '充足', add: '添加观察', addFor: '为{name}的{area}添加观察',
     emptyOk: '每位幼儿都有足够且近期的学习证据', noResults: '没有符合此筛选条件的幼儿。',
     tableCaption: '按幼儿和学习领域查看证据覆盖情况', areaCount: '{count} 条观察 · {status}', mobileAreas: '{name} 的学习领域',
     loading: '正在加载证据覆盖情况……', error: '无法加载证据覆盖情况。', retry: '重试'

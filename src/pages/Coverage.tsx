@@ -95,7 +95,7 @@ function CoverageContent() {
           {coverage && visible.length > 0 && (
             <>
               <div className="card coverage-table-card">
-                <div className="coverage-scroll" tabIndex={0} aria-label={t('pages.coverage.tableCaption')}>
+                <div className="coverage-scroll" role="region" aria-label={t('pages.coverage.tableCaption')}>
                   <table className="coverage-table">
                     <caption>{t('pages.coverage.tableCaption')} · {labels.termShort(term)}</caption>
                     <thead><tr><th className="coverage-student-head" scope="col">{t('pages.coverage.student')}</th>{DOMAINS.map((area) => <th scope="col" key={area.key}>{domainLabel(area.key)}</th>)}</tr></thead>
@@ -106,7 +106,7 @@ function CoverageContent() {
                           <div className="coverage-state"><Icon name={area.status === 'ok' ? 'check' : area.status === 'missing' ? 'info' : 'alertCircle'} size={16} /><strong>{statusLabel(area.status)}</strong></div>
                           <span className="sec num">{t('pages.coverage.count', { count: area.count })}</span>
                           <span className="cap muted">{area.latestDate ? t('pages.coverage.latest', { date: fmtDate(area.latestDate) }) : t('pages.coverage.noLatest')}</span>
-                          {role.can('observation.add') && <Link className="coverage-add" to={`/students/${row.student.id}/observe?area=${area.area}`}>{t('pages.coverage.add')}</Link>}
+                          {role.can('observation.add') && <Link className="coverage-add" aria-label={t('pages.coverage.addFor', { name: row.student.name, area: domainLabel(area.area) })} to={`/students/${row.student.id}/observe?area=${area.area}`}>{t('pages.coverage.add')}</Link>}
                         </div>
                       </td>)}
                     </tr>)}</tbody>
@@ -116,12 +116,12 @@ function CoverageContent() {
               <div className="coverage-mobile-list">
                 {visible.map((row) => <article className="card card-pad coverage-mobile-card" key={row.student.id}>
                   <h2 className="h2"><Link to={`/students/${row.student.id}`} className="coverage-child"><Avatar initials={row.student.initials} size="sm" />{row.student.name}</Link></h2>
-                  <div className="coverage-mobile-areas" aria-label={t('pages.coverage.mobileAreas', { name: row.student.name })}>
+                  <div className="coverage-mobile-areas" role="group" aria-label={t('pages.coverage.mobileAreas', { name: row.student.name })}>
                     {row.areas.map((area) => <div className="coverage-mobile-area" key={area.area}>
                       <strong>{domainLabel(area.area)}</strong>
                       <span className="coverage-state"><Icon name={area.status === 'ok' ? 'check' : area.status === 'missing' ? 'info' : 'alertCircle'} size={16} />{statusLabel(area.status)}</span>
                       <span className="cap muted">{t('pages.coverage.count', { count: area.count })} · {area.latestDate ? fmtDate(area.latestDate) : t('pages.coverage.noLatest')}</span>
-                      {role.can('observation.add') && <Link className="coverage-add" to={`/students/${row.student.id}/observe?area=${area.area}`}>{t('pages.coverage.add')}</Link>}
+                      {role.can('observation.add') && <Link className="coverage-add" aria-label={t('pages.coverage.addFor', { name: row.student.name, area: domainLabel(area.area) })} to={`/students/${row.student.id}/observe?area=${area.area}`}>{t('pages.coverage.add')}</Link>}
                     </div>)}
                   </div>
                 </article>)}
