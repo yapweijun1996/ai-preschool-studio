@@ -80,12 +80,11 @@ test('all roles can open personal settings while restricted demo settings explai
   }
 });
 
-test('non-teachers get an explanation and teacher switch on draft reports', async ({ page }) => {
+test('school admin cannot open report narratives', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
   await page.goto('./#/students/aria/report');
-  await expect(page.getByText('Only the teacher can edit or submit this draft.')).toBeVisible();
-  await page.getByRole('button', { name: 'Switch to teacher (demo)' }).click();
-  await expect(page.getByRole('button', { name: 'Submit for review' })).toBeVisible();
+  await expect(page.getByText('This role cannot access this page.')).toBeVisible();
+  await expect(page.getByText('Aria Tan', { exact: true })).toHaveCount(0);
 });
 
 test('Studio read-only explanation names the active role', async ({ page }) => {

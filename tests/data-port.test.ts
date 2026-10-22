@@ -89,6 +89,41 @@ describe('DataPort demo adapter', () => {
     expect(h.state().reports.ethan.approvedAt).toBe('2026-10-22T09:00:00.000Z');
     expect(h.state().reports.ethan.approvedBy).toBe('Reviewer One');
     expect(h.state().reports.ethan.versions[0].approvedBy).toBe('Reviewer One');
+    expect(await h.adapter.getReportHistory('ethan')).toContainEqual(expect.objectContaining({ type: 'approved', by: 'Reviewer One' }));
+  });
+
+  it('releases only an approved latest version and makes repeated release idempotent', async () => {
+    const h = harness();
+    expect(await h.adapter.releaseReport('aria', 'Reviewer', '2026-10-22T10:00:00.000Z')).toEqual({ ok: false, reason: 'not-approved' });
+    expect(await h.adapter.releaseReport('missing', 'Reviewer', '2026-10-22T10:00:00.000Z')).toEqual({ ok: false, reason: 'unknown-student' });
+    const result = await h.adapter.releaseReport('meiling', 'Reviewer', '2026-10-22T10:00:00.000Z');
+    expect(result).toEqual({ ok: true, value: undefined });
+    const events = h.state().auditEvents.length;
+    expect(await h.adapter.releaseReport('meiling', 'Reviewer', '2026-10-22T10:00:00.000Z')).toEqual({ ok: true, value: undefined });
+    expect(h.state().auditEvents).toHaveLength(events);
+    expect((await h.adapter.getReportHistory('meiling')).at(-1)).toMatchObject({ type: 'released', version: 1 });
+  });
+
+  it('reopens with a reason and keeps frozen and released versions unchanged', async () => {
+    const h = harness();
+    expect(await h.adapter.reopenReport('meiling', '  ', 'Reviewer', '2026-10-22T10:00:00.000Z')).toEqual({ ok: false, reason: 'reason-required' });
+    const previous = await h.adapter.getReportVersions('meiling');
+    expect(await h.adapter.reopenReport('meiling', 'Correct a detail', 'Reviewer', '2026-10-22T10:00:00.000Z')).toEqual({ ok: true, value: undefined });
+    expect(h.state().reports.meiling.status).toBe('draft');
+    expect(await h.adapter.getReportVersions('meiling')).toEqual(previous);
+    expect((await h.adapter.getReportHistory('meiling')).at(-1)).toMatchObject({ type: 'reopened', reason: 'Correct a detail', version: 2 });
+    expect(await h.adapter.reopenReport('meiling', 'Again', 'Reviewer', '2026-10-22T10:01:00.000Z')).toEqual({ ok: false, reason: 'invalid-target' });
+  });
+
+  it('seeds a version and matching append-only audit events for approved reports', async () => {
+    const h = harness();
+    for (const id of ['meiling', 'hana', 'nuraisyah', 'siti']) {
+      expect((await h.adapter.getReportVersions(id))[0].version).toBe(1);
+      expect((await h.adapter.getReportHistory(id)).some((event) => event.type === 'approved')).toBe(true);
+      expect((await h.adapter.getAuditLog({ studentId: id })).some((event) => event.action === 'report.approved')).toBe(true);
+    }
+    expect((await h.adapter.getReportHistory('ethan')).some((event) => event.type === 'submitted')).toBe(true);
+    expect((await h.adapter.getReportHistory('rayan')).some((event) => event.type === 'changesRequested')).toBe(true);
   });
 
   it('supports each remaining port write against reducer actions', async () => {
