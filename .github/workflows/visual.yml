@@ -1,0 +1,67 @@
+name: Visual regression
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      update:
+        description: Capture fresh visual baselines
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual regression
+        if: github.event_name == 'workflow_dispatch' && inputs.update
+        run: PW_VISUAL=1 npx playwright test --project=visual --update-snapshots
+
+      - name: Check for committed visual baselines
+        if: github.event_name != 'workflow_dispatch' || !inputs.update
+        id: baseline-check
+        run: |
+          if [ -d e2e/__screenshots__ ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo 'Visual regression skipped: e2e/__screenshots__ is absent. Run workflow_dispatch with update=true, then commit the downloaded baselines.'
+          fi
+
+      - name: Check visual regression
+        if: (github.event_name != 'workflow_dispatch' || !inputs.update) && steps.baseline-check.outputs.present == 'true'
+        run: PW_VISUAL=1 npx playwright test --project=visual
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: visual-diff-report
+          path: test-results
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'workflow_dispatch' && inputs.update && success()
+        with:
+          name: visual-baselines
+          path: e2e/__screenshots__
+          if-no-files-found: error
+          retention-days: 30
