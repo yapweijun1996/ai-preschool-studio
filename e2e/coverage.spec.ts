@@ -72,6 +72,8 @@ test('switching to Parent on coverage and reviews does not trigger a React error
     await page.getByRole('button', { name: /account/i }).click();
     await page.getByRole('menuitemradio', { name: 'Parent', exact: true }).click();
     await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.locator('.notice[role="status"]')).toContainText('Class evidence and review details are available to staff roles.');
+    await expect(page.getByRole('button', { name: 'Switch to teacher (demo)' })).toBeVisible();
     await expect(pageErrors).toEqual([]);
     await page.getByRole('button', { name: /account/i }).click();
     await page.getByRole('menuitemradio', { name: 'Teacher', exact: true }).click();
