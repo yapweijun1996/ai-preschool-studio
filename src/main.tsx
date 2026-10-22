@@ -4,19 +4,44 @@ import { App } from './App';
 import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/app.css';
-import { loadInitialLanguage } from './i18n';
+import { loadDict, loadInitialLanguage } from './i18n';
 import { installChunkFailureRecovery } from './routes/chunkRecovery';
 import { pageKindForPath, pageLoaders } from './routes/lazyPages';
 
 installChunkFailureRecovery();
-const initialHashPath = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '/';
-const initialKind = pageKindForPath(initialHashPath.split('?')[0] || '/');
-const [{ lang, dict }] = await Promise.all([
-  loadInitialLanguage(),
-  initialKind ? pageLoaders[initialKind]().then(() => undefined, () => undefined) : Promise.resolve()
-]);
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App initialLang={lang} initialDict={dict} />
-  </StrictMode>
-);
+
+function showStaticRecovery() {
+  const root = document.getElementById('root');
+  if (!root) return;
+  const alert = document.createElement('main');
+  alert.setAttribute('role', 'alert');
+  const heading = document.createElement('h1');
+  heading.textContent = 'The app could not load. Reload to try again.';
+  const reload = document.createElement('button');
+  reload.type = 'button';
+  reload.textContent = 'Reload';
+  reload.addEventListener('click', () => window.location.reload());
+  alert.append(heading, reload);
+  root.replaceChildren(alert);
+}
+
+async function startApp() {
+  const initialHashPath = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '/';
+  const initialKind = pageKindForPath(initialHashPath.split('?')[0] || '/');
+  const initialLanguage = loadInitialLanguage().catch(async () => ({ lang: 'en' as const, dict: await loadDict('en') }));
+  try {
+    const [{ lang, dict }] = await Promise.all([
+      initialLanguage,
+      initialKind ? pageLoaders[initialKind]().then(() => undefined, () => undefined) : Promise.resolve()
+    ]);
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App initialLang={lang} initialDict={dict} />
+      </StrictMode>
+    );
+  } catch {
+    showStaticRecovery();
+  }
+}
+
+void startApp();
