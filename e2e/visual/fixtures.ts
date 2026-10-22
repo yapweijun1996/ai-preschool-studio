@@ -54,6 +54,7 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
   } else if (path.includes('/students/')) {
     if (path.includes('/studio')) {
       const mobileTabs = page.getByRole('tablist', { name: 'Studio sections' });
+      await expect(page.locator('.studio-head h1').or(page.getByRole('tab', { name: 'Write', exact: true })).first()).toBeVisible();
       if (await mobileTabs.isVisible()) {
         await expect(page.getByRole('tab', { name: 'Write', exact: true })).toBeVisible();
       } else {
