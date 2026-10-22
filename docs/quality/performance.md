@@ -10,13 +10,21 @@ reporting service.
 ## Assertions
 
 LHCI enforces these assertions on each route. Resource sizes are measured in
-bytes; score and timing assertions use the median of the three CI runs.
+bytes. Error-level assertions use pessimistic aggregation, so the worst result
+across collected runs must pass. Warn-level speed assertions use the median of
+the three CI runs to report typical performance while the baseline is observed.
+
+The routes are hash-based (`#/`, `#/students`, and so on), so their collected
+URLs differ only by the fragment. LHCI groups these as one URL; its default
+`optimistic` aggregation can therefore check only the best result and miss a
+heavier page. Pessimistic aggregation on every error-level assertion ensures
+the heaviest page and worst run are checked despite that grouping.
 
 | Assertion | Threshold | Severity |
 |---|---:|---|
 | Script resource size | ≤ 174,080 bytes (170 KB) | Error |
 | Stylesheet resource size | ≤ 9,237 bytes (9.0 KiB) | Error |
-| Total resource size | ≤ 236,811 bytes (231.3 KiB) | Error |
+| Total resource size | ≤ 274,597 bytes (268.2 KiB) | Error |
 | Accessibility score | ≥ 0.95 | Error |
 | Best Practices score | ≥ 0.90 | Error |
 | Cumulative Layout Shift | ≤ 0.10 | Error |
@@ -43,6 +51,24 @@ are baseline observations, not CI medians:
 
 The largest improvement lever is the single entry chunk, about 460 KB raw / 140
 KB gzip. Route-level code splitting is a follow-up.
+
+## Local route transfer measurement (2026-10-22)
+
+The manager measured per-page transfers with `@lhci/cli` 0.15.1 against a local
+`vite preview` of this branch. Hash-route pages share the same URL before the
+fragment, which explains why LHCI's default optimistic aggregation missed the
+report page's larger total. Pessimistic error assertions now cover this case.
+
+| Route | Transfer total |
+|---|---:|
+| `#/` | 208,238 B |
+| `#/students` | 208,238 B |
+| `#/students/aria/report` | 238,780 B |
+| `#/catalog` | 167,845 B |
+
+The total resource budget is 274,597 B, 15% above the heaviest observed page
+(238,780 B, rounded up). The current build still fits the existing script and
+stylesheet budgets.
 
 ## First-party assets and font strategy (2026-10-22)
 
