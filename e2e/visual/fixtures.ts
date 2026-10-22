@@ -53,7 +53,12 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
     await expect(page.locator('.family-section h2#family-heading')).toBeVisible();
   } else if (path.includes('/students/')) {
     if (path.includes('/studio')) {
-      await expect(page.locator('.studio-head h1')).toBeVisible();
+      const mobileTabs = page.getByRole('tablist', { name: 'Studio sections' });
+      if (await mobileTabs.isVisible()) {
+        await expect(page.getByRole('tab', { name: 'Write', exact: true })).toBeVisible();
+      } else {
+        await expect(page.locator('.studio-head h1')).toBeVisible();
+      }
     } else if (path.includes('/report')) {
       await expect(page.locator('.a4')).toBeVisible();
     } else {
