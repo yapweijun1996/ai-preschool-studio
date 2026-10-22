@@ -130,7 +130,6 @@ jobs:
         uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: ./lighthouserc.json
-          budgetPath: ./budget.json
           uploadArtifacts: false
           urls: |
             ${{ steps.normalize.outputs.base_url }}#/
