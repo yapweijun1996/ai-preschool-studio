@@ -42,10 +42,42 @@ function pwaRelease(): Plugin {
   };
 }
 
+/** Inject a preload for the emitted, hashed Inter file while retaining Vite's relative base URL. */
+function preloadInterFont(): Plugin {
+  let base = './';
+  return {
+    name: 'aps-inter-font-preload',
+    apply: 'build',
+    configResolved(config) {
+      base = config.base;
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, context) {
+        const font = Object.values(context.bundle ?? {}).find(
+          (output) => output.type === 'asset' && /inter-latin-wght-normal.*\.woff2$/i.test(output.fileName)
+        );
+        if (!font) return [];
+        return [{
+          tag: 'link',
+          attrs: {
+            rel: 'preload',
+            as: 'font',
+            type: 'font/woff2',
+            crossorigin: 'anonymous',
+            href: `${base}${font.fileName}`
+          },
+          injectTo: 'head'
+        }];
+      }
+    }
+  };
+}
+
 // Relative base so the static build works from any sub-path (e.g. GitHub Pages).
 export default defineConfig({
   base: './',
-  plugins: [react(), pwaRelease()],
+  plugins: [react(), pwaRelease(), preloadInterFont()],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
     'import.meta.env.VITE_BUILD_ID': JSON.stringify(build)
