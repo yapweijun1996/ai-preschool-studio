@@ -42,6 +42,7 @@ export const shell: Dict['shell'] = {
     search: '搜索学生',
     noMatch: '没有与“{query}”匹配的学生。',
     overview: '概览',
+    designReference: '设计参考',
     addObservation: '添加观察记录',
     latest: '最新',
     reportQueue: '报告队列 · {term}',

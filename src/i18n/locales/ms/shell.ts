@@ -42,6 +42,7 @@ export const shell: Dict['shell'] = {
     search: 'Cari murid',
     noMatch: 'Tiada murid yang sepadan dengan “{query}”.',
     overview: 'Gambaran keseluruhan',
+    designReference: 'Rujukan reka bentuk',
     addObservation: 'Tambah pemerhatian',
     latest: 'Terkini',
     reportQueue: 'Baris gilir laporan · {term}',

@@ -18,6 +18,7 @@ import type { ReportStatus } from '../data/demo';
 import { DOMAINS, type Milestone } from '../framework';
 import type { Readiness } from '../store/reducer';
 import { MarkupExample } from './MarkupExample';
+import { useLabels } from '../i18n/labels';
 
 const sections = [
   'Tokens',
@@ -147,6 +148,7 @@ function Tokens({ theme }: { theme: string }) {
 }
 
 function SectionExamples({ name, theme }: { name: string; theme: string }) {
+  const labels = useLabels();
   switch (name) {
     case 'Tokens':
       return <Tokens theme={theme} />;
@@ -296,7 +298,7 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
       return (
         <>
           {statuses.map((status) => (
-            <MarkupExample key={status} title={`${status}: compact and full`}>
+            <MarkupExample key={status} title={`${labels.status(status)} — compact and full`}>
               <div className="catalog-flow">
                 <ReportFlow status={status} hadChanges />
                 <ReportFlow status={status} hadChanges compact />

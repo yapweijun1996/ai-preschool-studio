@@ -8,12 +8,12 @@
 .catalog-example { display: grid; gap: var(--space-3); padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
 .catalog-example-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
 .catalog-example-head h3 { margin: 0; font-size: 16px; }
-.catalog-preview { display: grid; align-content: start; gap: var(--space-3); min-width: 0; }
+.catalog-preview { display: grid; justify-items: start; align-content: start; gap: var(--space-3); min-width: 0; }
 .catalog-code { display: grid; gap: var(--space-2); }
 .catalog-code[hidden] { display: none; }
 .catalog-code pre { overflow: auto; max-height: 360px; padding: var(--space-3); margin: 0; background: var(--color-surface-muted); border-radius: var(--radius-sm); white-space: pre-wrap; overflow-wrap: anywhere; }
 .catalog-code code { font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
-.catalog-token-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: var(--space-2); }
+.catalog-token-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: var(--space-2); width: 100%; }
 .catalog-token { display: grid; gap: var(--space-2); align-content: start; padding: var(--space-3); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
 .catalog-swatch { width: 100%; height: 28px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
 .catalog-wrap { flex-wrap: wrap; }
@@ -25,4 +25,4 @@
 .catalog-field-error { color: var(--color-danger); }
 .catalog-scroll > * { flex: none; }
 .catalog-page :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-@media (max-width: 600px) { .catalog-page { padding-bottom: 88px; } .catalog-example { padding: var(--space-3); } .catalog-flow { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .catalog-page { padding-bottom: 88px; } .catalog-example { padding: var(--space-3); } .catalog-flow { grid-template-columns: 1fr; } .catalog-token-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .catalog-token { min-width: 0; } .catalog-token strong { overflow-wrap: anywhere; } }

@@ -12,6 +12,10 @@ for (const viewport of [{ name: 'desktop 1440x900', width: 1440, height: 900 }, 
       await expect(page.getByRole('heading', { name: 'Component catalog', level: 1 })).toBeVisible();
       await expect(page.locator('main')).toHaveCount(1);
       for (const heading of sectionNames) await expect(page.getByRole('heading', { name: heading, level: 2 })).toBeVisible();
+      if (viewport.width === 1440) {
+        const sourceChip = page.locator('#sourcechip .catalog-example .catalog-preview').locator('> *').first();
+        expect(await sourceChip.evaluate((el) => el.getBoundingClientRect().width)).toBeLessThan(200);
+      }
       await page.getByRole('navigation', { name: 'Catalog sections' }).getByRole('button', { name: 'Buttons' }).click();
       await expect(page).toHaveURL(/#\/catalog$/);
       await expect(page.getByText('We couldn’t find that page')).toHaveCount(0);
@@ -36,4 +40,13 @@ test('catalog follows dark theme', async ({ page }) => {
   await page.goto('./#/catalog');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.getByRole('heading', { name: 'Component catalog', level: 1 })).toBeVisible();
+});
+
+test('Settings links to the design reference catalog', async ({ page }) => {
+  await page.goto('./#/settings/appearance');
+  await expect(page.getByRole('heading', { name: 'Appearance', level: 1 })).toBeVisible();
+  await page.getByRole('navigation', { name: 'Settings pages' }).getByRole('link', { name: 'Design reference' }).click();
+  await expect(page).toHaveURL(/#\/catalog$/);
+  await expect(page.getByRole('heading', { name: 'Component catalog', level: 1 })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Settings pages' }).getByRole('link', { name: 'Design reference' })).toHaveAttribute('aria-current', 'page');
 });
