@@ -19,6 +19,10 @@ describe('v0.4.0 review fixes', () => {
     // A current-shaped state saved without the schema tag is also discarded.
     expect(loadState(JSON.stringify(current)).sim.aiDown).toBe(false);
     expect(loadState(null).reports.aria.status).toBe('draft');
+    // Right schema but missing fields: start fresh rather than crash later.
+    const { paragraphs: _p, ...partial } = current;
+    void _p;
+    expect(loadState(JSON.stringify({ schema: 4, state: partial })).paragraphs.aria).toBeDefined();
     expect(loadState('{not json').reports.aria.status).toBe('draft');
   });
 

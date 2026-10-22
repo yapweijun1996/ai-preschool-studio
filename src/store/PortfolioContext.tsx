@@ -16,7 +16,14 @@ export function loadState(raw: string | null): State {
   try {
     const parsed = JSON.parse(raw) as { schema?: number; state?: State };
     const s = parsed?.state;
-    const complete = !!s && Array.isArray(s.observations) && STUDENTS.every((st) => s.reports?.[st.id]?.status);
+    const complete =
+      !!s &&
+      Array.isArray(s.observations) &&
+      typeof s.paragraphs === 'object' && s.paragraphs !== null &&
+      typeof s.reflections === 'object' && s.reflections !== null &&
+      typeof s.sim === 'object' && s.sim !== null &&
+      typeof s.nextObsNumber === 'number' &&
+      STUDENTS.every((st) => s.reports?.[st.id]?.status);
     if (parsed?.schema === SCHEMA && complete) return s;
   } catch {
     /* corrupt entry: start fresh */

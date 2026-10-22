@@ -28,8 +28,18 @@ test.describe('learning framework · desktop 1440', () => {
   test('no unfilled {term} placeholders on pages that name a period', async ({ page }) => {
     for (const path of ['./#/students/aria', './#/students/aria/progress', './#/students/aria/studio', './#/students/kai', './#/students/aria/report', './#/students/aria/observe']) {
       await page.goto(path);
-      await expect(page.locator('main')).not.toContainText(/\{term/);
+      await expect(page.locator('body')).not.toContainText(/\{term/);
     }
+  });
+
+  test('no unfilled placeholders in mobile headers either', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+    const page = await ctx.newPage();
+    for (const path of ['./#/students/aria/progress', './#/students/aria/studio', './#/students/aria/report']) {
+      await page.goto(path);
+      await expect(page.locator('body')).not.toContainText(/\{term/);
+    }
+    await ctx.close();
   });
 
   test('a tab holding demo state from an older build starts fresh instead of breaking', async ({ page }) => {
