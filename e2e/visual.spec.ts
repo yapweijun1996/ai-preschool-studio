@@ -39,6 +39,7 @@ test('catalog first four sections · mobile light', async ({ page }) => {
 const screens = [
   { name: 'dashboard', path: './#/' },
   { name: 'students', path: './#/students' },
+  { name: 'classes', path: './#/classes' },
   { name: 'aria-profile', path: './#/students/aria' },
   { name: 'aria-studio', path: './#/students/aria/studio' },
   { name: 'aria-report', path: './#/students/aria/report' },
@@ -71,6 +72,28 @@ test('coverage · mobile light', async ({ page }) => {
   await page.setViewportSize(mobile);
   await openVisualPage(page, './#/coverage');
   await expect(page).toHaveScreenshot('coverage-mobile-light.png', { mask: [buildFooter(page)] });
+});
+
+test('class roster · desktop light', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/classes');
+  await page.getByRole('status', { name: 'Loading class roster…' }).waitFor({ state: 'hidden' });
+  await expect(page).toHaveScreenshot('classes-desktop-light.png', { mask: [buildFooter(page)] });
+});
+
+test('class roster · mobile light', async ({ page }) => {
+  await page.setViewportSize(mobile);
+  await openVisualPage(page, './#/classes');
+  await page.getByRole('status', { name: 'Loading class roster…' }).waitFor({ state: 'hidden' });
+  await expect(page).toHaveScreenshot('classes-mobile-light.png', { mask: [buildFooter(page)] });
+});
+
+test('child family section · teacher desktop light', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/students/aria');
+  const family = page.locator('.family-section');
+  await expect(family).toBeVisible();
+  await expect(family).toHaveScreenshot('aria-family-teacher-desktop-light.png');
 });
 
 test('aria report · desktop dark', async ({ page }) => {
