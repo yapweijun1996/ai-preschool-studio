@@ -2,6 +2,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { ThemeContext } from './components/AppShell';
 import { NavMemoryProvider } from './hooks/useNavMemory';
 import { useTheme } from './hooks/useTheme';
+import { I18nProvider } from './i18n';
 import { AddObservation } from './pages/AddObservation';
 import { Dashboard } from './pages/Dashboard';
 import { LearningProgress } from './pages/LearningProgress';
@@ -10,6 +11,7 @@ import { PortfolioStudio } from './pages/PortfolioStudio';
 import { ReportPreview } from './pages/ReportPreview';
 import { StudentProfile } from './pages/StudentProfile';
 import { Students } from './pages/Students';
+import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 
 // Hash routing keeps deep links working on static hosts without rewrite rules.
@@ -17,6 +19,8 @@ export function App() {
   const theme = useTheme();
   return (
     <ThemeContext.Provider value={theme}>
+      <I18nProvider>
+      <PwaProvider>
       <PortfolioProvider>
         <NavMemoryProvider>
         <HashRouter>
@@ -33,6 +37,8 @@ export function App() {
         </HashRouter>
         </NavMemoryProvider>
       </PortfolioProvider>
+      </PwaProvider>
+      </I18nProvider>
     </ThemeContext.Provider>
   );
 }
