@@ -277,6 +277,7 @@ export const pages = {
     releaseAction: 'Release to family', releasedBadge: 'Released to family',
     versionBadge: 'v{version} · Approved {date} by {name}', reopenAction: 'Reopen for amendment',
     reopenTitle: 'Reopen report for amendment', reopenReason: 'Reason for reopening',
+    reopenedAnnounce: 'Report reopened for amendment.',
     reopenHint: 'The previous approved version stays unchanged. If already released, it remains visible to families until a new version is released.',
     reopenConfirm: 'Reopen report', history: 'Decision history', versions: 'Report versions',
     version: 'Version {version}', releasedVersion: 'Released version', familyCopy: 'Family copy',

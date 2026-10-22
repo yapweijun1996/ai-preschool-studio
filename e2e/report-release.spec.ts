@@ -22,6 +22,8 @@ test('approve, release, reopen, resubmit and approve v2 with immutable family co
   await expect(dialog.getByRole('alert')).toBeVisible();
   await dialog.getByLabel('Reason for reopening').fill('Correct the reflection');
   await dialog.getByRole('button', { name: 'Reopen report' }).click();
+  await expect(page.getByText('Report reopened for amendment.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Report status' })).toBeFocused();
   await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
   await page.getByRole('button', { name: /Account menu/ }).click();
   await page.getByRole('menuitemradio', { name: 'Teacher', exact: true }).click();

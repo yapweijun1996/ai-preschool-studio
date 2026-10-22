@@ -30,9 +30,12 @@ export function ReportPreview() {
   const [reopenOpen, setReopenOpen] = useState(false);
   const [reopenReason, setReopenReason] = useState('');
   const [reopenError, setReopenError] = useState(false);
+  const [reopenAnnouncement, setReopenAnnouncement] = useState(false);
+  const [focusStatusAfterReopen, setFocusStatusAfterReopen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const reopenTrigger = useRef<HTMLButtonElement>(null);
+  const statusHeading = useRef<HTMLHeadingElement>(null);
   const { t, fmtDate, lang } = useI18n();
   // An approved report keeps the framework labels it was approved with.
   const { domainFull, status: statusLabel, term: periodLabel } = useLabels(state.reports[id]?.frameworkVersion);
@@ -42,6 +45,11 @@ export function ReportPreview() {
   useEffect(() => {
     if (reopenOpen) dialogRef.current?.querySelector<HTMLElement>('textarea')?.focus();
   }, [reopenOpen]);
+  useEffect(() => {
+    if (!focusStatusAfterReopen || state.reports[id]?.status !== 'draft') return;
+    statusHeading.current?.focus();
+    setFocusStatusAfterReopen(false);
+  }, [focusStatusAfterReopen, id, state.reports]);
   useEffect(() => {
     if (!reopenOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -88,7 +96,7 @@ export function ReportPreview() {
   const reopen = () => {
     if (!reopenReason.trim()) { setReopenError(true); return; }
     dispatch({ type: 'reopen', studentId: id, reason: reopenReason, reopenedBy: REVIEWER, at: now(), actor: { role: 'reviewer', name: REVIEWER } });
-    setReopenOpen(false); setReopenReason(''); setSelectedVersion(null); reopenTrigger.current?.focus();
+    setReopenOpen(false); setReopenReason(''); setSelectedVersion(null); setReopenAnnouncement(true); setFocusStatusAfterReopen(true);
   };
   const linkFirstCandidate = (sentenceId: string, paragraphId: string) => {
     const domain = paragraphs.find((p) => p.id === paragraphId)!.domain;
@@ -160,7 +168,8 @@ export function ReportPreview() {
 
   const panel = (mobile: boolean) => (
     <aside className="panel report-panel" aria-label={t('pages.report.reviewLabel')} style={{ overflow: 'visible' }}>
-      <div className="panel-head"><h2 className="h2 grow">{t('pages.report.statusHeading')}</h2><StatusLabel status={status} /></div>
+      <div className="panel-head"><h2 ref={statusHeading} tabIndex={-1} className="h2 grow">{t('pages.report.statusHeading')}</h2><StatusLabel status={status} /></div>
+      {reopenAnnouncement && <span className="sr-only" role="status" aria-live="polite">{t('pages.report.reopenedAnnounce')}</span>}
       <div className="stack" style={{ padding: 16, gap: 20 }}>
         {status === 'changes' && report.comment && (
           <Notice tone="warning" icon="alert" role="status">

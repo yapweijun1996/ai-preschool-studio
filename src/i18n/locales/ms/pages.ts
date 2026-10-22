@@ -277,6 +277,7 @@ export const pages: Dict['pages'] = {
     phoneNote: 'Paparan telefon menyusun semula halaman A4. Eksport PDF menunjukkan susun atur cetakan yang tepat.',
     releaseAction: 'Lepaskan kepada keluarga', releasedBadge: 'Dilepaskan kepada keluarga', versionBadge: 'v{version} · Diluluskan pada {date} oleh {name}',
     reopenAction: 'Buka semula untuk pindaan', reopenTitle: 'Buka semula laporan untuk pindaan', reopenReason: 'Sebab membuka semula',
+    reopenedAnnounce: 'Laporan dibuka semula untuk pindaan.',
     reopenHint: 'Versi yang diluluskan sebelum ini kekal tanpa perubahan. Jika telah dilepaskan, keluarga masih melihatnya sehingga versi baharu dilepaskan.', reopenConfirm: 'Buka semula laporan',
     history: 'Sejarah keputusan', versions: 'Versi laporan', version: 'Versi {version}', releasedVersion: 'Versi dilepaskan', familyCopy: 'Salinan keluarga',
     familyEmpty: 'Belum ada laporan dilepaskan untuk kanak-kanak ini.', familyTitle: 'Laporan keluarga', close: 'Tutup', releaseSuccess: 'Versi dilepaskan kepada keluarga.', reopenRequired: 'Masukkan sebab untuk meneruskan.'
