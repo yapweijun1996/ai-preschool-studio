@@ -141,7 +141,7 @@ export function ScrollRow({ children, ...rest }: HTMLAttributes<HTMLDivElement>)
     };
   }, []);
   return (
-    <div ref={ref} tabIndex={rest.tabIndex ?? 0} {...rest}>
+    <div ref={ref} {...rest}>
       {children}
     </div>
   );

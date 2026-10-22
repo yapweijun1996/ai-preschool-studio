@@ -19,6 +19,7 @@ import { DOMAINS, type Milestone } from '../framework';
 import type { Readiness } from '../store/reducer';
 import { MarkupExample } from './MarkupExample';
 import { useLabels } from '../i18n/labels';
+import { useI18n } from '../i18n';
 
 const sections = [
   'Tokens',
@@ -149,6 +150,7 @@ function Tokens({ theme }: { theme: string }) {
 
 function SectionExamples({ name, theme }: { name: string; theme: string }) {
   const labels = useLabels();
+  const { t } = useI18n();
   switch (name) {
     case 'Tokens':
       return <Tokens theme={theme} />;
@@ -342,16 +344,20 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
           </Menu>
         </MarkupExample>
       );
-    case 'ScrollRow':
+    case 'ScrollRow': {
+      const filters: (ReportStatus | 'all')[] = ['all', 'notStarted', 'draft', 'review', 'changes', 'approved'];
       return (
         <MarkupExample title="Horizontally overflowing row">
-          <ScrollRow className="chip-row scroll catalog-scroll">
-            {['Observation 1', 'Observation 2', 'Observation 3', 'Observation 4', 'Observation 5'].map((item) => (
-              <span className="chip" key={item}>{item}</span>
+          <ScrollRow className="chip-row scroll catalog-scroll" role="group" aria-label={t('pages.students.filterLabel')}>
+            {filters.map((filter) => (
+              <button key={filter} className="chip" type="button" aria-pressed={filter === 'all'}>
+                {filter === 'all' ? t('pages.shared.all') : labels.status(filter)}
+              </button>
             ))}
           </ScrollRow>
         </MarkupExample>
       );
+    }
     case 'Cards':
       return (
         <MarkupExample title="Card, padded card and stretched link">

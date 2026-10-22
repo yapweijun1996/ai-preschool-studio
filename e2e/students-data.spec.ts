@@ -6,6 +6,16 @@ const IDS = ['aria', 'ethan', 'meiling', 'rayan', 'sofia', 'daniel', 'hana', 'ar
 test.describe('all students · desktop 1440', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
+  test('student filter row does not add a Tab stop before its filter buttons', async ({ page }) => {
+    await page.goto('./#/students');
+    const row = page.getByRole('group', { name: 'Filter by report status' });
+    await expect(row).toBeVisible();
+    await expect(row).not.toHaveAttribute('tabindex', /.+/);
+    await page.getByRole('searchbox', { name: 'Search students' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(row.getByRole('button', { name: 'All' })).toBeFocused();
+  });
+
   test('students list shows 20; counts match each studio evidence panel', async ({ page }) => {
     test.setTimeout(120_000);
     await page.goto('./#/students');
