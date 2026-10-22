@@ -69,6 +69,12 @@ function CoverageContent() {
   };
   const statusLabel = (status: CoverageStatus) => t(statusKeys[status]);
   const domainLabel = labels.domainShort;
+  const summaryLabel = coverage ? [
+    t('pages.coverage.childrenWithGaps', { count: coverage.summary.childrenWithGaps }),
+    t('pages.coverage.areasMissing', { count: coverage.summary.areasMissing }),
+    t('pages.coverage.areasThin', { count: coverage.summary.areasThin }),
+    t('pages.coverage.areasStale', { count: coverage.summary.areasStale })
+  ].join(' · ') : '';
 
   return (
     <AppShell
@@ -89,23 +95,13 @@ function CoverageContent() {
           </div>
           <section
             className="card card-pad coverage-summary"
-            aria-label={coverage ? t('pages.coverage.summary', {
-                children: coverage.summary.childrenWithGaps,
-                missing: coverage.summary.areasMissing,
-                thin: coverage.summary.areasThin,
-                stale: coverage.summary.areasStale
-              }) : t('pages.coverage.title')}
+            aria-label={coverage ? summaryLabel : t('pages.coverage.title')}
             aria-busy={loading}
           >
             {coverage ? <>
               <span className="coverage-summary-item">
                 <Icon name="alertCircle" size={18} />
-                {t('pages.coverage.summary', {
-                  children: coverage.summary.childrenWithGaps,
-                  missing: coverage.summary.areasMissing,
-                  thin: coverage.summary.areasThin,
-                  stale: coverage.summary.areasStale
-                })}
+                {summaryLabel}
               </span>
               {coverage.summary.childrenWithGaps === 0 && <p className="sec">{t('pages.coverage.emptyOk')}</p>}
             </> : loading && <p role="status" className="sec muted">{t('pages.coverage.loading')}</p>}
@@ -161,7 +157,7 @@ function CoverageContent() {
                               : t('pages.coverage.noLatest')}
                           </span>
                           {role.can('observation.add') && <Link
-                            className="coverage-add"
+                            className="link-btn coverage-add"
                             aria-label={t('pages.coverage.addFor', {
                               name: row.student.name,
                               area: domainLabel(area.area)
@@ -198,7 +194,7 @@ function CoverageContent() {
                           : t('pages.coverage.noLatest')}
                       </span>
                       {role.can('observation.add') && <Link
-                        className="coverage-add"
+                        className="link-btn coverage-add"
                         aria-label={t('pages.coverage.addFor', {
                           name: row.student.name,
                           area: domainLabel(area.area)

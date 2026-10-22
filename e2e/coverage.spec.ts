@@ -4,8 +4,11 @@ import { CURRENT_FRAMEWORK } from '../src/framework';
 test('missing coverage opens observation with that area selected and updates after saving', async ({ page }) => {
   await page.goto('./#/coverage');
   await expect(page.getByRole('heading', { name: 'Evidence coverage' })).toBeVisible();
+  await expect(page.locator('.coverage-summary')).not.toContainText(/1 stale areas/);
   const cell = page.locator('.coverage-cell').filter({ has: page.getByText('Missing', { exact: true }) }).first();
   const add = cell.getByRole('link', { name: /^Add observation for/ });
+  await expect(add).toHaveClass(/link-btn/);
+  expect(await add.evaluate((node) => getComputedStyle(node).color)).not.toBe('rgb(0, 0, 238)');
   const href = await add.getAttribute('href');
   expect(href).toMatch(/\?area=(en|zh|ma|se)$/);
   const area = href!.split('area=')[1] as 'en' | 'zh' | 'ma' | 'se';
@@ -42,7 +45,10 @@ test('mobile coverage uses child cards without the wide table', async ({ page })
   await expect(page.locator('.coverage-mobile-list .coverage-mobile-card').first()).toBeVisible();
   await expect(page.locator('.coverage-mobile-area')).toHaveCount(80);
   await expect(page.getByRole('group', { name: 'Learning areas for Aria Tan' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Add observation for Aria Tan, English' })).toBeVisible();
+  const add = page.getByRole('link', { name: 'Add observation for Aria Tan, English' });
+  await expect(add).toBeVisible();
+  await expect(add).toHaveClass(/link-btn/);
+  expect(await add.evaluate((node) => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
 });
 
 test('coverage horizontal table scroll is a named region', async ({ page }) => {
@@ -58,6 +64,9 @@ test('review queue is oldest first and opens the selected child report', async (
   const rows = page.locator('.review-row');
   await expect(rows).toHaveCount(4);
   await expect(rows.locator('h2')).toHaveText(['Ethan Koh', 'Daniel Wong', 'Priya Raman', 'Wei Ming Ho']);
+  await expect(rows.locator('.review-block.is-ready')).toHaveCount(4);
+  await expect(rows.locator('.review-block.is-ready').first()).toHaveText('Ready to approve');
+  await expect(rows.locator('.review-block.is-blocked')).toHaveCount(0);
   await rows.first().getByRole('link', { name: 'Open report' }).click();
   await expect(page).toHaveURL(/#\/students\/ethan\/report$/);
 });

@@ -278,7 +278,10 @@ export const pages: Dict['pages'] = {
   },
   coverage: {
     title: '学习证据覆盖情况',
-    summary: '{children} 名幼儿有待跟进 · 缺少 {missing} 个领域的证据 · {thin} 个领域证据不足 · {stale} 个领域的证据已过时',
+    childrenWithGaps: '{count} 名幼儿有待跟进', childrenWithGaps_one: '{count} 名幼儿有待跟进',
+    areasMissing: '缺少 {count} 个领域的证据', areasMissing_one: '缺少 {count} 个领域的证据',
+    areasThin: '{count} 个领域证据不足', areasThin_one: '{count} 个领域证据不足',
+    areasStale: '{count} 个领域的证据已过时', areasStale_one: '{count} 个领域的证据已过时',
     term: '报告学期', filters: '筛选覆盖情况', all: '全部', attention: '需要跟进', missingFilter: '缺少证据', staleFilter: '证据已过时',
     student: '幼儿', count: '{count} 条观察', count_one: '{count} 条观察', latest: '最近：{date}', noLatest: '尚无证据',
     statusMissing: '缺少证据', statusThin: '证据不足', statusStale: '证据已过时', statusOk: '充足', add: '添加观察', addFor: '为{name}的{area}添加观察',
@@ -288,9 +291,9 @@ export const pages: Dict['pages'] = {
     loading: '正在加载证据覆盖情况……', error: '无法加载证据覆盖情况。', retry: '重试'
   },
   reviews: {
-    title: '审核队列', submitted: '提交日期：{date}', waiting: '已等待 {count} 天', waiting_one: '已等待 {count} 天', changesRequestedOn: '要求修改日期：{date}', readiness: '已撰写 {written}/{total} 个领域',
-    claims: '{count} 项待核实陈述', claims_one: '{count} 项待核实陈述', block: '无法批准：{reason}', blockNone: '没有批准阻碍',
-    blockClaims: '{count} 项陈述尚无证据', blockIncomplete: '报告尚未完成', blockStatus: '报告状态：{status}', open: '打开报告',
+    title: '审核队列', submitted: '提交日期：{date}', waiting: '已等待 {count} 天', waiting_one: '已等待 {count} 天', changesRequestedOn: '要求修改日期：{date}', readiness: '已撰写 {written}/{total} 个领域', readiness_one: '已撰写 {written}/{total} 个领域',
+    claims: '{count} 项待核实陈述', claims_one: '{count} 项待核实陈述', block: '无法批准：{reason}', ready: '可以批准',
+    blockClaims: '{count} 项陈述尚无证据', blockClaims_one: '{count} 项陈述尚无证据', blockIncomplete: '报告尚未完成', blockStatus: '报告状态：{status}', open: '打开报告',
     empty: '目前没有等待审核的报告。', changesHeading: '等待你处理', changesEmpty: '目前没有等待修改的报告。',
     loading: '正在加载审核队列……', error: '无法加载审核队列。', retry: '重试', viewQueue: '查看审核队列'
   }

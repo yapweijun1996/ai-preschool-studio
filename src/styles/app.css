@@ -452,7 +452,8 @@ legend { padding: 0; margin-bottom: var(--space-2); }
 .review-row { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; }
 .dashboard-review-list { min-height: 195px; }
 .review-copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.review-block { color: var(--color-warning); }
+.review-block.is-blocked { color: var(--color-warning); }
+.review-block.is-ready { color: var(--color-success); }
 .reviews-page > .stack { gap: 12px; }
 .coverage-page .notice, .reviews-page .notice { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .is-mobile .coverage-page .page-title-row { align-items: flex-start; }

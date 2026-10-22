@@ -278,7 +278,10 @@ export const pages: Dict['pages'] = {
   },
   coverage: {
     title: 'Liputan bukti pembelajaran',
-    summary: '{children} kanak-kanak perlu diberi perhatian · {missing} bidang tanpa bukti · {thin} bidang dengan bukti terhad · {stale} bidang dengan bukti lama',
+    childrenWithGaps: '{count} kanak-kanak perlu diberi perhatian', childrenWithGaps_one: '{count} kanak-kanak perlu diberi perhatian',
+    areasMissing: '{count} bidang tanpa bukti', areasMissing_one: '{count} bidang tanpa bukti',
+    areasThin: '{count} bidang dengan bukti terhad', areasThin_one: '{count} bidang dengan bukti terhad',
+    areasStale: '{count} bidang dengan bukti lama', areasStale_one: '{count} bidang dengan bukti lama',
     term: 'Penggal laporan', filters: 'Tapis liputan', all: 'Semua', attention: 'Perlu perhatian', missingFilter: 'Tiada bukti', staleFilter: 'Bukti lama',
     student: 'Kanak-kanak', count: '{count} pemerhatian', count_one: '{count} pemerhatian', latest: 'Terkini {date}', noLatest: 'Belum ada bukti',
     statusMissing: 'Tiada bukti', statusThin: 'Bukti belum mencukupi', statusStale: 'Bukti lama', statusOk: 'Mencukupi', add: 'Tambah pemerhatian', addFor: 'Tambah pemerhatian untuk {name}, {area}',
@@ -288,9 +291,9 @@ export const pages: Dict['pages'] = {
     loading: 'Memuatkan liputan bukti…', error: 'Liputan bukti tidak dapat dimuatkan.', retry: 'Cuba lagi'
   },
   reviews: {
-    title: 'Giliran semakan', submitted: 'Dihantar pada {date}', waiting: 'Menunggu selama {count} hari', waiting_one: 'Menunggu selama {count} hari', changesRequestedOn: 'Perubahan diminta pada {date}', readiness: '{written} daripada {total} bidang telah ditulis',
-    claims: '{count} dakwaan belum disahkan', claims_one: '{count} dakwaan belum disahkan', block: 'Kelulusan terhalang: {reason}', blockNone: 'Tiada halangan untuk kelulusan',
-    blockClaims: '{count} dakwaan memerlukan bukti', blockIncomplete: 'Laporan belum lengkap', blockStatus: 'Status laporan ialah {status}', open: 'Buka laporan',
+    title: 'Giliran semakan', submitted: 'Dihantar pada {date}', waiting: 'Menunggu selama {count} hari', waiting_one: 'Menunggu selama {count} hari', changesRequestedOn: 'Perubahan diminta pada {date}', readiness: '{written} daripada {total} bidang telah ditulis', readiness_one: '{written} daripada {total} bidang telah ditulis',
+    claims: '{count} dakwaan belum disahkan', claims_one: '{count} dakwaan belum disahkan', block: 'Disekat: {reason}', ready: 'Sedia untuk diluluskan',
+    blockClaims: '{count} dakwaan memerlukan bukti', blockClaims_one: '{count} dakwaan memerlukan bukti', blockIncomplete: 'Laporan belum lengkap', blockStatus: 'Status laporan ialah {status}', open: 'Buka laporan',
     empty: 'Tiada laporan yang menunggu semakan.', changesHeading: 'Menunggu tindakan anda', changesEmpty: 'Tiada laporan yang menunggu perubahan daripada anda.',
     loading: 'Memuatkan giliran semakan…', error: 'Giliran semakan tidak dapat dimuatkan.', retry: 'Cuba lagi',
     viewQueue: 'Lihat giliran semakan'

@@ -44,7 +44,7 @@ function ReviewsContent() {
   const teacher = role.can('reviews.changes');
   const reason = (item: QueuedReport) => {
     const block = item.approvalBlock;
-    if (!block) return t('pages.reviews.blockNone');
+    if (!block) return '';
     if (block.reason === 'claims') return t('pages.reviews.blockClaims', { count: block.count });
     if (block.reason === 'incomplete') return t('pages.reviews.blockIncomplete');
     return t('pages.reviews.blockStatus', { status: labels.status(block.status) });
@@ -72,8 +72,13 @@ function ReviewsContent() {
               <div className="grow review-copy">
                 <h2 className="h2">{item.student.name}</h2>
                 <p className="sec muted">{t('pages.reviews.submitted', { date: fmtDate(item.submittedAt) })} · {t('pages.reviews.waiting', { count: item.daysWaiting })}</p>
-                <p className="sec">{t('pages.reviews.readiness', { written: item.readiness.domainsWritten, total: item.readiness.domainsTotal })} · {t('pages.reviews.claims', { count: item.unverifiedClaimCount })}</p>
-                <p className="sec review-block"><Icon name={item.approvalBlock ? 'alertCircle' : 'check'} size={16} />{t('pages.reviews.block', { reason: reason(item) })}</p>
+                <p className="sec">{t('pages.reviews.readiness', { written: item.readiness.domainsWritten, total: item.readiness.domainsTotal, count: item.readiness.domainsTotal })} · {t('pages.reviews.claims', { count: item.unverifiedClaimCount })}</p>
+                <p className={`sec review-block${item.approvalBlock ? ' is-blocked' : ' is-ready'}`}>
+                  <Icon name={item.approvalBlock ? 'alertCircle' : 'check'} size={16} />
+                  {item.approvalBlock
+                    ? t('pages.reviews.block', { reason: reason(item) })
+                    : t('pages.reviews.ready')}
+                </p>
               </div>
               {role.can('report.review') && <Link className="btn btn-secondary" to={`/students/${item.student.id}/report`}>{t('pages.reviews.open')}</Link>}
             </article>)}
