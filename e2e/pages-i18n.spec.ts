@@ -112,6 +112,10 @@ for (const lang of ['zh', 'ms'] as Lang[]) {
 
         await page.getByRole('button', { name: c.submit }).click();
         await expect(page.getByRole('heading', { name: c.reportTitle })).toBeVisible();
+        if (vp.mobile) await page.locator('.tabbar button.tabbar-item').click();
+        else await page.locator('button.avatar').click();
+        const reviewerName = lang === 'en' ? /Reviewer/ : lang === 'zh' ? /审核人/ : /Penyemak/;
+        await page.getByRole('menuitemradio', { name: reviewerName }).click();
         await expect(page.getByText(c.blocked, { exact: true })).toBeVisible();
         await expect(page.getByRole('button', { name: c.approve, exact: true })).toHaveAttribute('aria-disabled', 'true');
         if (lang === 'zh') await expectNoEnglishUi(page);

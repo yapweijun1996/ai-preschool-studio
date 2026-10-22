@@ -48,6 +48,8 @@ test.describe('desktop 1440 journey', () => {
     await page.getByRole('button', { name: 'Submit for review' }).click();
 
     await expect(page.getByRole('heading', { name: 'Report preview' })).toBeVisible();
+    await page.getByRole('button', { name: /Account menu/ }).click();
+    await page.getByRole('menuitemradio', { name: 'Reviewer / Principal' }).click();
     await expect(page.getByText('Approval blocked')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Approve' })).toHaveAttribute('aria-disabled', 'true');
     await page.screenshot(shot('07-report-blocked'));

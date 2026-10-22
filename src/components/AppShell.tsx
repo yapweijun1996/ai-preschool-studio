@@ -208,7 +208,7 @@ function DemoStrip({ compact }: { compact?: boolean }) {
     <div className="demo-strip" role="note">
       <Icon name="alert" size={16} />
       <span>{compact ? t('shell.demoStripCompact') : t('shell.demoStrip')}</span>
-      <span className="role-chip">{t('shell.roles.viewingAs', { role: t(selected.labelKey) })}</span>
+      <span className="role-chip" role="status" aria-live="polite">{t('shell.roles.viewingAs', { role: t(selected.labelKey) })}</span>
     </div>
   );
 }

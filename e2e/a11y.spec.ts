@@ -5,6 +5,8 @@ import { expect, test } from '@playwright/test';
 
 const routes = [
   { name: 'dashboard', path: './#/' },
+  { name: 'admin-planned', path: './#/', role: 'admin' },
+  { name: 'parent-planned', path: './#/', role: 'parent' },
   { name: 'catalog', path: './#/catalog' },
   { name: 'students', path: './#/students' },
   { name: 'aria-profile', path: './#/students/aria' },
@@ -30,10 +32,11 @@ for (const route of routes) {
   for (const variant of variants) {
     test(`${route.name} · ${variant.name}`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width: variant.width, height: variant.height });
-      await page.addInitScript(({ theme, language }) => {
+      await page.addInitScript(({ theme, language, role }) => {
         localStorage.setItem('aps-theme', theme);
         if (language === 'zh') localStorage.setItem('aps-lang', 'zh');
-      }, { theme: variant.theme, language: variant.language });
+        if (role) sessionStorage.setItem('aps-demo-role', role);
+      }, { theme: variant.theme, language: variant.language, role: 'role' in route ? route.role : undefined });
       await page.goto(route.path);
       await expect(page.getByRole('main')).toBeVisible();
       await page.waitForTimeout(600);
