@@ -274,5 +274,23 @@ export const pages: Dict['pages'] = {
     pageOf: 'Halaman {page} daripada {total}',
     frameworkLine: '{name} v{version}',
     phoneNote: 'Paparan telefon menyusun semula halaman A4. Eksport PDF menunjukkan susun atur cetakan yang tepat.'
+  },
+  coverage: {
+    title: 'Liputan bukti pembelajaran',
+    summary: '{children} kanak-kanak perlu diberi perhatian · {missing} bidang tanpa bukti · {stale} bidang dengan bukti lama',
+    term: 'Penggal laporan', filters: 'Tapis liputan', all: 'Semua', attention: 'Perlu perhatian', missingFilter: 'Tiada bukti', staleFilter: 'Bukti lama',
+    student: 'Kanak-kanak', count: '{count} pemerhatian', count_one: '{count} pemerhatian', latest: 'Terkini {date}', noLatest: 'Belum ada bukti',
+    statusMissing: 'Tiada bukti', statusThin: 'Bukti belum mencukupi', statusStale: 'Bukti lama', statusOk: 'Mencukupi', add: 'Tambah pemerhatian',
+    emptyOk: 'Setiap kanak-kanak mempunyai bukti terkini yang mencukupi', noResults: 'Tiada kanak-kanak yang sepadan dengan penapis ini.',
+    tableCaption: 'Liputan bukti mengikut kanak-kanak dan bidang pembelajaran', areaCount: '{count} pemerhatian · {status}', mobileAreas: 'Bidang pembelajaran untuk {name}',
+    loading: 'Memuatkan liputan bukti…', error: 'Liputan bukti tidak dapat dimuatkan.', retry: 'Cuba lagi'
+  },
+  reviews: {
+    title: 'Giliran semakan', submitted: 'Dihantar pada {date}', waiting: 'Menunggu selama {count} hari', readiness: '{written} daripada {total} bidang telah ditulis',
+    claims: '{count} dakwaan belum disahkan', claims_one: '{count} dakwaan belum disahkan', block: 'Kelulusan terhalang: {reason}', blockNone: 'Tiada halangan untuk kelulusan',
+    blockClaims: '{count} dakwaan memerlukan bukti', blockIncomplete: 'Laporan belum lengkap', blockStatus: 'Status laporan ialah {status}', open: 'Buka laporan',
+    empty: 'Tiada laporan yang menunggu semakan.', changesHeading: 'Menunggu tindakan anda', changesEmpty: 'Tiada laporan yang menunggu perubahan daripada anda.',
+    loading: 'Memuatkan giliran semakan…', error: 'Giliran semakan tidak dapat dimuatkan.', retry: 'Cuba lagi', topHeading: 'Giliran semakan',
+    viewQueue: 'Lihat giliran semakan', submittedBy: 'Dihantar pada {date}'
   }
 };

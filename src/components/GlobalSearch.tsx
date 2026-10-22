@@ -11,6 +11,8 @@ import { useRole } from '../roles/RoleContext';
 const PAGES: { key: string; label: TKey; to: string; icon: IconName }[] = [
   { key: 'dashboard', label: 'shell.nav.dashboard', to: '/', icon: 'home' },
   { key: 'students', label: 'shell.nav.students', to: '/students', icon: 'users' },
+  { key: 'coverage', label: 'pages.coverage.title', to: '/coverage', icon: 'layers' },
+  { key: 'reviews', label: 'pages.reviews.title', to: '/reviews', icon: 'fileText' },
   { key: 'settings', label: 'shell.more.settings', to: '/settings', icon: 'settings' }
 ];
 
@@ -58,7 +60,13 @@ export function GlobalSearch() {
     const students = (role.can('students.view') ? allSummaries(state) : [])
       .filter((s) => !q || s.student.name.toLowerCase().includes(q))
       .map((s) => ({ kind: 'student' as const, key: s.student.id, to: `/students/${s.student.id}`, summary: s }));
-    const pages = PAGES.filter((p) => (p.key === 'dashboard' ? role.can('dashboard.view') : p.key === 'students' ? role.can('students.view') : role.can('settings.view')))
+    const pages = PAGES.filter((p) => {
+      if (p.key === 'dashboard') return role.can('dashboard.view');
+      if (p.key === 'students') return role.can('students.view');
+      if (p.key === 'coverage') return role.can('coverage.view');
+      if (p.key === 'reviews') return role.can('reviews.view') || role.role === 'teacher';
+      return role.can('settings.view');
+    })
       .filter((p) => !q || t(p.label).toLowerCase().includes(q))
       .map((p) => ({ kind: 'page' as const, key: p.key, to: p.to, page: p }));
     return [...students, ...pages];

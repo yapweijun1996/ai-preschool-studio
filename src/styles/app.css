@@ -414,3 +414,43 @@ legend { padding: 0; margin-bottom: var(--space-2); }
   font-weight: 600;
   white-space: normal;
 }
+
+/* Evidence coverage and review queue */
+.coverage-page, .reviews-page { min-width: 0; }
+.coverage-term { width: 156px; flex: 0 0 auto; }
+.coverage-summary { display: flex; flex-direction: column; gap: 8px; }
+.coverage-summary-item, .coverage-state, .review-block { display: inline-flex; align-items: center; gap: 8px; }
+.coverage-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.coverage-table-card { overflow: hidden; }
+.coverage-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.coverage-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
+.coverage-table caption { padding: 14px 16px; text-align: left; color: var(--color-text-muted); font-size: 14px; }
+.coverage-table th, .coverage-table td { min-width: 220px; padding: 10px; border-top: 1px solid var(--color-border); border-right: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+.coverage-table thead th { position: sticky; top: 0; z-index: 2; background: var(--color-surface-muted); }
+.coverage-table .coverage-student-head, .coverage-table .coverage-student-cell { position: sticky; left: 0; z-index: 3; min-width: 190px; width: 190px; background: var(--color-surface); }
+.coverage-table .coverage-student-head { z-index: 4; background: var(--color-surface-muted); }
+.coverage-child { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.coverage-child:hover { text-decoration: underline; }
+.coverage-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 110px; }
+.coverage-state { font-size: 14px; }
+.coverage-cell.status-missing .coverage-state, .coverage-cell.status-stale .coverage-state { color: var(--color-warning); }
+.coverage-cell.status-thin .coverage-state { color: var(--color-text-muted); }
+.coverage-cell.status-ok .coverage-state { color: var(--color-success); }
+.coverage-add { font-size: 13px; font-weight: 600; }
+.coverage-mobile-list { display: none; }
+.coverage-mobile-card { display: flex; flex-direction: column; gap: 12px; }
+.coverage-mobile-areas { display: flex; flex-direction: column; }
+.coverage-mobile-area { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 12px 0; border-top: 1px solid var(--color-border); }
+.coverage-mobile-area .cap, .coverage-mobile-area .coverage-add { grid-column: 1 / -1; }
+.review-row { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; }
+.review-copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.review-block { color: var(--color-warning); }
+.reviews-page > .stack { gap: 12px; }
+.coverage-page .notice, .reviews-page .notice { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.is-mobile .coverage-page .page-title-row { align-items: flex-start; }
+.is-mobile .coverage-term { width: 130px; }
+.is-mobile .coverage-table-card { display: none; }
+.is-mobile .coverage-mobile-list { display: flex; flex-direction: column; gap: 12px; }
+.is-mobile .review-row { flex-wrap: wrap; padding: 16px; }
+.is-mobile .review-row .btn { margin-left: 48px; }
+.is-mobile .coverage-summary-item { align-items: flex-start; }

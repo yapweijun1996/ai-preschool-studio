@@ -12,12 +12,14 @@ export type Capability =
   | 'settings.view'
   | 'demo.controls'
   | 'catalog.view'
-  | 'students.view';
+  | 'students.view'
+  | 'coverage.view'
+  | 'reviews.view';
 
 export const ROLE_CAPABILITIES: Readonly<Record<Role, readonly Capability[]>> = {
-  teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view'],
-  reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view'],
-  admin: ['dashboard.view', 'students.view', 'settings.view', 'demo.controls', 'catalog.view'],
+  teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view', 'coverage.view'],
+  reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view', 'coverage.view', 'reviews.view'],
+  admin: ['dashboard.view', 'students.view', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'coverage.view', 'reviews.view'],
   parent: ['dashboard.view', 'settings.view']
 };
 

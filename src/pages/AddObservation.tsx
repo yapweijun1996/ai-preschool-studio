@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { Avatar, Notice, SourceChip } from '../components/ui';
@@ -34,17 +34,22 @@ const formKey = (f: Form) => JSON.stringify([f.date, f.domain, f.milestone, f.te
 
 export function AddObservation() {
   const { id = '' } = useParams();
+  const [searchParams] = useSearchParams();
   const { t, fmtDate } = useI18n();
   const { domainShort, milestone: milestoneLabel, term: periodLabel, termShort } = useLabels();
   const { state, dispatch } = usePortfolio();
   const role = useRole();
   const [date, setDate] = useState(TODAY);
-  const [domain, setDomain] = useState<DomainKey>('ma');
+  const initialDomain = (() => {
+    const requested = searchParams.get('area');
+    return DOMAINS.some((area) => area.key === requested) ? requested as DomainKey : 'ma';
+  })();
+  const [domain, setDomain] = useState<DomainKey>(initialDomain);
   const [milestone, setMilestone] = useState<Milestone>('developing');
   const [text, setText] = useState(DEMO_TEXT);
   const [phase, setPhase] = useState<Phase>({ kind: 'editing' });
   // The form as first shown (prefilled demo), last saved, or last cleared: only changes from it are unsaved work.
-  const [baseline, setBaseline] = useState(() => formKey({ date: TODAY, domain: 'ma', milestone: 'developing', text: DEMO_TEXT }));
+  const [baseline, setBaseline] = useState(() => formKey({ date: TODAY, domain: initialDomain, milestone: 'developing', text: DEMO_TEXT }));
   const [error, setError] = useState(false);
   const [dateError, setDateError] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);

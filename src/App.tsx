@@ -5,11 +5,13 @@ import { NavMemoryProvider } from './hooks/useNavMemory';
 import { useTheme } from './hooks/useTheme';
 import { I18nProvider } from './i18n';
 import { AddObservation } from './pages/AddObservation';
+import { Coverage } from './pages/Coverage';
 import { Dashboard } from './pages/Dashboard';
 import { LearningProgress } from './pages/LearningProgress';
 import { NotFound } from './pages/NotFound';
 import { PortfolioStudio } from './pages/PortfolioStudio';
 import { ReportPreview } from './pages/ReportPreview';
+import { Reviews } from './pages/Reviews';
 import { Settings } from './pages/Settings';
 import { StudentProfile } from './pages/StudentProfile';
 import { Students } from './pages/Students';
@@ -42,6 +44,8 @@ export function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
+            <Route path="/coverage" element={<Coverage />} />
+            <Route path="/reviews" element={<Reviews />} />
             <Route path="/students/:id" element={<StudentProfile />} />
             <Route path="/students/:id/observe" element={<PerStudent><AddObservation /></PerStudent>} />
             <Route path="/students/:id/progress" element={<LearningProgress />} />

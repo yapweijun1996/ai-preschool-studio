@@ -14,7 +14,7 @@ import { DEMO_ROLES } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { Capability } from '../roles';
 
-export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'settings';
+export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'coverage' | 'reviews' | 'settings';
 
 export const ThemeContext = createContext<{ pref: ThemePref; theme: Theme; setPref: (p: ThemePref) => void }>({
   pref: 'light',

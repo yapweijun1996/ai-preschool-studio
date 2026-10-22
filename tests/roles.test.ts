@@ -3,11 +3,11 @@ import { can, DEMO_ROLES, ROLE_CAPABILITIES, type Capability, type Role } from '
 
 describe('demo role capability table', () => {
   it('defines the complete capability matrix', () => {
-    const capabilities: Capability[] = ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.review', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view'];
+    const capabilities: Capability[] = ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.review', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view', 'coverage.view', 'reviews.view'];
     const expected: Record<Role, Capability[]> = {
-      teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view'],
-      reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view'],
-      admin: ['dashboard.view', 'students.view', 'settings.view', 'demo.controls', 'catalog.view'],
+      teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view', 'coverage.view'],
+      reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view', 'coverage.view', 'reviews.view'],
+      admin: ['dashboard.view', 'students.view', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'coverage.view', 'reviews.view'],
       parent: ['dashboard.view', 'settings.view']
     };
     expect(Object.keys(ROLE_CAPABILITIES).sort()).toEqual(['admin', 'parent', 'reviewer', 'teacher']);

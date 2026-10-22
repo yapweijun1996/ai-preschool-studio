@@ -102,7 +102,10 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
           </>
         )}
         {module === 'students' && (
-          <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">{STUDENTS.length}</span></Link>
+          <>
+            <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">{STUDENTS.length}</span></Link>
+            {role.can('coverage.view') && <Link className="nav-link" to="/coverage" aria-current={path === '/coverage' ? 'page' : undefined}><Icon name="layers" size={18} />{t('pages.coverage.title')}</Link>}
+          </>
         )}
         {module === 'observations' && role.can('observation.add') && (
           <>
@@ -118,6 +121,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
         )}
         {module === 'reports' && role.can('report.view') && (
           <>
+            {(role.can('reviews.view') || role.role === 'teacher') && <Link className="nav-link" to="/reviews" aria-current={path === '/reviews' ? 'page' : undefined}><Icon name="fileText" size={18} />{t('pages.reviews.title')}</Link>}
             <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue', { term: labels.termShort(4) })}</p>
             {(['review', 'changes', 'draft', 'notStarted', 'approved'] as ReportStatus[]).map((st) => (
               <Link key={st} className="nav-link" to={`/students?status=${st}`} aria-current={status === st ? 'page' : undefined}>

@@ -274,5 +274,23 @@ export const pages: Dict['pages'] = {
     pageOf: '第 {page} 页，共 {total} 页',
     frameworkLine: '{name} v{version}',
     phoneNote: '手机视图会重新排版 A4 页面。导出 PDF 可查看准确的打印版式。'
+  },
+  coverage: {
+    title: '学习证据覆盖情况',
+    summary: '{children} 名幼儿有待跟进 · 缺少 {missing} 个领域的证据 · {stale} 个领域的证据已过时',
+    term: '报告学期', filters: '筛选覆盖情况', all: '全部', attention: '需要跟进', missingFilter: '缺少证据', staleFilter: '证据已过时',
+    student: '幼儿', count: '{count} 条观察', count_one: '{count} 条观察', latest: '最近：{date}', noLatest: '尚无证据',
+    statusMissing: '缺少证据', statusThin: '证据不足', statusStale: '证据已过时', statusOk: '充足', add: '添加观察',
+    emptyOk: '每位幼儿都有足够且近期的学习证据', noResults: '没有符合此筛选条件的幼儿。',
+    tableCaption: '按幼儿和学习领域查看证据覆盖情况', areaCount: '{count} 条观察 · {status}', mobileAreas: '{name} 的学习领域',
+    loading: '正在加载证据覆盖情况……', error: '无法加载证据覆盖情况。', retry: '重试'
+  },
+  reviews: {
+    title: '审核队列', submitted: '提交日期：{date}', waiting: '已等待 {count} 天', readiness: '已撰写 {written}/{total} 个领域',
+    claims: '{count} 项待核实陈述', claims_one: '{count} 项待核实陈述', block: '无法批准：{reason}', blockNone: '没有批准阻碍',
+    blockClaims: '{count} 项陈述尚无证据', blockIncomplete: '报告尚未完成', blockStatus: '报告状态：{status}', open: '打开报告',
+    empty: '目前没有等待审核的报告。', changesHeading: '等待你处理', changesEmpty: '目前没有等待修改的报告。',
+    loading: '正在加载审核队列……', error: '无法加载审核队列。', retry: '重试', topHeading: '审核队列', viewQueue: '查看审核队列',
+    submittedBy: '提交日期：{date}'
   }
 };
