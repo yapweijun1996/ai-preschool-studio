@@ -3,7 +3,7 @@
 - Tier: Core
 - Owns: Observation records and their generated demo identifiers
 - Reads: Student (Children & Classes; static fictional records), learning area, milestone and reporting period (Learning Framework)
-- Status: exists
+- Status: done (v0.4.0)
 
 ## Purpose
 
@@ -29,7 +29,7 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 ## Screens and states
 
 - Add observation: prefills the fixed demo date, Mathematics, Developing and sample text; form fields include date/domain/milestone/text. Date out of allowed Term 4 range and text shorter than 10 trimmed characters show inline errors and focus the first invalid field (`src/pages/AddObservation.tsx:34-72,141-197`).
-- Save: editing/unsaved, saving, saved with source ID, and failed with retry are explicit states (`src/pages/AddObservation.tsx:24-24,43-53,62-85,112-139`). `saveFail` is the demo simulation; no network save is attempted (`src/pages/AddObservation.tsx:74-84`).
+- Save: editing/unsaved, saving, saved with source ID, and failed with retry are explicit states. Edited unsaved input registers a dirty guard, blocking PWA update/reload until saved or discarded (`src/pages/AddObservation.tsx:43-53,62-85,112-139`). `saveFail` is the demo simulation; no network save is attempted (`src/pages/AddObservation.tsx:74-84`).
 - Missing student route renders NotFound (`src/pages/AddObservation.tsx:49-55`). There is no observation-list empty screen on this form; empty observation states appear in profile and studio.
 - Desktop and tablet show the form with tips beside it; mobile uses the compact AppShell header/action bar (`src/pages/AddObservation.tsx:93-120,207-218`; `src/components/AppShell.tsx:412-470`).
 
@@ -43,16 +43,17 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 
 ## Compliance hooks
 
-Fictional observation text and evidence references support the licensee's obligations under PDPA (Singapore) and ECDA by keeping evidence linked to a child and learning domain in the demo. Real consent, retention/deletion, access controls, media handling and audit events are not implemented; Not in Studio Demo yet — planned (roadmap Phase 4 Privacy Centre and Records Retention; audit events planned with Report Release & History in Phase 1). No child photos are collected by this screen.
+No PDPA obligation is supported by this module in Studio Demo yet. Planned: consent, retention, access controls and audit events are addressed by roadmap Privacy Centre, Records Retention and Audit Log work. No child photos are collected by this screen.
 
 ## Data port
 
-Reads:
-- `getStudentSummary(state: State, studentId: string): StudentSummary | undefined` (`src/store/selectors.ts:15-27`)
-- `getCurrentFramework(): Framework` / `getPeriod(date: string): ReportingPeriod | undefined` (`src/framework/index.ts:47-54,82-98`)
+Proposed async interfaces:
+- `getStudentSummary(studentId: string): Promise<StudentSummary | undefined>` (proposed; demo implementation: `studentSummary` `src/store/selectors.ts:15-27`)
+- `getCurrentFramework(): Promise<Framework>` (proposed; demo implementation: `frameworkFor` `src/framework/index.ts:82-86`)
+- `getPeriod(date: string): Promise<ReportingPeriod | undefined>` (proposed; demo implementation: `periodOf` `src/framework/index.ts:92-98`)
 
 Writes:
-- `addObservation(obs: Omit<Observation, 'id'>): void` — the form sends `{ studentId: string; date: string; domain: DomainKey; milestone: Milestone; text: string; hasPhoto: boolean; term: 4 }`; reducer assigns `id` and derives `term` from `date` (`src/store/reducer.ts:26-28,81-91`; `src/data/demo.ts:22-31`).
+- `addObservation(input): Promise<Observation>` (server assigns ID; demo: dispatch `{type:'addObservation', ...}` after the page computes `OBS-xxxx`; reducer derives term from date) (`src/pages/AddObservation.tsx:79`; `src/store/reducer.ts:81-91`)
 
 ## Acceptance criteria
 
