@@ -63,16 +63,13 @@ jobs:
   smoke:
     needs: deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: mcr.microsoft.com/playwright:v1.56.0-noble
     # Read-only: the smoke job only checks out and tests; it never writes to Pages.
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
 
       - name: Install
         run: npm ci
@@ -93,9 +90,6 @@ jobs:
           echo "::error::Live site does not serve build ${expected}"
           exit 1
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
       - name: E2E against the live site
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
@@ -112,6 +106,7 @@ jobs:
   lighthouse:
     needs: [deploy, smoke]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     env:

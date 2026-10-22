@@ -24,7 +24,8 @@ at the repository root, review the image changes, and commit the files under
 to `main` compare against those committed files. If the folder is absent, CI reports that the
 comparison was skipped so the first baseline capture can happen without failing the pipeline.
 
-Baselines are CI-only: capture and comparison use the same Ubuntu and Chromium versions, avoiding
+Baselines are CI-only: capture and comparison use the same official Playwright `v1.56.0-noble`
+container and Chromium version, avoiding
 native CJK font and rendering differences across developer operating systems. Do not auto-commit or push
 baselines from CI. To capture locally for investigation, use `npm run test:visual:update`; remove
 the generated PNGs before committing source changes.
