@@ -10,7 +10,7 @@ Status reflects the Studio Demo code and current roadmap. Links are provided for
 | Core | Learning Progress | done (v0.4.0) | [Learning Progress](learning-progress.md) |
 | Core | Portfolio Studio | done (v0.4.0) | [Portfolio Studio](portfolio-studio.md) |
 | Core | Report Review & Release | partial | [Report Review](report-review.md) |
-| Core | Evidence Coverage & Review Queue | partial | — |
+| Core | Evidence Coverage & Review Queue | done (v0.8.0) | [Evidence Coverage & Review Queue](evidence-coverage.md) |
 | Operations | Attendance (+ optional face-match adapter) | planned | — |
 | Operations | Daily Health Check | planned | — |
 | Operations | Pick-up & Release | planned | — |

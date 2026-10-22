@@ -17,7 +17,9 @@ recognition and admin-heavy screens; the owner has now lifted those exclusions f
 2. **Scope.** All ADR 0001 modules are designed and built as working, fictional-data screens,
    including Family Portal, School administration and Attendance with an optional face-match
    method. Two-way messaging and classroom audio stay out (no written requirement).
-3. **Real AI.** The AI assistant can call the production **Demo Gateway** (short-lived,
+3. **Real AI.** AI Provider: Demo Gateway adapter is deferred by owner (2026-10-22): the public
+   demo keeps the labelled Mock provider. Studio Platform's AI assistant can call the production
+   **Demo Gateway** (short-lived,
    origin-bound session, quota-limited). When the gateway is not configured or not reachable, the
    app falls back to the **Mock provider**. The UI always names which one answered. Only fictional
    data is ever sent; national IDs never appear in prompts.

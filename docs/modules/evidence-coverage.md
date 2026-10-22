@@ -3,7 +3,7 @@
 - Tier: Core
 - Owns: Derived evidence coverage and report review queue views; it owns no source data
 - Reads: Students (Children & Classes), observations (Observations), learning areas and coverage policy (Learning Framework), report lifecycle and narrative claims (Portfolio Studio / Report Review)
-- Status: in progress
+- Status: done (v0.8.0)
 
 ## Purpose
 

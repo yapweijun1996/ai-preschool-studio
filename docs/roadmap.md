@@ -3,7 +3,7 @@
 Goal: every module in ADR 0001 designed and built to the production quality bar in
 [ADR 0002](adr/0002-production-design-reference.md), so Studio Platform can copy or port it.
 
-Status values: **done**, **in progress**, **planned**.
+Status values: **done**, **in progress**, **planned**, **deferred by owner**.
 
 ## Phase 0: Foundation
 
@@ -21,10 +21,10 @@ Status values: **done**, **in progress**, **planned**.
 
 | Module | Status |
 |---|---|
-| Evidence Coverage & Review Queue | planned |
+| Evidence Coverage & Review Queue | done (v0.8.0) |
 | Report Release & History (frozen version, decision history, family export) + Audit Log | planned |
 | Children & Classes (enrolment, guardians, authorised collectors) | planned |
-| AI Provider: Demo Gateway adapter with Mock fallback and provider labelling | planned (needs gateway URL) |
+| AI Provider: Demo Gateway adapter with Mock fallback and provider labelling | deferred by owner (2026-10-22): the public demo keeps the labelled Mock provider |
 
 ## Phase 2: Daily operations
 
