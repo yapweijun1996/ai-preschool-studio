@@ -87,26 +87,29 @@ function CoverageContent() {
               </select>
             </label>
           </div>
-          {coverage && <section
+          <section
             className="card card-pad coverage-summary"
-            aria-label={t('pages.coverage.summary', {
-              children: coverage.summary.childrenWithGaps,
-              missing: coverage.summary.areasMissing,
-              thin: coverage.summary.areasThin,
-              stale: coverage.summary.areasStale
-            })}
-          >
-            <span className="coverage-summary-item">
-              <Icon name="alertCircle" size={18} />
-              {t('pages.coverage.summary', {
+            aria-label={coverage ? t('pages.coverage.summary', {
                 children: coverage.summary.childrenWithGaps,
                 missing: coverage.summary.areasMissing,
                 thin: coverage.summary.areasThin,
                 stale: coverage.summary.areasStale
-              })}
-            </span>
-            {coverage.summary.childrenWithGaps === 0 && <p className="sec">{t('pages.coverage.emptyOk')}</p>}
-          </section>}
+              }) : t('pages.coverage.title')}
+            aria-busy={loading}
+          >
+            {coverage ? <>
+              <span className="coverage-summary-item">
+                <Icon name="alertCircle" size={18} />
+                {t('pages.coverage.summary', {
+                  children: coverage.summary.childrenWithGaps,
+                  missing: coverage.summary.areasMissing,
+                  thin: coverage.summary.areasThin,
+                  stale: coverage.summary.areasStale
+                })}
+              </span>
+              {coverage.summary.childrenWithGaps === 0 && <p className="sec">{t('pages.coverage.emptyOk')}</p>}
+            </> : loading && <p role="status" className="sec muted">{t('pages.coverage.loading')}</p>}
+          </section>
           <div className="coverage-filters" role="group" aria-label={t('pages.coverage.filters')}>
             {filters.map((item) => <button
               key={item.key}
@@ -116,16 +119,15 @@ function CoverageContent() {
               onClick={() => setFilter(item.key)}
             >{item.label}</button>)}
           </div>
-          {coverage && <p className="sec muted" role="status" aria-live="polite">
-            {t('pages.coverage.resultCount', { count: visible.length })}
-          </p>}
+          <p className="sec muted" role="status" aria-live="polite">
+            {coverage ? t('pages.coverage.resultCount', { count: visible.length }) : ''}
+          </p>
           {failed && <div className="notice notice-error" role="alert">
             <span>{t('pages.coverage.error')}</span>
             <button className="btn btn-secondary" type="button" onClick={load}>
               {t('pages.coverage.retry')}
             </button>
           </div>}
-          {loading && <p role="status" className="sec muted">{t('pages.coverage.loading')}</p>}
           {coverage && visible.length === 0 && filter !== 'all' && <p className="card card-pad sec" role="status">
             {t('pages.coverage.noResults')}
           </p>}

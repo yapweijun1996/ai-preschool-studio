@@ -12,7 +12,7 @@ import { allSummaries } from '../store/selectors';
 import { useLastObservedLabel } from './Students';
 import { DEMO_ROLES } from '../roles';
 import { useRole } from '../roles/RoleContext';
-import type { ClassCoverage, ReviewQueue } from '../coverage';
+import type { ReviewQueue } from '../coverage';
 import { useEffect, useState } from 'react';
 
 const ORDER: ReportStatus[] = ['notStarted', 'draft', 'review', 'changes', 'approved'];
@@ -25,14 +25,12 @@ export function Dashboard() {
   const dataPort = useDataPort();
   const role = useRole();
   const showStaffDashboard = role.can('observation.add') || role.can('report.review');
-  const [coverageSummary, setCoverageSummary] = useState<ClassCoverage['summary']>();
   const [reviewQueue, setReviewQueue] = useState<ReviewQueue>();
   useEffect(() => {
     if (!showStaffDashboard) return;
     let cancelled = false;
-    void Promise.all([dataPort.getCoverage(4), dataPort.getReviewQueue()]).then(([coverage, queue]) => {
+    void dataPort.getReviewQueue().then((queue) => {
       if (cancelled) return;
-      setCoverageSummary(coverage.summary);
       setReviewQueue(queue);
     });
     return () => { cancelled = true; };
@@ -104,15 +102,18 @@ export function Dashboard() {
             <div className="stack" style={{ gap: 24 }}>
               {role.can('reviews.view') && <section className="card" aria-labelledby="review-queue-heading" style={{ overflow: 'hidden' }}>
                 <div className="card-head"><h2 id="review-queue-heading" className="h2 grow">{t('pages.reviews.title')}</h2><Link className="btn btn-ghost" to="/reviews">{t('pages.reviews.viewQueue')}</Link></div>
-                {reviewQueue && topReviews.length === 0 && <p className="sec muted" style={{ padding: '0 20px 20px' }}>{t('pages.reviews.empty')}</p>}
-                {topReviews.map((item) => <Link key={item.student.id} className="row-link" to={`/students/${item.student.id}/report`}>
-                  <Avatar initials={item.student.initials} />
-                  <span className="grow stack" style={{ gap: 4 }}><span className="strong">{item.student.name}</span><span className="sec muted">{t('pages.reviews.waiting', { count: item.daysWaiting })}</span></span>
-                  <Icon name="chevronRight" />
-                </Link>)}
+                <div className="dashboard-review-list" aria-busy={!reviewQueue}>
+                  {!reviewQueue && <p role="status" className="sec muted" style={{ padding: '0 20px' }}>{t('pages.reviews.loading')}</p>}
+                  {reviewQueue && topReviews.length === 0 && <p className="sec muted" style={{ padding: '0 20px' }}>{t('pages.reviews.empty')}</p>}
+                  {topReviews.map((item) => <Link key={item.student.id} className="row-link" to={`/students/${item.student.id}/report`}>
+                    <Avatar initials={item.student.initials} />
+                    <span className="grow stack" style={{ gap: 4 }}><span className="strong">{item.student.name}</span><span className="sec muted">{t('pages.reviews.waiting', { count: item.daysWaiting })}</span></span>
+                    <Icon name="chevronRight" />
+                  </Link>)}
+                </div>
               </section>}
               <section className="card" aria-labelledby="ar-h" style={{ overflow: 'hidden' }}>
-                <div className="card-head"><h2 id="ar-h" className="h2 grow">{t('pages.dashboard.actionRequired')}</h2><span className="cap muted">{t('pages.dashboard.items', { count: actions.length })}</span>{role.can('observation.add') && (coverageSummary?.childrenWithGaps ?? 0) > 0 && <Link className="btn btn-ghost" to="/coverage">{t('pages.coverage.title')}</Link>}</div>
+                <div className="card-head"><h2 id="ar-h" className="h2 grow">{t('pages.dashboard.actionRequired')}</h2><span className="cap muted">{t('pages.dashboard.items', { count: actions.length })}</span>{role.can('observation.add') && <Link className="btn btn-ghost" to="/coverage">{t('pages.coverage.title')}</Link>}</div>
                 {actions.length === 0 && <p className="sec muted" style={{ padding: '0 20px 20px' }}>{t('pages.dashboard.nothing')}</p>}
                 {actions.map(({ s, to, texts, label }) => (
                   <Link key={s.student.id} className="row-link" to={to}>

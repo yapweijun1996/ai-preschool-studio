@@ -425,7 +425,7 @@ legend { padding: 0; margin-bottom: var(--space-2); }
 /* Evidence coverage and review queue */
 .coverage-page, .reviews-page { min-width: 0; }
 .coverage-term { width: 156px; flex: 0 0 auto; }
-.coverage-summary { display: flex; flex-direction: column; gap: 8px; }
+.coverage-summary { display: flex; flex-direction: column; gap: 8px; min-height: 76px; }
 .coverage-summary-item, .coverage-state, .review-block { display: inline-flex; align-items: center; gap: 8px; }
 .coverage-filters { display: flex; flex-wrap: wrap; gap: 8px; }
 .coverage-table-card { overflow: hidden; }
@@ -450,6 +450,7 @@ legend { padding: 0; margin-bottom: var(--space-2); }
 .coverage-mobile-area { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 12px 0; border-top: 1px solid var(--color-border); }
 .coverage-mobile-area .cap, .coverage-mobile-area .coverage-add { grid-column: 1 / -1; }
 .review-row { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; }
+.dashboard-review-list { min-height: 195px; }
 .review-copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .review-block { color: var(--color-warning); }
 .reviews-page > .stack { gap: 12px; }
@@ -461,3 +462,4 @@ legend { padding: 0; margin-bottom: var(--space-2); }
 .is-mobile .review-row { flex-wrap: wrap; padding: 16px; }
 .is-mobile .review-row .btn { margin-left: 48px; }
 .is-mobile .coverage-summary-item { align-items: flex-start; }
+.is-mobile .coverage-summary { min-height: 112px; }
