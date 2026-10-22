@@ -141,6 +141,18 @@ test.describe('re-review fixes · desktop 1440', () => {
     await expect(page.getByRole('complementary', { name: 'Students sidebar' }).getByRole('link', { name: 'Ethan Koh' })).toBeFocused();
   });
 
+  test('the app shell stays mounted when switching child from a profile', async ({ page }) => {
+    await page.goto('./#/students/aria');
+    await page.evaluate(() => {
+      (window as Window & { __profileApp?: Element }).__profileApp = document.querySelector('.app')!;
+    });
+    await page.getByRole('complementary', { name: 'Students sidebar' }).getByRole('link', { name: 'Ethan Koh' }).click();
+    await expect(page).toHaveURL(/#\/students\/ethan$/);
+    await expect.poll(() => page.evaluate(() =>
+      (window as Window & { __profileApp?: Element }).__profileApp === document.querySelector('.app')
+    )).toBe(true);
+  });
+
   test('in review, the Studio still offers evidence links (wording stays paused)', async ({ page }) => {
     await page.goto('./#/students/aria/studio');
     await page.getByRole('button', { name: 'Submit for review' }).click();
