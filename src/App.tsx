@@ -21,7 +21,7 @@ function PerStudent({ children }: { children: ReactNode }) {
 function RoutedPages() {
   const { pathname } = useLocation();
   const kind = pageKindForPath(pathname);
-  return <RouteErrorBoundary>
+  return <RouteErrorBoundary key={pathname}>
     <Suspense fallback={kind ? <RouteFallback kind={kind} /> : null}>
       <Routes>
         <Route path="/" element={<RouteChunkSuccess><Dashboard /></RouteChunkSuccess>} />
