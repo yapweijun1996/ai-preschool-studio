@@ -13,6 +13,7 @@ const routes = [
   { name: 'children-classes-admin', path: './#/classes', role: 'admin' },
   { name: 'children-classes-reviewer', path: './#/classes', role: 'reviewer' },
   { name: 'children-classes-parent-denied', path: './#/classes', role: 'parent' },
+  { name: 'children-class-withdrawn-empty', path: './#/classes', role: 'teacher', state: 'withdrawn-empty' },
   { name: 'coverage', path: './#/coverage', role: 'reviewer' },
   { name: 'reviews', path: './#/reviews', role: 'reviewer' },
   { name: 'aria-profile', path: './#/students/aria' },
@@ -20,6 +21,9 @@ const routes = [
   { name: 'aria-family-admin', path: './#/students/aria', role: 'admin' },
   { name: 'aria-family-reviewer', path: './#/students/aria', role: 'reviewer' },
   { name: 'aria-family-parent-denied', path: './#/students/aria', role: 'parent' },
+  { name: 'aria-guardian-validation', path: './#/students/aria', role: 'admin', state: 'guardian-validation' },
+  { name: 'aria-collector-edit-dialog', path: './#/students/aria', role: 'admin', state: 'collector-dialog' },
+  { name: 'ethan-withdraw-refusal', path: './#/students/ethan', role: 'admin', state: 'withdraw-refused' },
   { name: 'aria-observe', path: './#/students/aria/observe' },
   { name: 'aria-progress', path: './#/students/aria/progress' },
   { name: 'aria-studio', path: './#/students/aria/studio' },
@@ -54,6 +58,22 @@ for (const route of routes) {
       }, { theme: variant.theme, language: variant.language, role: 'role' in route ? route.role : undefined });
       await page.goto(route.path);
       await expect(page.getByRole('main')).toBeVisible();
+      if ('state' in route) {
+        if (route.state === 'withdrawn-empty') {
+          await page.locator('.class-filters button').nth(1).click();
+        }
+        if (route.state === 'guardian-validation') {
+          await page.locator('.family-section .family-subsection').first().locator(':scope > .row button').click();
+          await page.locator('.family-dialog button[type="submit"]').click();
+        }
+        if (route.state === 'collector-dialog') {
+          await page.locator('.family-section .family-subsection').nth(1).locator('.family-record .btn-ghost').click();
+        }
+        if (route.state === 'withdraw-refused') {
+          await page.locator('.family-section .danger-text').click();
+          await page.locator('.family-dialog .btn-primary').click();
+        }
+      }
       await page.waitForTimeout(600);
 
       const results = await new AxeBuilder({ page })
