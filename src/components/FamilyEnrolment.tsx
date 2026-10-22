@@ -302,6 +302,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
                 <button
                   className="btn btn-ghost"
                   type="button"
+                  aria-label={t('pages.children.editGuardianFor', { name: guardian.name })}
                   onClick={(event) => openDialog('guardian', event.currentTarget, guardian)}
                 >
                   {t('pages.children.edit')}
@@ -355,6 +356,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
                 <button
                   className="btn btn-ghost"
                   type="button"
+                  aria-label={t('pages.children.editCollectorFor', { name: collector.name })}
                   onClick={(event) => openDialog('collector', event.currentTarget, undefined, collector)}
                 >
                   {t('pages.children.edit')}

@@ -321,7 +321,7 @@ export const pages: Dict['pages'] = {
     status: '状态', emptyRoster: '此筛选条件下没有儿童', emptyRosterBody: '选择另一种在读状态查看此班级的儿童。', noClass: '没有可用班级。',
     portfolioStudents: '作品集学生', viewClasses: '班级名册', familyTitle: '家庭与入学信息', class: '班级', dateOfBirth: '出生日期', enrolledOn: '入学日期',
     homeLanguages: '家庭语言', editChild: '编辑儿童资料', childName: '儿童姓名', readOnlyReason: '只有学校管理员可以编辑儿童和家庭记录。', guardians: '监护人',
-    addGuardian: '添加监护人', edit: '编辑', removeGuardianFor: '移除监护人{name}', primary: '主要监护人', phone: '电话', email: '电子邮件', preferredLanguage: '首选语言',
+    addGuardian: '添加监护人', edit: '编辑', editGuardianFor: '编辑监护人{name}', editCollectorFor: '编辑获授权接送人{name}', removeGuardianFor: '移除监护人{name}', primary: '主要监护人', phone: '电话', email: '电子邮件', preferredLanguage: '首选语言',
     primaryGuardian: '设为主要监护人', noGuardians: '没有监护人记录。', contactsRestricted: '此角色无法查看联系资料。', collectors: '获授权接送人', addCollector: '添加接送人',
     removeCollectorFor: '移除接送人{name}', noCollectors: '没有获授权接送人记录。', noExpiry: '没有结束日期', photoIdNote: '接送时，工作人员会在第二阶段的接送模块中核对照片身份证件。',
     healthNotes: '健康与过敏备注', allergies: '过敏情况', medical: '医疗备注', noneRecorded: '没有记录', healthRestricted: '受限——仅教师和学校管理员可见。', withdraw: '办理退园',

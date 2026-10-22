@@ -43,7 +43,7 @@ test(
   const collectors = family.locator('.family-subsection').filter({
     has: page.getByRole('heading', { name: 'Authorised collectors' })
   });
-  await collectors.getByRole('button', { name: 'Edit' }).click();
+  await collectors.getByRole('button', { name: 'Edit authorised collector Fictional Collector 01' }).click();
   const collectorDialog = page.getByRole('dialog', { name: 'Authorised collector details' });
   await collectorDialog.getByLabel('Collector name').fill('Fictional Collector E2E updated');
   await collectorDialog.getByRole('button', { name: 'Save' }).click();
@@ -80,7 +80,7 @@ test('an open collector editor cannot move Aria’s record to Chloe after route 
   await expect(family.locator('.family-facts')).toContainText('Status');
   await expect(family.locator('.family-facts')).toContainText('Active');
   const collectors = family.locator('.family-subsection').filter({ has: page.getByRole('heading', { name: 'Authorised collectors' }) });
-  await collectors.getByRole('button', { name: 'Edit' }).click();
+  await collectors.getByRole('button', { name: 'Edit authorised collector Fictional Collector 01' }).click();
   const dialog = page.getByRole('dialog', { name: 'Authorised collector details' });
   await page.goto('./#/students/chloe');
   await expect(dialog).toHaveCount(0);

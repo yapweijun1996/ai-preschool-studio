@@ -360,7 +360,7 @@ export const pages = {
     emptyRosterBody: 'Choose the other enrolment status to see children in this class.', noClass: 'No class is available.', portfolioStudents: 'Portfolio students', viewClasses: 'Class roster',
     familyTitle: 'Family & enrolment', class: 'Class', dateOfBirth: 'Date of birth', enrolledOn: 'Enrolled on', homeLanguages: 'Home languages',
     editChild: 'Edit child details', childName: 'Child name', readOnlyReason: 'Only school admins can edit child and family records.', guardians: 'Guardians',
-    addGuardian: 'Add guardian', edit: 'Edit', removeGuardianFor: 'Remove guardian {name}', primary: 'Primary', phone: 'Phone', email: 'Email',
+    addGuardian: 'Add guardian', edit: 'Edit', editGuardianFor: 'Edit guardian {name}', editCollectorFor: 'Edit authorised collector {name}', removeGuardianFor: 'Remove guardian {name}', primary: 'Primary', phone: 'Phone', email: 'Email',
     preferredLanguage: 'Preferred language', primaryGuardian: 'Primary guardian', noGuardians: 'No guardian records.', contactsRestricted: 'Contact details are restricted for this role.',
     collectors: 'Authorised collectors', addCollector: 'Add collector', removeCollectorFor: 'Remove collector {name}', noCollectors: 'No authorised collectors recorded.',
     noExpiry: 'No end date', photoIdNote: 'At pick-up, identity is checked against photo ID in Pick-up & Release (Phase 2).',
