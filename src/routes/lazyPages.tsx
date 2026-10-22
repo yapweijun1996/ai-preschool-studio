@@ -1,4 +1,4 @@
-import { lazy, useEffect, type ReactNode } from 'react';
+import { createElement, useEffect, type ComponentType, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppShell, type Module } from '../components/AppShell';
 import { useI18n } from '../i18n';
@@ -21,24 +21,50 @@ const rawPageLoaders = {
   notFound: () => import('../pages/NotFound').then((m) => ({ default: m.NotFound }))
 };
 
-export const pageLoaders = rawPageLoaders;
+export type PageKind = keyof typeof rawPageLoaders;
 
-export const Students = lazy(pageLoaders.students);
-export const Classes = lazy(pageLoaders.classes);
-export const StudentProfile = lazy(pageLoaders.profile);
-export const LearningProgress = lazy(pageLoaders.progress);
-export const AddObservation = lazy(pageLoaders.observe);
-export const PortfolioStudio = lazy(pageLoaders.studio);
-export const ReportPreview = lazy(pageLoaders.report);
-export const FamilyReport = lazy(pageLoaders.family);
-export const Coverage = lazy(pageLoaders.coverage);
-export const Reviews = lazy(pageLoaders.reviews);
-export const AuditLog = lazy(pageLoaders.audit);
-export const Settings = lazy(pageLoaders.settings);
-export const Catalog = lazy(pageLoaders.catalog);
-export const NotFound = lazy(pageLoaders.notFound);
+type PageModule = { default: ComponentType<any> };
+type PageLoader = () => Promise<PageModule>;
+const loadedPages = new Map<PageKind, ComponentType<any>>();
+const pendingPages = new Map<PageKind, Promise<PageModule>>();
 
-export type PageKind = keyof typeof pageLoaders;
+export const pageLoaders = Object.fromEntries(
+  (Object.entries(rawPageLoaders) as [PageKind, PageLoader][]).map(([kind, load]) => [kind, () => {
+    const loaded = loadedPages.get(kind);
+    if (loaded) return Promise.resolve({ default: loaded });
+    const pending = pendingPages.get(kind);
+    if (pending) return pending;
+    const request = load().then((module) => {
+      loadedPages.set(kind, module.default);
+      return module;
+    });
+    pendingPages.set(kind, request);
+    return request;
+  }])
+) as Record<PageKind, PageLoader>;
+
+function routePage(kind: PageKind): ComponentType<any> {
+  return function PreloadedRoutePage(props) {
+    const Page = loadedPages.get(kind);
+    if (!Page) throw pageLoaders[kind]();
+    return createElement(Page, props);
+  };
+}
+
+export const Students = routePage('students');
+export const Classes = routePage('classes');
+export const StudentProfile = routePage('profile');
+export const LearningProgress = routePage('progress');
+export const AddObservation = routePage('observe');
+export const PortfolioStudio = routePage('studio');
+export const ReportPreview = routePage('report');
+export const FamilyReport = routePage('family');
+export const Coverage = routePage('coverage');
+export const Reviews = routePage('reviews');
+export const AuditLog = routePage('audit');
+export const Settings = routePage('settings');
+export const Catalog = routePage('catalog');
+export const NotFound = routePage('notFound');
 
 export function pageKindForPath(pathname: string): PageKind | undefined {
   const path = pathname.split('?')[0];
