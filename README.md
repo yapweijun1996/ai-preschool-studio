@@ -56,13 +56,13 @@ npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ (relative base, hash routing)
 npm test             # unit tests (reducer, approval rules, Mock provider, i18n, PWA state machine)
-npm run e2e          # Playwright: journey, sidebar, i18n, settings, real service-worker updates
+npm run e2e          # Playwright: journey, sidebar, profile, i18n, settings, real service-worker updates
 npm run icons        # regenerate PWA icons (needs Chromium; see PW_CHROMIUM below)
 ```
 
 If Chromium is already installed elsewhere, point Playwright at it:
 `PW_CHROMIUM=/path/to/chrome npm run e2e`. `BASE_URL=<deployed url> npx playwright test
-e2e/journey.spec.ts e2e/sidebar.spec.ts` runs the suite against a deployed site.
+e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts` runs the suite against a deployed site.
 
 Version identity: `package.json` version + short commit SHA, baked in at build time and
 published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
@@ -72,7 +72,7 @@ published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
 `.github/workflows/deploy-pages.yml` runs on every push to `main` (and on demand from the
 Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages →
 **live smoke**: waits until the live `version.json` reports this commit's build, then runs the
-journey and sidebar e2e specs against the live URL.
+journey, sidebar and profile e2e specs against the live URL.
 
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pages on a

@@ -92,7 +92,9 @@ export const pages: Dict['pages'] = {
     homeLanguages: 'Bahasa di rumah',
     keyTeacher: 'Guru utama',
     photo: 'Foto',
-    photoValue: 'Ruang foto sahaja dalam mod demo'
+    photoValue: 'Ruang foto sahaja dalam mod demo',
+    claimsBody: 'Pautkan bukti atau buang kenyataan ini sebelum laporan dihantar untuk semakan.',
+    reviewClaims: 'Semak kenyataan di Studio'
   },
   observation: {
     title: 'Tambah pemerhatian',

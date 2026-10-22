@@ -64,7 +64,7 @@ export function MilestoneDots({ milestone }: { milestone: Milestone }) {
   );
 }
 
-export function Avatar({ initials, size, label }: { initials: string; size?: 'sm' | 'lg'; label?: string }) {
+export function Avatar({ initials, size, label }: { initials: string; size?: 'sm' | 'md' | 'lg'; label?: string }) {
   return (
     <span className={`avatar${size ? ` avatar-${size}` : ''}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       {initials}

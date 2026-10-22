@@ -91,7 +91,9 @@ export const pages = {
     homeLanguages: 'Home languages',
     keyTeacher: 'Key teacher',
     photo: 'Photo',
-    photoValue: 'Placeholder only in demo mode'
+    photoValue: 'Placeholder only in demo mode',
+    claimsBody: 'Link evidence or remove these claims before the report goes to review.',
+    reviewClaims: 'Review claims in Studio'
   },
   observation: {
     title: 'Add observation',

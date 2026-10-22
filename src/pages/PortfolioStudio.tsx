@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { AiPanel, type AiState } from '../components/studio/AiPanel';
@@ -33,6 +33,9 @@ export function PortfolioStudio() {
   const [selected, setSelected] = useState<string>();
   const [drawer, setDrawer] = useState<'evidence' | 'ai' | null>('ai');
   const [tab, setTab] = useState<MobileTab>('write');
+  // ?focus=claims (from the profile's report card) lands on the first claim needing verification.
+  const [params] = useSearchParams();
+  const focusClaims = params.get('focus') === 'claims';
   const requestSeq = useRef(0);
 
   const [reflection, setReflection] = useState(state.reflections[id] ?? '');
@@ -67,6 +70,20 @@ export function PortfolioStudio() {
     started.current = true;
     void run('clearer', 'p-se', 0);
   }, [paragraphs.length, run]);
+
+  useEffect(() => {
+    if (!focusClaims) return;
+    const raf = requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>('[data-claim]');
+      if (!el) return;
+      // Scroll only the narrative panel when it scrolls on its own; otherwise the page.
+      const box = el.closest<HTMLElement>('.panel-body');
+      if (box && box.scrollHeight > box.clientHeight) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 16;
+      else el.scrollIntoView({ block: 'center' });
+      el.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focusClaims]);
 
   if (!sum) return <NotFound />;
   const { student, report } = sum;

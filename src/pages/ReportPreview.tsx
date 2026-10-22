@@ -2,8 +2,9 @@ import { Fragment, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { ReportFlow } from '../components/ReportFlow';
 import { MilestoneDots, Notice, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, REVIEWER, TEACHER, TODAY, type ReportStatus } from '../data/demo';
+import { CLASS_NAME, REVIEWER, TEACHER, TODAY } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDirtyGuard } from '../pwa';
@@ -12,8 +13,6 @@ import { approvalBlock, observationsFor, unverifiedClaims } from '../store/reduc
 import { studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
-
-const FLOW: ReportStatus[] = ['draft', 'review', 'changes', 'approved'];
 
 export function ReportPreview() {
   const { id = '' } = useParams();
@@ -35,7 +34,6 @@ export function ReportPreview() {
   const block = approvalBlock(state, id);
   const observations = observationsFor(state, id);
   const status = report.status;
-  const cur = FLOW.indexOf(status);
   const term = t('common.term4');
   const openStudio = t('pages.shared.openStudio');
 
@@ -49,22 +47,7 @@ export function ReportPreview() {
     if (obs) dispatch({ type: 'linkSource', studentId: id, sentenceId, obsId: obs.id });
   };
 
-  const steps = (
-    <ol aria-label={t('pages.report.flowLabel')} className="stack" style={{ gap: 4 }}>
-      {FLOW.map((st, i) => {
-        const skipped = st === 'changes' && status === 'approved' && !report.hadChanges;
-        const done = cur > i && !skipped;
-        const current = cur === i;
-        return (
-          <li key={st} className="step" aria-current={current ? 'step' : undefined}>
-            <span className={`step-mark${done ? ' done' : current ? ' current' : ''}`}>{done ? <Icon name="check" size={14} /> : i + 1}</span>
-            <span className="sec semibold grow">{statusLabel(st)}</span>
-            <span className="cap muted">{current ? t('pages.report.current') : skipped ? t('pages.report.notNeeded') : done ? t('pages.report.done') : ''}</span>
-          </li>
-        );
-      })}
-    </ol>
-  );
+  const steps = <ReportFlow status={status} hadChanges={report.hadChanges} />;
 
   const actions = (mobile: boolean) => {
     if (status === 'review') {

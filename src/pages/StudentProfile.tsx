@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useNavMemory, useVisit } from '../hooks/useNavMemory';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { ReportFlow } from '../components/ReportFlow';
 import { StudentTabs } from '../components/StudentTabs';
 import { Avatar, MilestoneDots, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME, DOMAINS, TEACHER } from '../data/demo';
@@ -48,9 +49,9 @@ export function StudentProfile() {
     >
       {(bp) => (
         <div className="page">
-          <div className="row" style={{ gap: 16 }}>
+          <div className="row profile-head">
             {bp !== 'mobile' && <Link className="icon-btn" to="/students" aria-label={t('pages.profile.backToStudents')} title={t('pages.shared.back')}><Icon name="arrowLeft" /></Link>}
-            <Avatar initials={student.initials} size="lg" label={t('pages.shared.photoPlaceholderFor', { name: student.name })} />
+            <Avatar initials={student.initials} size="md" label={t('pages.shared.photoPlaceholderFor', { name: student.name })} />
             <div className="grow">
               <div className="row">
                 {bp !== 'mobile' && <h1 className="h1">{student.name}</h1>}
@@ -58,7 +59,7 @@ export function StudentProfile() {
               </div>
               <p className="sec muted">{CLASS_NAME} · {t('pages.profile.age', { age: student.age })} · {lastObservedLabel(sum.lastObserved)}</p>
             </div>
-            <button className="icon-btn icon-btn-outline has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinLabel} data-tip={pinLabel}>
+            <button className="icon-btn pin-btn has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinLabel} data-tip={pinLabel}>
               <Icon name="pin" />
             </button>
             {bp !== 'mobile' && (
@@ -69,10 +70,10 @@ export function StudentProfile() {
             )}
           </div>
           <StudentTabs id={id} active="overview" />
-          <div className="grid-main-side">
-            <section aria-labelledby="ld-h" className="stack" style={{ gap: 16 }}>
+          <div className="grid-main-side profile-grid">
+            <section aria-labelledby="ld-h" className="stack profile-main" style={{ gap: 16 }}>
               <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading')}</h2><Link className="btn btn-secondary" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare')}</Link></div>
-              <div className="grid-2">
+              <div className="grid-2 domain-grid">
                 {DOMAINS.map((d) => {
                   const list = byDomain(d.key);
                   return (
@@ -108,13 +109,22 @@ export function StudentProfile() {
             </section>
             <aside className="stack" style={{ gap: 16 }}>
               <section className="card card-pad stack" aria-labelledby="pr-h">
-                <h2 id="pr-h" className="h2">{t('pages.profile.portfolioReport')}</h2>
-                <p className="sec muted">{t('common.term4')}</p>
-                <div className="row">
+                <div className="row" style={{ alignItems: 'flex-start' }}>
+                  <div className="grow">
+                    <h2 id="pr-h" className="h2">{t('pages.profile.portfolioReport')}</h2>
+                    <p className="sec muted">{t('common.term4')}</p>
+                  </div>
                   <StatusLabel status={report.status} />
-                  {sum.unverified > 0 && <VerifyLabel>{t('pages.shared.claims', { count: sum.unverified })}</VerifyLabel>}
                 </div>
-                <Link className="btn btn-secondary" to={`/students/${id}/report`} style={{ alignSelf: 'flex-start' }}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>
+                <ReportFlow status={report.status} hadChanges={report.hadChanges} compact />
+                {sum.unverified > 0 && (
+                  <div className="notice notice-warning" style={{ flexDirection: 'column', gap: 8 }}>
+                    <VerifyLabel>{t('pages.shared.claims', { count: sum.unverified })}</VerifyLabel>
+                    <p className="body-text">{t('pages.profile.claimsBody')}</p>
+                    <Link className="btn btn-secondary" to={`/students/${id}/studio?focus=claims`} style={{ alignSelf: 'flex-start' }}>{t('pages.profile.reviewClaims')}<Icon name="arrowRight" size={18} /></Link>
+                  </div>
+                )}
+                <Link className="btn btn-ghost" to={`/students/${id}/report`} style={{ alignSelf: 'flex-start' }}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>
               </section>
               <section className="card card-pad stack" aria-labelledby="ab-h">
                 <h2 id="ab-h" className="h2">{t('pages.profile.about')}</h2>

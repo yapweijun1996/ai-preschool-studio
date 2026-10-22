@@ -100,7 +100,7 @@ jobs:
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         # Same normalisation, so relative page.goto('./…') resolves under the repo sub-path.
-        run: BASE_URL="${PAGE_URL%/}/" npx playwright test e2e/journey.spec.ts e2e/sidebar.spec.ts --reporter=line
+        run: BASE_URL="${PAGE_URL%/}/" npx playwright test e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts --reporter=line
 
       - uses: actions/upload-artifact@v7
         if: failure()

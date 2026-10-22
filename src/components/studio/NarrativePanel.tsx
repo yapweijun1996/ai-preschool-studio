@@ -68,7 +68,7 @@ export function NarrativePanel(p: NarrativeProps) {
               {flagged.map((s) => {
                 const candidates = p.observations.filter((o) => o.domain === para.domain).slice(0, 2);
                 return (
-                  <div key={s.id} className="notice notice-warning" style={{ marginTop: 12, flexDirection: 'column', gap: 8 }}>
+                  <div key={s.id} className="notice notice-warning" data-claim tabIndex={-1} style={{ marginTop: 12, flexDirection: 'column', gap: 8 }}>
                     <VerifyLabel />
                     <p className="body-text">{t('pages.studio.nar.noLink', { text: s.text })}</p>
                     {!p.locked && (

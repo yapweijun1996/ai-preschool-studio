@@ -92,7 +92,9 @@ export const pages: Dict['pages'] = {
     homeLanguages: '家庭语言',
     keyTeacher: '主责教师',
     photo: '照片',
-    photoValue: '演示模式下仅显示占位图'
+    photoValue: '演示模式下仅显示占位图',
+    claimsBody: '提交审核前，请为这些陈述链接佐证或将其删除。',
+    reviewClaims: '在工作室中核实陈述'
   },
   observation: {
     title: '添加观察记录',
