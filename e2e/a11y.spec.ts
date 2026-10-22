@@ -50,6 +50,9 @@ for (const route of routes) {
         route: route.path,
         variant: variant.name,
         url: page.url(),
+        incompleteChecks: results.incomplete
+          .filter(({ id }) => id === 'aria-prohibited-attr')
+          .map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) })),
         violations: results.violations.map(({ id, impact, description, help, nodes }) => ({
           id,
           impact,
@@ -68,6 +71,9 @@ for (const route of routes) {
       await writeFile(outputPath, JSON.stringify(summary, null, 2));
       const blocking = results.violations.filter(({ impact }) => impact === 'serious' || impact === 'critical');
       expect(blocking, `${blocking.length} serious/critical accessibility violations; see ${filename}`).toEqual([]);
+      if (route.name === 'coverage') {
+        expect(summary.incompleteChecks, `aria-prohibited-attr incomplete checks; see ${filename}`).toEqual([]);
+      }
     });
   }
 }
