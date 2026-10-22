@@ -11,6 +11,10 @@ for (const viewport of [{ name: 'desktop 1440x900', width: 1440, height: 900 }, 
       await page.goto('./#/catalog');
       await expect(page.getByRole('heading', { name: 'Component catalog', level: 1 })).toBeVisible();
       for (const heading of sectionNames) await expect(page.getByRole('heading', { name: heading, level: 2 })).toBeVisible();
+      await page.getByRole('navigation', { name: 'Catalog sections' }).getByRole('button', { name: 'Buttons' }).click();
+      await expect(page).toHaveURL(/#\/catalog$/);
+      await expect(page.getByText('We couldn’t find that page')).toHaveCount(0);
+      await expect(page.locator('#buttons h2')).toBeInViewport();
       const buttonExample = page.locator('#buttons').getByRole('button', { name: 'Markup' }).first();
       await buttonExample.click();
       await expect(page.locator('#buttons code')).toContainText('btn-primary');
