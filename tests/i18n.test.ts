@@ -89,3 +89,31 @@ describe('makeT', () => {
     expect(makeT('ms')('pages.nope.missing' as TKey)).toBe('pages.nope.missing');
   });
 });
+
+describe('translated defaults and fallbacks', () => {
+  it('the prefilled request-changes note is translated, with the domain filled in', () => {
+    const en = makeT('en')('pages.report.defaultChangeNote', { domain: 'DOMAIN' });
+    expect(en).toBe('Please check the reading claim in DOMAIN — I can’t see an observation for it.');
+    for (const lang of ['zh', 'ms'] as const) {
+      const note = makeT(lang)('pages.report.defaultChangeNote', { domain: 'DOMAIN' });
+      expect(note).not.toBe('pages.report.defaultChangeNote');
+      expect(note).not.toBe(en);
+      expect(note).toContain('DOMAIN');
+    }
+  });
+
+  it('the update button has a generic label for when the new version is unknown', () => {
+    expect(makeT('en')('shell.update.buttonGeneric')).toBe('Update now');
+    expect(makeT('zh')('shell.update.buttonGeneric')).toBe('立即更新');
+    expect(makeT('ms')('shell.update.buttonGeneric')).toBe('Kemas kini sekarang');
+  });
+
+  it('apply failures and unsupported browsers have their own copy', () => {
+    expect(makeT('en')('shell.update.applyErrorText')).toBe('The update couldn’t be installed.');
+    expect(makeT('en')('shell.settings.about.statusUnsupportedBrowser')).toBe('This browser doesn’t support automatic updates.');
+    for (const lang of ['zh', 'ms'] as const) {
+      expect(makeT(lang)('shell.update.applyErrorText')).not.toBe(makeT('en')('shell.update.applyErrorText'));
+      expect(makeT(lang)('shell.settings.about.statusUnsupportedBrowser')).not.toBe(makeT('en')('shell.settings.about.statusUnsupportedBrowser'));
+    }
+  });
+});

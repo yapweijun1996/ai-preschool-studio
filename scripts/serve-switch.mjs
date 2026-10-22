@@ -3,6 +3,8 @@
 //   PW_SWITCH_PORT=4180 node scripts/serve-switch.mjs a=dir/a b=dir/b
 //   POST /__switch?to=b   → serve dir/b from now on
 //   POST /__switch?to=off → drop every connection (a real network failure, for offline tests)
+//   POST /__switch?to=b&cache=pages → also send GitHub Pages' `max-age=600` on non-hashed files
+//                                     (until the next switch), to test the browser HTTP cache
 // Files are mounted under PW_SWITCH_BASE (default /ai-preschool-studio/) to mirror GitHub Pages.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -17,6 +19,7 @@ const roots = Object.fromEntries(
   })
 );
 let current = Object.keys(roots)[0];
+let pagesCache = false;
 if (!current) {
   console.error('usage: node scripts/serve-switch.mjs name=dir [name=dir ...]');
   process.exit(1);
@@ -42,6 +45,7 @@ const server = createServer(async (req, res) => {
       return;
     }
     current = to;
+    pagesCache = url.searchParams.get('cache') === 'pages';
     res.writeHead(200, { 'Content-Type': 'text/plain' }).end('serving ' + to);
     return;
   }
@@ -66,11 +70,11 @@ const server = createServer(async (req, res) => {
     const body = await readFile(file);
     const ext = extname(file);
     // Hashed assets are immutable; everything else (html, sw.js, version.json, manifest, icons)
-    // must revalidate.
+    // must revalidate — unless mimicking GitHub Pages, which lets browsers reuse them for 10 min.
     const hashed = path.startsWith('/assets/');
     res.writeHead(200, {
       'Content-Type': TYPES[ext] || 'application/octet-stream',
-      'Cache-Control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache'
+      'Cache-Control': hashed ? 'public, max-age=31536000, immutable' : pagesCache ? 'public, max-age=600' : 'no-cache'
     });
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch {

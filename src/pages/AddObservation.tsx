@@ -16,6 +16,12 @@ type Phase = { kind: 'editing' } | { kind: 'saving' } | { kind: 'saved'; id: str
 
 const TIPS = ['tip1', 'tip2', 'tip3'] as const;
 
+// Prefilled demo text is teacher content, not UI copy: it stays as written.
+const DEMO_TEXT = 'Sorted 12 shells into “big” and “small” groups at the nature table, then pointed and said “this group has more”.';
+
+type Form = { date: string; domain: DomainKey; milestone: Milestone; text: string };
+const formKey = (f: Form) => JSON.stringify([f.date, f.domain, f.milestone, f.text.trim()]);
+
 export function AddObservation() {
   const { id = '' } = useParams();
   const { t } = useI18n();
@@ -24,16 +30,17 @@ export function AddObservation() {
   const [date, setDate] = useState(TODAY);
   const [domain, setDomain] = useState<DomainKey>('ma');
   const [milestone, setMilestone] = useState<Milestone>('developing');
-  // Prefilled demo text is teacher content, not UI copy: it stays as written.
-  const [text, setText] = useState('Sorted 12 shells into “big” and “small” groups at the nature table, then pointed and said “this group has more”.');
+  const [text, setText] = useState(DEMO_TEXT);
   const [phase, setPhase] = useState<Phase>({ kind: 'editing' });
-  const [lastSaved, setLastSaved] = useState('');
+  // The form as first shown (prefilled demo), last saved, or last cleared: only changes from it are unsaved work.
+  const [baseline, setBaseline] = useState(() => formKey({ date: TODAY, domain: 'ma', milestone: 'developing', text: DEMO_TEXT }));
   const [error, setError] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
-  // Unsaved work: text that differs from what was last saved and is not saved yet.
-  useDirtyGuard(phase.kind !== 'saved' && text.trim().length > 0 && text.trim() !== lastSaved);
+  // Unsaved work: a non-empty observation the teacher changed and has not saved yet.
+  const dirty = phase.kind !== 'saved' && text.trim().length > 0 && formKey({ date, domain, milestone, text }) !== baseline;
+  useDirtyGuard(dirty);
   if (!sum) return <NotFound />;
   const { student } = sum;
   const demo = t('common.demoStudent');
@@ -57,7 +64,7 @@ export function AddObservation() {
       const newId = `OBS-${String(state.nextObsNumber).padStart(4, '0')}`;
       const saved = text.trim();
       dispatch({ type: 'addObservation', obs: { studentId: id, date, domain, milestone, text: saved, hasPhoto: false, term: 4 } });
-      setLastSaved(saved);
+      setBaseline(formKey({ date, domain, milestone, text: saved }));
       setPhase({ kind: 'saved', id: newId });
     }, 800);
   };
@@ -86,7 +93,7 @@ export function AddObservation() {
                 <h1 className="h1">{t('pages.observation.title')}</h1>
                 <p className="sec muted">{student.name} · {demo} · {CLASS_NAME} · {term}</p>
               </div>
-              {phase.kind === 'editing' && <span className="save-state">{t('pages.shared.unsavedChanges')}</span>}
+              {phase.kind === 'editing' && dirty && <span className="save-state">{t('pages.shared.unsavedChanges')}</span>}
               {phase.kind === 'saved' && <span className="save-state" role="status"><Icon name="check" size={16} className="ic-primary" />{t('pages.shared.saved')}</span>}
               {phase.kind === 'failed' && <span className="status st-failed"><Icon name="alertCircle" size={14} />{t('pages.shared.saveFailed')}</span>}
               <Link className="btn btn-secondary" to={`/students/${id}`}>{t('pages.shared.cancel')}</Link>
@@ -111,7 +118,7 @@ export function AddObservation() {
                     <p className="body-text">{t('pages.observation.savedBody', { name: firstName })}</p>
                     <div className="row">
                       <Link className="btn btn-secondary" to={`/students/${id}/progress`}>{t('pages.observation.viewProgress')}</Link>
-                      <button className="btn btn-ghost" type="button" onClick={() => { setPhase({ kind: 'editing' }); setText(''); }}>{t('pages.observation.addAnother')}</button>
+                      <button className="btn btn-ghost" type="button" onClick={() => { setPhase({ kind: 'editing' }); setText(''); setBaseline(formKey({ date, domain, milestone, text: '' })); }}>{t('pages.observation.addAnother')}</button>
                     </div>
                   </Notice>
                 )}

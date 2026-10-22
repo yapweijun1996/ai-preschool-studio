@@ -7,7 +7,7 @@ import { MockProviderLabel, Notice } from '../components/ui';
 import type { Breakpoint } from '../hooks/useBreakpoint';
 import type { ThemePref } from '../hooks/useTheme';
 import { LANGS, useI18n, type TKey } from '../i18n';
-import { APP_VERSION, BUILD_ID, usePwa, type UpdateStatus } from '../pwa';
+import { APP_VERSION, BUILD_ID, usePwa, type PwaApi, type UnsupportedReason, type UpdateStatus } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
 import { NotFound } from './NotFound';
 
@@ -128,13 +128,31 @@ const STATUS_LINE: Record<UpdateStatus, { icon: IconName; cls?: string; key: TKe
   error: { icon: 'alertCircle', cls: 'ic-danger', key: 'shell.settings.about.statusError' }
 };
 
+// Unsupported copy says why: dev build (by design), the browser, http, or storage blocked.
+const UNSUPPORTED: Record<UnsupportedReason, { status: TKey; reason: TKey }> = {
+  dev: { status: 'shell.settings.about.statusUnsupported', reason: 'shell.settings.about.checkUnsupported' },
+  browser: { status: 'shell.settings.about.statusUnsupportedBrowser', reason: 'shell.settings.about.checkUnsupportedBrowser' },
+  insecure: { status: 'shell.settings.about.statusUnsupportedInsecure', reason: 'shell.settings.about.checkUnsupportedInsecure' },
+  blocked: { status: 'shell.settings.about.statusUnsupportedBlocked', reason: 'shell.settings.about.checkUnsupportedBlocked' }
+};
+
+/** Status line text: never "v" without a version, and install failures are not check failures. */
+function statusKey(pwa: PwaApi): TKey {
+  if (pwa.status === 'unsupported') return UNSUPPORTED[pwa.unsupportedReason ?? 'dev'].status;
+  if (pwa.status === 'error' && pwa.errorKind === 'apply') return 'shell.update.applyErrorText';
+  if (!pwa.availableVersion && pwa.status === 'available') return 'shell.settings.about.statusAvailableGeneric';
+  if (!pwa.availableVersion && pwa.status === 'applying') return 'shell.settings.about.statusApplyingGeneric';
+  return STATUS_LINE[pwa.status].key;
+}
+
 function About() {
   const { t, fmtDate, fmtTime } = useI18n();
   const pwa = usePwa();
   const reasonId = useId();
   const [waitNotice, setWaitNotice] = useState(false);
   const line = STATUS_LINE[pwa.status];
-  const reason: TKey | undefined = pwa.status === 'unsupported' ? 'shell.settings.about.checkUnsupported' : pwa.status === 'offline' ? 'shell.settings.about.checkOffline' : undefined;
+  const reason: TKey | undefined =
+    pwa.status === 'unsupported' ? UNSUPPORTED[pwa.unsupportedReason ?? 'dev'].reason : pwa.status === 'offline' ? 'shell.settings.about.checkOffline' : undefined;
   const busy = pwa.status === 'checking' || pwa.status === 'applying';
   const blocked = !!reason || busy;
   const version = pwa.availableVersion ?? '';
@@ -150,7 +168,7 @@ function About() {
             <dd>
               <span className="status-line" role="status">
                 <Icon name={line.icon} size={18} className={line.cls} />
-                {t(line.key, { version })}
+                {t(statusKey(pwa), { version })}
               </span>
             </dd>
           </div>
@@ -160,7 +178,7 @@ function About() {
           </div>
         </dl>
         <div className="row">
-          {pwa.status === 'available' && (
+          {pwa.updateOffered && (
             <button className="btn btn-primary" type="button" onClick={() => (pwa.hasDirtyWork ? setWaitNotice(true) : pwa.applyUpdate())}>
               <Icon name="download" size={18} />
               {t('shell.settings.about.updateNow')}
@@ -180,7 +198,7 @@ function About() {
           </button>
         </div>
         {reason && <p id={reasonId} className="sec muted">{t(reason)}</p>}
-        {waitNotice && pwa.status === 'available' && (
+        {waitNotice && pwa.updateOffered && (
           <Notice tone="warning" icon="info" role="status">
             <p className="body-text">{t('shell.update.waitNotice')}</p>
           </Notice>

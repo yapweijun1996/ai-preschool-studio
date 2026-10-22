@@ -1,4 +1,5 @@
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
+import { cpSync, rmSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 
 // Real service worker, two real releases. Builds live under test-results/ (git-ignored) and are
@@ -17,10 +18,13 @@ test.use({ baseURL: appUrl, viewport: { width: 1280, height: 800 } });
 
 let server: ChildProcess | undefined;
 
-const switchTo = async (to: 'a' | 'b' | 'off') => {
-  const res = await fetch(`${origin}/__switch?to=${to}`, { method: 'POST' });
+// a-nosw: release a without sw.js (registration fails); b-nover: release b without version.json.
+type Root = 'a' | 'b' | 'a-nosw' | 'b-nover' | 'off';
+const switchTo = async (to: Root, opts: { pagesCache?: boolean } = {}) => {
+  const res = await fetch(`${origin}/__switch?to=${to}${opts.pagesCache ? '&cache=pages' : ''}`, { method: 'POST' });
   expect(res.ok).toBe(true);
 };
+const check = (page: Page) => page.evaluate(() => (window as unknown as { __apsPwa: { check(): Promise<void> } }).__apsPwa.check());
 
 type Snapshot = { status: string; currentVersion: string; currentBuild: string; availableVersion?: string; hasDirtyWork: boolean };
 const snap = (page: Page) =>
@@ -38,7 +42,14 @@ test.beforeAll(async () => {
       { env: { ...process.env, APP_VERSION: r.version, BUILD_ID: r.build }, stdio: 'inherit' }
     );
   }
-  server = spawn(process.execPath, ['scripts/serve-switch.mjs', `a=${outRoot}/a`, `b=${outRoot}/b`], {
+  // Broken variants: a release whose sw.js 404s, and one whose version.json 404s.
+  for (const [name, from, drop] of [['a-nosw', 'a', 'sw.js'], ['b-nover', 'b', 'version.json']]) {
+    rmSync(`${outRoot}/${name}`, { recursive: true, force: true });
+    cpSync(`${outRoot}/${from}`, `${outRoot}/${name}`, { recursive: true });
+    rmSync(`${outRoot}/${name}/${drop}`);
+  }
+  const roots = ['a', 'b', 'a-nosw', 'b-nover'].map((n) => `${n}=${outRoot}/${n}`);
+  server = spawn(process.execPath, ['scripts/serve-switch.mjs', ...roots], {
     env: { ...process.env, PW_SWITCH_PORT: String(port) },
     stdio: 'inherit'
   });
@@ -143,10 +154,15 @@ test('visible update UI: dirty work blocks, then "Update to v…" installs the n
   let loads = 0;
   page.on('load', () => loads++);
 
-  // Add observation starts with an unsaved draft, so updating must wait.
+  // Add observation's prefilled demo text is not unsaved work; once the teacher edits it, it is,
+  // and updating must wait.
   await page.goto('./#/students/aria/observe');
   await waitForController(page);
   await expect.poll(async () => (await snap(page)).status).toBe('current');
+  expect((await snap(page)).hasDirtyWork).toBe(false);
+  const draft = page.locator('#obs-text');
+  await draft.fill(`${await draft.inputValue()} Then she counted the big group aloud.`);
+  await expect.poll(async () => (await snap(page)).hasDirtyWork).toBe(true);
   await switchTo('b');
   await page.evaluate(() => (window as unknown as { __apsPwa: { check(): Promise<void> } }).__apsPwa.check());
 
@@ -171,4 +187,99 @@ test('visible update UI: dirty work blocks, then "Update to v…" installs the n
 
   await page.goto('./#/settings/about');
   await expect(page.getByTestId('app-version')).toContainText('0.3.0-b');
+});
+
+test('a failed service worker registration recovers through the visible Retry', async ({ page }) => {
+  // sw.js 404s: registration fails and the error banner offers Retry.
+  await switchTo('a-nosw');
+  await page.goto('./');
+  await expect(page.locator('#root')).not.toBeEmpty();
+  const alert = page.getByRole('alert').filter({ hasText: 'Couldn’t check for updates.' });
+  await expect(alert).toBeVisible();
+  expect((await snap(page)).status).toBe('error');
+  expect(await page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration()))).toBe(false);
+
+  // The file is back: Retry registers the worker and the check completes.
+  await switchTo('a');
+  await alert.getByRole('button', { name: 'Retry' }).click();
+  await expect.poll(async () => (await snap(page)).status).toBe('current');
+  await expect(alert).toHaveCount(0);
+  expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL)).toBe(`${appUrl}sw.js`);
+  await waitForController(page);
+});
+
+test('unknown new version: the button says "Update now", never "Update to v"', async ({ page }) => {
+  await switchTo('a');
+  let loads = 0;
+  page.on('load', () => loads++);
+  await page.goto('./');
+  await waitForController(page);
+  await expect.poll(async () => (await snap(page)).status).toBe('current');
+
+  // The new release's version.json cannot be read (fetched twice, both 404).
+  await switchTo('b-nover');
+  await check(page);
+  expect(await snap(page)).toMatchObject({ status: 'available', availableVersion: undefined });
+  const update = page.getByRole('button', { name: 'Update now', exact: true });
+  await expect(update).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Update to v/ })).toHaveCount(0);
+
+  await update.click();
+  await expect.poll(() => loads, { timeout: 15_000 }).toBe(2);
+  await expect.poll(async () => (await snap(page)).currentVersion).toBe('0.3.0-b');
+});
+
+test('apply failure (reload-loop guard): own message, update stays on offer, never a false "current"', async ({ page }) => {
+  await switchTo('a');
+  let loads = 0;
+  page.on('load', () => loads++);
+  await page.goto('./');
+  await waitForController(page);
+  await expect.poll(async () => (await snap(page)).status).toBe('current');
+  await switchTo('b');
+  await check(page);
+  expect(await snap(page)).toMatchObject({ status: 'available', availableVersion: '0.3.0-b' });
+
+  // Pretend this tab just reloaded for an update, so the 30 s loop guard refuses the next reload
+  // after the new worker has already taken over.
+  await page.evaluate(() => sessionStorage.setItem('aps-pwa-reload-at', String(Date.now())));
+  await page.getByRole('button', { name: 'Update to v0.3.0-b' }).click();
+  const alert = page.getByRole('alert').filter({ hasText: 'The update couldn’t be installed.' });
+  await expect(alert).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Couldn’t check for updates.' })).toHaveCount(0);
+  expect(loads).toBe(1);
+  expect((await snap(page)).currentVersion).toBe('0.3.0-a');
+  // The update stays available while it is still pending.
+  await expect(page.getByRole('button', { name: 'Update to v0.3.0-b' })).toBeVisible();
+
+  // Retry re-offers the update; a later check still reports it (reload needed), never 'current'.
+  await alert.getByRole('button', { name: 'Retry' }).click();
+  await expect(alert).toHaveCount(0);
+  expect((await snap(page)).status).toBe('available');
+  await check(page);
+  expect((await snap(page)).status).toBe('available');
+  await expect(page.getByRole('button', { name: 'Update to v0.3.0-b' })).toBeVisible();
+
+  // Once the guard window is over, updating reloads exactly once into the new release.
+  await page.evaluate(() => sessionStorage.removeItem('aps-pwa-reload-at'));
+  await page.getByRole('button', { name: 'Update to v0.3.0-b' }).click();
+  await expect.poll(() => loads, { timeout: 15_000 }).toBe(2);
+  await expect.poll(async () => (await snap(page)).currentVersion).toBe('0.3.0-b');
+  await page.waitForTimeout(1000);
+  expect(loads).toBe(2);
+});
+
+test('navigations bypass the 10-minute HTTP cache (GitHub Pages max-age) and get the new shell', async ({ page }) => {
+  // Serve with Pages-like caching from the first load, so index.html sits in the HTTP cache.
+  await switchTo('a', { pagesCache: true });
+  await page.goto('./');
+  await waitForController(page);
+  await expect.poll(async () => (await snap(page)).status).toBe('current');
+
+  // Deploy b, leave, and come back with an ordinary (non-reload) navigation.
+  await switchTo('b', { pagesCache: true });
+  await page.goto('about:blank');
+  await page.goto('./');
+  await expect(page.locator('#root')).not.toBeEmpty();
+  await expect.poll(async () => (await snap(page)).currentVersion).toBe('0.3.0-b');
 });

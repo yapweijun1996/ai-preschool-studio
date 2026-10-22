@@ -231,6 +231,7 @@ export const pages: Dict['pages'] = {
     linkEvidence: '关联佐证',
     fixInStudio: '在工作室中修改',
     whatChange: '需要修改什么？',
+    defaultChangeNote: '请核对“{domain}”中关于阅读的描述——我找不到相应的观察记录。',
     changesNotice: '已要求修改。{teacher}会在 AI 学习档案工作室中更新草稿，然后重新提交。',
     approvedBy: '{date} · {name}（演示审核人）',
     approvedAt: '{date} {time}',

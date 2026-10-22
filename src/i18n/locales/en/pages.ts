@@ -230,6 +230,7 @@ export const pages = {
     linkEvidence: 'Link evidence',
     fixInStudio: 'Fix in studio',
     whatChange: 'What should change?',
+    defaultChangeNote: 'Please check the reading claim in {domain} — I can’t see an observation for it.',
     changesNotice: 'Changes requested. {teacher} updates the draft in AI Portfolio Studio, then submits again.',
     approvedBy: '{date} · {name} (demo reviewer)',
     approvedAt: '{date}, {time}',

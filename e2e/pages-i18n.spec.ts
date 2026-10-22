@@ -19,6 +19,8 @@ const COPY: Record<Lang, {
   reportTitle: string;
   blocked: string;
   approve: string;
+  requestChanges: string;
+  changeNote: string;
 }> = {
   zh: {
     greeting: '早上好，Ms. Lim',
@@ -34,7 +36,9 @@ const COPY: Record<Lang, {
     submit: '提交审核',
     reportTitle: '报告预览',
     blocked: '无法批准',
-    approve: '批准'
+    approve: '批准',
+    requestChanges: '要求修改',
+    changeNote: '请核对“英语 English Language”中关于阅读的描述——我找不到相应的观察记录。'
   },
   ms: {
     greeting: 'Selamat pagi, Ms. Lim',
@@ -50,7 +54,9 @@ const COPY: Record<Lang, {
     submit: 'Hantar untuk semakan',
     reportTitle: 'Pratonton laporan',
     blocked: 'Kelulusan disekat',
-    approve: 'Luluskan'
+    approve: 'Luluskan',
+    requestChanges: 'Minta perubahan',
+    changeNote: 'Sila semak dakwaan membaca dalam Bahasa Inggeris 英语 — saya tidak nampak pemerhatian untuknya.'
   }
 };
 
@@ -110,6 +116,12 @@ for (const lang of ['zh', 'ms'] as Lang[]) {
         await expect(page.getByRole('button', { name: c.approve, exact: true })).toHaveAttribute('aria-disabled', 'true');
         if (lang === 'zh') await expectNoEnglishUi(page);
         await page.screenshot(shot(`i18n-${lang}-${vp.name}-report`));
+
+        // The prefilled request-changes note is in the current language too.
+        if (!vp.mobile) {
+          await page.getByRole('button', { name: c.requestChanges, exact: true }).click();
+          await expect(page.locator('#change-note')).toHaveValue(c.changeNote);
+        }
       });
     });
   }

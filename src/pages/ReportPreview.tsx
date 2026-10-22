@@ -18,10 +18,12 @@ const FLOW: ReportStatus[] = ['draft', 'review', 'changes', 'approved'];
 export function ReportPreview() {
   const { id = '' } = useParams();
   const { state, dispatch } = usePortfolio();
-  const [changeNote, setChangeNote] = useState('Please check the reading claim in English Language 英语 — I can’t see an observation for it.');
+  // Undefined until edited: the prefilled note follows the current language.
+  const [editedNote, setEditedNote] = useState<string | undefined>(undefined);
   const [requesting, setRequesting] = useState(false);
   const { t, fmtDate, fmtTime } = useI18n();
   const { domainFull, status: statusLabel } = useLabels();
+  const changeNote = editedNote ?? t('pages.report.defaultChangeNote', { domain: domainFull('en') });
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
   // The request-changes note is unsaved work while its editor is open.
@@ -136,7 +138,7 @@ export function ReportPreview() {
         {status === 'review' && requesting && (
           <div className="field">
             <label className="field-label" htmlFor="change-note">{t('pages.report.whatChange')}</label>
-            <textarea id="change-note" className="input" rows={3} value={changeNote} onChange={(e) => setChangeNote(e.target.value)} />
+            <textarea id="change-note" className="input" rows={3} value={changeNote} onChange={(e) => setEditedNote(e.target.value)} />
           </div>
         )}
         {status === 'changes' && <Notice tone="warning" icon="alert" role="status"><p className="body-text">{t('pages.report.changesNotice', { teacher: TEACHER })}</p></Notice>}

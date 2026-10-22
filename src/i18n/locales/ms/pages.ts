@@ -231,6 +231,7 @@ export const pages: Dict['pages'] = {
     linkEvidence: 'Pautkan bukti',
     fixInStudio: 'Betulkan dalam studio',
     whatChange: 'Apakah yang perlu diubah?',
+    defaultChangeNote: 'Sila semak dakwaan membaca dalam {domain} — saya tidak nampak pemerhatian untuknya.',
     changesNotice: 'Perubahan diminta. {teacher} mengemas kini draf dalam Studio Portfolio AI, kemudian menghantarnya semula.',
     approvedBy: '{date} · {name} (penyemak demo)',
     approvedAt: '{date}, {time}',

@@ -63,6 +63,9 @@ jobs:
   smoke:
     needs: deploy
     runs-on: ubuntu-latest
+    # Read-only: the smoke job only checks out and tests; it never writes to Pages.
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
 
@@ -78,9 +81,11 @@ jobs:
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
+          # page_url may or may not end in "/": normalise to exactly one.
+          base="${PAGE_URL%/}/"
           expected="${GITHUB_SHA::7}"
           for i in $(seq 1 12); do
-            build=$(curl -fsS "${PAGE_URL}version.json?ts=$(date +%s)" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).build)}catch{console.log("")}})') || build=""
+            build=$(curl -fsS "${base}version.json?ts=$(date +%s)" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).build)}catch{console.log("")}})') || build=""
             echo "attempt $i: live build=${build:-none} expected=${expected}"
             [ "$build" = "$expected" ] && exit 0
             sleep 10
@@ -93,8 +98,9 @@ jobs:
 
       - name: E2E against the live site
         env:
-          BASE_URL: ${{ needs.deploy.outputs.page_url }}
-        run: npx playwright test e2e/journey.spec.ts e2e/sidebar.spec.ts --reporter=line
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        # Same normalisation, so relative page.goto('./…') resolves under the repo sub-path.
+        run: BASE_URL="${PAGE_URL%/}/" npx playwright test e2e/journey.spec.ts e2e/sidebar.spec.ts --reporter=line
 
       - uses: actions/upload-artifact@v7
         if: failure()
