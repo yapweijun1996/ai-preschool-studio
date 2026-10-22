@@ -147,7 +147,9 @@ test.describe('re-review fixes · desktop 1440', () => {
     await page.evaluate(() => {
       (window as Window & { __profileApp?: Element }).__profileApp = document.querySelector('.app')!;
     });
-    await page.getByRole('complementary', { name: 'Students sidebar' }).getByRole('link', { name: 'Ethan Koh' }).click();
+    const ethan = page.getByRole('complementary', { name: 'Students sidebar' }).getByRole('link', { name: 'Ethan Koh' });
+    await ethan.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/#\/students\/ethan$/);
     await expect.poll(() => page.evaluate(() =>
       (window as Window & { __profileApp?: Element }).__profileApp === document.querySelector('.app')
