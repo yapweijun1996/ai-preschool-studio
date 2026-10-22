@@ -53,7 +53,8 @@ const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
   'unverified-claims': 'pages.children.refusal.invalidTarget',
   'no-observations': 'pages.children.refusal.invalidTarget',
   'not-approved': 'pages.children.refusal.invalidTarget',
-  'reason-required': 'pages.children.refusal.invalidTarget'
+  'reason-required': 'pages.children.refusal.invalidTarget',
+  'status-change-not-allowed': 'pages.children.refusal.invalidTarget'
 };
 
 function maskedPhone(phone: string) {

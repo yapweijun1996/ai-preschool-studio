@@ -65,6 +65,8 @@ an authorization boundary.
 - `updateChild`, `upsertGuardian`, `removeGuardian`, `upsertCollector`, `removeCollector` and
   `withdrawChild` append fixed, translatable audit summary keys. Summary values contain no free text
   or sensitive notes.
+- `updateChild` cannot change enrolment status; `withdrawChild` is the only status transition. The
+  demo has no re-enrolment action, so withdrawn records remain withdrawn.
 - All dates are ISO calendar dates and comparisons are timezone-independent.
 
 ## Compliance hooks

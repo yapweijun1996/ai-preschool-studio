@@ -53,7 +53,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async getCollectors(childId) { return getState().collectors.filter((collector) => collector.childId === childId); },
     async updateChild(child, actor) {
       const state = getState();
-      if (!state.children[child.id]) return refusal('unknown-child');
+      const stored = state.children[child.id];
+      if (!stored) return refusal('unknown-child');
+      if (stored.status !== child.status) return refusal('status-change-not-allowed');
       if (Object.keys(validateChild(child)).length > 0 || !state.classes.some((item) => item.id === child.classId)) return refusal('invalid-child');
       return run({ type: 'updateChild', child, actor }, child, 'invalid-child');
     },

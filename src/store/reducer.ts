@@ -361,7 +361,8 @@ export function reducer(state: State, action: Action): State {
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
     case 'updateChild': {
-      if (!state.children[action.child.id] || Object.keys(validateChild(action.child)).length > 0) return state;
+      const stored = state.children[action.child.id];
+      if (!stored || stored.status !== action.child.status || Object.keys(validateChild(action.child)).length > 0) return state;
       const next = { ...state, children: { ...state.children, [action.child.id]: action.child } };
       return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'child.updated', target: { type: 'child', id: action.child.id }, summaryKey: 'pages.audit.summaryChildUpdated' });
     }

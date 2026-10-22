@@ -51,6 +51,16 @@ describe('DataPort demo adapter', () => {
     expect(h.state().collectors.find((item) => item.id === collector.id)?.childId).toBe('aria');
   });
 
+  it('rejects status changes through updateChild in either direction', async () => {
+    const h = harness();
+    const ethan = (await h.adapter.getChild('ethan'))!;
+    expect(await h.adapter.updateChild({ ...ethan, status: 'withdrawn' })).toEqual({ ok: false, reason: 'status-change-not-allowed' });
+    expect(await h.adapter.updateChild({ ...ethan, enrolledOn: '2025-01-01' })).toMatchObject({ ok: true });
+    await h.adapter.withdrawChild('aria');
+    const aria = (await h.adapter.getChild('aria'))!;
+    expect(await h.adapter.updateChild({ ...aria, status: 'active' })).toEqual({ ok: false, reason: 'status-change-not-allowed' });
+  });
+
   it('returns typed child and report-in-review withdrawal refusals', async () => {
     const { adapter, state } = harness();
     expect(await adapter.withdrawChild('missing')).toEqual({ ok: false, reason: 'unknown-child' });
