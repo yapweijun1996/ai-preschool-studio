@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { TODAY } from '../data/demo';
+import { useI18n } from '../i18n';
 
+/** `at` is the save time already formatted for the current language (HH:MM). */
 export type SaveStatus = { kind: 'saved'; at: string } | { kind: 'unsaved' } | { kind: 'saving' } | { kind: 'failed' };
 
-const timeLabel = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+type InnerStatus = { kind: 'saved'; at: Date } | { kind: 'unsaved' } | { kind: 'saving' } | { kind: 'failed' };
 
 /**
  * Debounced autosave for the demo. `persist` commits the value; `shouldFail`
  * simulates a network failure so the "Save failed · Retry" state is reachable.
+ * The save time is kept as a Date and formatted with fmtTime at render, so it
+ * follows the current language.
  */
 export function useAutosave<T>(value: T, persist: (v: T) => void, shouldFail: boolean, initialAt = '10:42') {
-  const [status, setStatus] = useState<SaveStatus>({ kind: 'saved', at: initialAt });
+  const { fmtTime } = useI18n();
+  const [inner, setInner] = useState<InnerStatus>(() => ({ kind: 'saved', at: new Date(`${TODAY}T${initialAt}:00`) }));
   const first = useRef(true);
   const timers = useRef<number[]>([]);
   const latest = useRef(value);
@@ -22,14 +28,14 @@ export function useAutosave<T>(value: T, persist: (v: T) => void, shouldFail: bo
 
   const save = useCallback(() => {
     clear();
-    setStatus({ kind: 'saving' });
+    setInner({ kind: 'saving' });
     timers.current.push(
       window.setTimeout(() => {
         if (shouldFail) {
-          setStatus({ kind: 'failed' });
+          setInner({ kind: 'failed' });
         } else {
           persist(latest.current);
-          setStatus({ kind: 'saved', at: timeLabel() });
+          setInner({ kind: 'saved', at: new Date() });
         }
       }, 700)
     );
@@ -41,11 +47,12 @@ export function useAutosave<T>(value: T, persist: (v: T) => void, shouldFail: bo
       return;
     }
     clear();
-    setStatus({ kind: 'unsaved' });
+    setInner({ kind: 'unsaved' });
     timers.current.push(window.setTimeout(save, 800));
     return clear;
     // Only value changes should schedule a save.
   }, [value]);
 
+  const status: SaveStatus = inner.kind === 'saved' ? { kind: 'saved', at: fmtTime(inner.at) } : inner;
   return { status, retry: save };
 }

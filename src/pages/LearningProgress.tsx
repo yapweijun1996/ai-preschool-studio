@@ -4,13 +4,16 @@ import { Icon } from '../components/Icon';
 import { StudentTabs } from '../components/StudentTabs';
 import { MilestoneDots, Notice, SourceChip } from '../components/ui';
 import { DOMAINS, MILESTONES } from '../data/demo';
+import { useI18n } from '../i18n';
+import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
 import { studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
-// Teacher-written change notes for the demo student; other students show a neutral line.
+// Teacher-written change notes for the demo student (teacher content, not translated);
+// other students show a neutral, translated line.
 const NOTES: Record<string, Record<string, string>> = {
   aria: {
     en: 'Now retells familiar stories in order without picture prompts.',
@@ -20,10 +23,10 @@ const NOTES: Record<string, Record<string, string>> = {
   }
 };
 
-const label = (m: string) => MILESTONES.find((x) => x.key === m)!.label;
-
 export function LearningProgress() {
   const { id = '' } = useParams();
+  const { t } = useI18n();
+  const { domainFull, milestone: label } = useLabels();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -31,36 +34,39 @@ export function LearningProgress() {
   const { student } = sum;
   const t4 = observationsFor(state, id, 4);
   const t3 = observationsFor(state, id, 3);
+  const term3 = t('common.term3');
+  const term4 = t('common.term4');
+  const openStudio = t('pages.shared.openStudio');
 
   return (
     <AppShell
       module="students"
       currentStudentId={id}
-      mobileTitle="Learning progress"
-      mobileSubtitle={`${student.name} · Term 3 vs Term 4`}
+      mobileTitle={t('pages.progress.title')}
+      mobileSubtitle={t('pages.progress.mobileSubtitle', { name: student.name })}
       mobileBack={`/students/${id}`}
-      mobileActions={<Link className="btn btn-primary btn-block" to={`/students/${id}/studio`}>Open AI Portfolio Studio</Link>}
+      mobileActions={<Link className="btn btn-primary btn-block" to={`/students/${id}/studio`}>{openStudio}</Link>}
     >
       {(bp) => (
         <div className="page">
           <div className="row" style={{ gap: 16 }}>
-            {bp !== 'mobile' && <Link className="icon-btn" to={`/students/${id}`} aria-label={`Back to ${student.name}'s profile`} title="Back"><Icon name="arrowLeft" /></Link>}
+            {bp !== 'mobile' && <Link className="icon-btn" to={`/students/${id}`} aria-label={t('pages.shared.backToProfileOf', { name: student.name })} title={t('pages.shared.back')}><Icon name="arrowLeft" /></Link>}
             <div className="grow">
-              {bp !== 'mobile' && <h1 className="h1">Learning progress</h1>}
-              <p className="sec muted">{student.name} · Demo student · 2026 Term 3 compared with 2026 Term 4</p>
+              {bp !== 'mobile' && <h1 className="h1">{t('pages.progress.title')}</h1>}
+              <p className="sec muted">{student.name} · {t('common.demoStudent')} · {t('pages.progress.compared', { term3, term4 })}</p>
             </div>
-            {bp !== 'mobile' && <Link className="btn btn-primary" to={`/students/${id}/studio`}>Open AI Portfolio Studio</Link>}
+            {bp !== 'mobile' && <Link className="btn btn-primary" to={`/students/${id}/studio`}>{openStudio}</Link>}
           </div>
           <StudentTabs id={id} active="progress" />
-          <div className="row" style={{ gap: 20 }} aria-label="Milestone key">
-            <span className="sec semibold">Milestones</span>
+          <div className="row" style={{ gap: 20 }} aria-label={t('pages.progress.keyLabel')}>
+            <span className="sec semibold">{t('pages.progress.milestones')}</span>
             {MILESTONES.map((m) => <MilestoneDots key={m.key} milestone={m.key} />)}
-            <span className="cap muted">Descriptions of observed learning — not scores or rankings.</span>
+            <span className="cap muted">{t('pages.progress.keyNote')}</span>
           </div>
-          <section className="card" aria-label="Term 3 and Term 4 comparison" style={{ overflow: 'hidden' }}>
+          <section className="card" aria-label={t('pages.progress.tableLabel')} style={{ overflow: 'hidden' }}>
             {bp !== 'mobile' && (
               <div className="table-head" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1.6fr', gap: 16 }}>
-                <span>Domain</span><span>2026 Term 3</span><span>2026 Term 4</span><span>What changed, in the teacher’s words</span>
+                <span>{t('pages.progress.colDomain')}</span><span>{term3}</span><span>{term4}</span><span>{t('pages.progress.colChanged')}</span>
               </div>
             )}
             {DOMAINS.map((d) => {
@@ -69,19 +75,19 @@ export function LearningProgress() {
               const n4 = sources.length;
               const before = student.term3[d.key];
               const after = student.term4[d.key];
-              const note = NOTES[id]?.[d.key] ?? (before === after ? `Still ${label(after)}.` : `Moved from ${label(before)} to ${label(after)}.`);
+              const note = NOTES[id]?.[d.key] ?? (before === after ? t('pages.progress.still', { milestone: label(after) }) : t('pages.progress.moved', { from: label(before), to: label(after) }));
               return (
                 <div key={d.key} style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr 1fr' : '1.3fr 1fr 1fr 1.6fr', gap: 16, padding: 20, borderTop: '1px solid var(--color-border)', alignItems: 'start' }}>
-                  <h2 className="strong" style={{ gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>{d.full}</h2>
+                  <h2 className="strong" style={{ gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>{domainFull(d.key)}</h2>
                   <div className="stack" style={{ gap: 6 }}>
-                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>Term 3</span>
+                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{t('pages.shared.term3')}</span>
                     <MilestoneDots milestone={before} />
-                    {n3 > 0 && <span className="cap muted num">{n3} {n3 === 1 ? 'observation' : 'observations'}</span>}
+                    {n3 > 0 && <span className="cap muted num">{t('pages.shared.observations', { count: n3 })}</span>}
                   </div>
                   <div className="stack" style={{ gap: 6 }}>
-                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>Term 4</span>
+                    <span className={bp === 'mobile' ? 'cap muted' : 'sr-only'}>{t('pages.shared.term4')}</span>
                     <MilestoneDots milestone={after} />
-                    {n4 > 0 && <span className="cap muted num">{n4} {n4 === 1 ? 'observation' : 'observations'}</span>}
+                    {n4 > 0 && <span className="cap muted num">{t('pages.shared.observations', { count: n4 })}</span>}
                   </div>
                   <div className="stack" style={{ gap: 8, gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>
                     <p className="sec">{note}</p>
@@ -92,7 +98,7 @@ export function LearningProgress() {
             })}
           </section>
           <Notice tone="info" icon="info">
-            <p className="body-text">Term 4 milestones flow into the portfolio narrative. Each sentence there must cite an observation, or it is flagged “Needs teacher verification”.</p>
+            <p className="body-text">{t('pages.progress.notice', { label: t('common.needsVerification') })}</p>
           </Notice>
         </div>
       )}
