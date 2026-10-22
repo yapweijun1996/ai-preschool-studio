@@ -15,13 +15,14 @@ export const test = base.extend({
 
 export { expect };
 
-export async function openVisualPage(page: import('@playwright/test').Page, path: string, theme: 'light' | 'dark' = 'light') {
-  await page.addInitScript(({ theme }) => {
+export async function openVisualPage(page: import('@playwright/test').Page, path: string, theme: 'light' | 'dark' = 'light', role?: string) {
+  await page.addInitScript(({ theme, role }) => {
     localStorage.clear();
     sessionStorage.clear();
     localStorage.setItem('aps-theme', theme);
     localStorage.setItem('aps-lang', 'en');
-  }, { theme });
+    if (role) sessionStorage.setItem('aps-demo-role', role);
+  }, { theme, role });
   await page.goto(path);
   await expect(page.getByRole('main')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
@@ -33,6 +34,8 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
   // The catalog is a lazy route and Students has a short simulated fetch.
   await page.getByRole('status', { name: 'Loading catalog' }).waitFor({ state: 'hidden' });
   await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
+  await page.getByRole('status', { name: 'Loading evidence coverage…' }).waitFor({ state: 'hidden' });
+  await page.getByRole('status', { name: 'Loading review queue…' }).waitFor({ state: 'hidden' });
 
   // PWA update UI is normally prevented by the visual project's blocked service workers;
   // make the settled-state expectation explicit in case the shell has already surfaced it.

@@ -42,13 +42,15 @@ const screens = [
   { name: 'aria-profile', path: './#/students/aria' },
   { name: 'aria-studio', path: './#/students/aria/studio' },
   { name: 'aria-report', path: './#/students/aria/report' },
+  { name: 'coverage', path: './#/coverage' },
+  { name: 'reviews', path: './#/reviews', role: 'reviewer' },
   { name: 'settings-framework', path: './#/settings/framework' }
 ] as const;
 
 for (const screen of screens) {
   test(`${screen.name} · desktop light`, async ({ page }) => {
     await page.setViewportSize(desktop);
-    await openVisualPage(page, screen.path);
+    await openVisualPage(page, screen.path, 'light', 'role' in screen ? screen.role : undefined);
     await expect(page).toHaveScreenshot(`${screen.name}-desktop-light.png`, { mask: [buildFooter(page)] });
   });
 }
@@ -61,6 +63,12 @@ for (const name of ['dashboard', 'aria-studio', 'aria-report'] as const) {
     await expect(page).toHaveScreenshot(`${screen.name}-mobile-light.png`, { mask: [buildFooter(page)] });
   });
 }
+
+test('coverage · mobile light', async ({ page }) => {
+  await page.setViewportSize(mobile);
+  await openVisualPage(page, './#/coverage');
+  await expect(page).toHaveScreenshot('coverage-mobile-light.png', { mask: [buildFooter(page)] });
+});
 
 test('aria report · desktop dark', async ({ page }) => {
   await page.setViewportSize(desktop);
