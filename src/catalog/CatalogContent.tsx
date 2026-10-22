@@ -40,6 +40,7 @@ const sections = [
   'Skeleton',
 ];
 const names = designTokens.color.tokens.map(({ name }) => `--${name}`);
+const tokenValue = (value: string | Record<string, string>, theme: string) => typeof value === 'string' ? value : value[theme] ?? value.light;
 const statuses: ReportStatus[] = ['notStarted', 'draft', 'review', 'changes', 'approved'];
 const readinessExamples: { title: string; readiness: Readiness }[] = [
   {
@@ -92,11 +93,16 @@ function sectionId(name: string) {
 }
 
 function Tokens({ theme }: { theme: string }) {
+  const tokenNames = [
+    ...designTokens.spacing.tokens.filter(({ name }) => name.startsWith('space-')).map(({ name }) => `--${name}`),
+    ...designTokens.radius.tokens.map(({ name }) => `--${name}`),
+    ...designTokens.shadow.tokens.map(({ name }) => `--${name}`),
+  ];
   const [values, setValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const style = getComputedStyle(document.documentElement);
-    setValues(Object.fromEntries(names.map((name) => [name, style.getPropertyValue(name).trim()])));
+    setValues(Object.fromEntries([...names, ...tokenNames].map((name) => [name, style.getPropertyValue(name).trim()])));
   }, [theme]);
 
   return (
@@ -110,24 +116,31 @@ function Tokens({ theme }: { theme: string }) {
       ))}
       <div className="catalog-token">
         <strong>Type scale</strong>
-        <span className="cap">12 / 16</span>
-        <span className="sec">14 / 20</span>
-        <span style={{ fontSize: 20, lineHeight: '28px' }}>20 / 28</span>
-        <span style={{ fontSize: 28, lineHeight: '36px' }}>28 / 36</span>
+        {designTokens.type.groups.flatMap(({ name: group, styles }) => styles.map((style) => (
+          <span key={style.name} style={{ fontSize: style.fontSize, lineHeight: style.lineHeight, fontWeight: style.fontWeight }}>
+            {group} · {style.name}: {style.fontSize} / {style.lineHeight}
+          </span>
+        )))}
       </div>
       <div className="catalog-token">
         <strong>Spacing</strong>
-        <span>1: 4 · 2: 8 · 3: 12 · 4: 16</span>
-        <span>5: 20 · 6: 24 · 8: 32 px</span>
+        {designTokens.spacing.tokens.filter(({ name }) => name.startsWith('space-')).map(({ name, value }) => (
+          <span key={name}>--{name}: {value} (computed: {values[`--${name}`] || '—'})</span>
+        ))}
       </div>
       <div className="catalog-token">
         <strong>Radii</strong>
-        <span>sm 6 · md 10 · lg 12 · pill 999 px</span>
+        {designTokens.radius.tokens.map(({ name, value }) => (
+          <span key={name}>--{name}: {value} (computed: {values[`--${name}`] || '—'})</span>
+        ))}
       </div>
       <div className="catalog-token">
         <strong>Shadows</strong>
-        <span style={{ boxShadow: 'var(--shadow-sm)', padding: 12 }}>shadow-sm</span>
-        <span style={{ boxShadow: 'var(--shadow-overlay)', padding: 12 }}>shadow-overlay</span>
+        {designTokens.shadow.tokens.map(({ name, value }) => (
+          <span key={name} style={{ boxShadow: `var(--${name})`, padding: 'var(--space-3)' }}>
+            --{name}: {tokenValue(value, theme)} (computed: {values[`--${name}`] || '—'})
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -258,7 +271,7 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
                 aria-describedby="catalog-error"
                 defaultValue="Took turns at the block corner and handed a peer the last arch block without being asked."
               />
-              <p id="catalog-error" className="sec" style={{ color: 'var(--color-danger)' }}>
+              <p id="catalog-error" className="sec catalog-field-error">
                 Please add an observation date.
               </p>
             </div>
