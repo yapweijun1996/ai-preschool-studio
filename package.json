@@ -11,6 +11,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "test:a11y": "playwright test e2e/a11y.spec.ts --project=chromium",
+    "test:visual": "PW_VISUAL=1 playwright test --project=visual",
+    "test:visual:update": "PW_VISUAL=1 playwright test --project=visual --update-snapshots",
     "test:browsers": "PW_BROWSERS=firefox,webkit playwright test --project=firefox --project=webkit",
     "icons": "node scripts/gen-icons.mjs"
   },

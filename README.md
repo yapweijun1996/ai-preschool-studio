@@ -70,6 +70,8 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
 
 Quality baseline: [2026-10-22](docs/quality/baseline-2026-10-22.md).
 
+Visual regression: [how it works and how to update baselines](docs/quality/visual-regression.md).
+
 ## Run
 
 ```bash
