@@ -178,7 +178,8 @@ test('visible update UI: dirty work blocks, then "Update to v…" installs the n
 
   // Leave the draft for a screen without unsaved work, then update from the top bar.
   await page.goto('./#/students');
-  await expect(page.getByText('Update available')).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Students sidebar' }).getByText('Update available')).toBeVisible();
+  await expect.poll(async () => (await snap(page)).hasDirtyWork).toBe(false);
   await page.getByRole('button', { name: 'Update to v0.3.0-b' }).click();
   await expect.poll(() => loads, { timeout: 15_000 }).toBe(2);
   await expect.poll(async () => (await snap(page)).currentVersion).toBe('0.3.0-b');
