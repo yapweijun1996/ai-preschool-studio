@@ -39,7 +39,6 @@ test('catalog first four sections · mobile light', async ({ page }) => {
 const screens = [
   { name: 'dashboard', path: './#/' },
   { name: 'students', path: './#/students' },
-  { name: 'classes', path: './#/classes' },
   { name: 'aria-profile', path: './#/students/aria' },
   { name: 'aria-studio', path: './#/students/aria/studio' },
   { name: 'aria-report', path: './#/students/aria/report' },

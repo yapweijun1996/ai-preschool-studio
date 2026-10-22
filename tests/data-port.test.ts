@@ -50,6 +50,23 @@ describe('DataPort demo adapter', () => {
     expect(await adapter.withdrawChild('ethan')).toEqual({ ok: false, reason: 'report-in-review' });
     expect(state().children.ethan.status).toBe('active');
     expect(await adapter.withdrawChild('aria')).toMatchObject({ ok: true, value: { status: 'withdrawn' } });
+    expect(await adapter.withdrawChild('aria')).toEqual({ ok: false, reason: 'invalid-target' });
+  });
+
+  it('returns a typed refusal for every Children & Classes write guard', async () => {
+    const h = harness();
+    const child = (await h.adapter.getChild('aria'))!;
+    const guardian = (await h.adapter.getGuardians('aria'))![0];
+    const collector = (await h.adapter.getCollectors('aria'))![0];
+    expect(await h.adapter.updateChild({ ...child, dateOfBirth: 'bad-date' })).toEqual({ ok: false, reason: 'invalid-child' });
+    expect(await h.adapter.updateChild({ ...child, classId: 'missing-class' })).toEqual({ ok: false, reason: 'invalid-child' });
+    expect(await h.adapter.upsertGuardian({ ...guardian, childIds: ['missing-child'] })).toEqual({ ok: false, reason: 'unknown-child' });
+    expect(await h.adapter.upsertGuardian({ ...guardian, phone: 'invalid-phone' })).toEqual({ ok: false, reason: 'invalid-guardian' });
+    expect(await h.adapter.removeGuardian('missing-guardian')).toEqual({ ok: false, reason: 'unknown-guardian' });
+    expect(await h.adapter.upsertGuardian({ ...guardian, isPrimary: false })).toEqual({ ok: false, reason: 'primary-guardian-required' });
+    expect(await h.adapter.upsertCollector({ ...collector, childId: 'missing-child' })).toEqual({ ok: false, reason: 'unknown-child' });
+    expect(await h.adapter.upsertCollector({ ...collector, validTo: 'not-a-date' })).toEqual({ ok: false, reason: 'invalid-collector' });
+    expect(await h.adapter.removeCollector('missing-collector')).toEqual({ ok: false, reason: 'unknown-collector' });
   });
 
   it('matches existing selectors and rules for every read method', async () => {
