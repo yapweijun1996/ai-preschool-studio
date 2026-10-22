@@ -32,6 +32,19 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
 - **Responsive** — desktop ≥1200 (rail + context panel + 3 columns), tablet 768–1199 (rail,
   editor with a docked Evidence/AI drawer), mobile <768 (compact header, bottom tab bar,
   Evidence | Write | AI tabs, sticky action bar). Light and dark themes.
+- **Languages** — English (default), 中文 (Simplified Chinese) and Bahasa Melayu. Switch from
+  the top-bar language menu, the phone More sheet or Settings › Language; the choice persists
+  and sets `<html lang>`. Learning domains stay bilingual with 中文. Teacher content
+  (observations, narratives, reflections) stays in the language it was written in.
+- **Installable app (PWA)** — manifest, icons and a versioned service worker. The app checks for
+  a new release on start, when you return to the tab, when the network comes back and hourly.
+  A new release shows **Update to vX.Y.Z** (top bar, sidebar footer, Settings › About); it
+  installs with a loader and one reload. It updates by itself only while the tab is in the
+  background and nothing is unsaved; it never reloads over a draft. Offline: the app shell and
+  demo data keep working; the Mock provider runs locally.
+- **Settings** — Appearance (Light/Dark/System, sidebar panel), Language, About & updates
+  (version, build, update status, Check for updates), Demo data (simulate AI outage or save
+  failure, reset).
 
 ## Run
 
@@ -39,17 +52,24 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
 npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ (relative base, hash routing)
-npm test             # unit tests (reducer, approval rules, Mock provider)
-npm run e2e          # Playwright journey at 1440 / 1024 / 390
+npm test             # unit tests (reducer, approval rules, Mock provider, i18n, PWA state machine)
+npm run e2e          # Playwright: journey, sidebar, i18n, settings, real service-worker updates
+npm run icons        # regenerate PWA icons (needs Chromium; see PW_CHROMIUM below)
 ```
 
 If Chromium is already installed elsewhere, point Playwright at it:
-`PW_CHROMIUM=/path/to/chrome npm run e2e`.
+`PW_CHROMIUM=/path/to/chrome npm run e2e`. `BASE_URL=<deployed url> npx playwright test
+e2e/journey.spec.ts e2e/sidebar.spec.ts` runs the suite against a deployed site.
+
+Version identity: `package.json` version + short commit SHA, baked in at build time and
+published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
 
 ## Deploy (GitHub Pages)
 
 `.github/workflows/deploy-pages.yml` runs on every push to `main` (and on demand from the
-Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages.
+Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages →
+**live smoke**: waits until the live `version.json` reports this commit's build, then runs the
+journey and sidebar e2e specs against the live URL.
 
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pages on a
@@ -61,7 +81,10 @@ private repository needs a paid GitHub plan; on the free plan, make the repo pub
 design/tokens.json        design system tokens (source of truth)
 src/styles/tokens.css     tokens as CSS variables, light + dark
 src/styles/app.css        token-only component and layout styles
-src/components/           AppShell, Icon, shared UI, studio/ panels
+src/components/           AppShell, Icon, Menu, ModulePanel, shared UI, studio/ panels
+src/i18n/                 provider, glossary labels, locales/{en,zh,ms}/{common,shell,pages}.ts
+src/pwa/                  update state machine, provider, service-worker template
+public/                   manifest + icons
 src/pages/                one file per route
 src/store/                pure reducer + selectors, React context
 src/services/mockProvider.ts   Mock AI provider (canned, sourced suggestions)
