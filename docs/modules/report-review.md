@@ -13,12 +13,12 @@ Displays a one-page fictional report preview and drives the draft → in review 
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Draft/changes report, readiness and status; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can edit in Studio, submit for review and view the preview. |
-| Reviewer / Principal | In-review report and evidence claims; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can request changes, link same-child evidence or approve when unblocked. |
-| School admin | Report screens; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no separate admin permissions. |
-| Parent | Released report in future Family Portal; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no family release or parent account. |
+| Teacher | Draft/changes reports, readiness and report status. | Edit in Studio and submit; in review, sees why review actions are restricted and can switch to Reviewer. |
+| Reviewer / Principal | Reports in review, readiness and evidence claims. | Request changes, link same-child evidence or approve when unblocked. |
+| School admin | Read-only Students views; admin planned landing page. | No report review actions. |
+| Parent | Planned-role landing page; no reports navigation. | Released reports are planned for Phase 3. |
 
-Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
 
 ## Flows
 

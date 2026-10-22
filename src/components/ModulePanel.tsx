@@ -9,6 +9,7 @@ import { usePortfolio } from '../store/PortfolioContext';
 import type { Module } from './AppShell';
 import { Icon, type IconName } from './Icon';
 import { Avatar } from './ui';
+import { useRole } from '../roles/RoleContext';
 
 export type SettingsSection = 'appearance' | 'language' | 'framework' | 'about' | 'demo';
 
@@ -47,6 +48,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
   const { pinned, recent } = useNavMemory();
   const { state } = usePortfolio();
   const { t, fmtDate } = useI18n();
+  const role = useRole();
   const labels = useLabels();
   const pwa = usePwa();
   const moduleLabel = t(`shell.module.${module}`);
@@ -59,7 +61,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
 
   const path = location.pathname;
   const status = new URLSearchParams(location.search).get('status');
-  const matches = query.trim() ? STUDENTS.filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase())) : [];
+  const matches = role.can('students.view') && query.trim() ? STUDENTS.filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase())) : [];
   const recentShown = recent.filter((id) => !pinned.includes(id)).slice(0, 5);
   const counts = (st: ReportStatus) => Object.values(state.reports).filter((r) => r.status === st).length;
   const latestObs = [...state.observations].filter((o) => o.term === 4).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
@@ -69,15 +71,15 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
     <>
       <div className="ctx-head">
         <p className="strong grow">{moduleLabel}</p>
-        <button className="icon-btn has-tip tip-below" type="button" data-tip={t('shell.panel.search')} aria-label={t('shell.panel.search')} aria-expanded={searchOpen} onClick={() => { setSearchOpen(!searchOpen); setQuery(''); }}>
+        {role.can('students.view') && <button className="icon-btn has-tip tip-below" type="button" data-tip={t('shell.panel.search')} aria-label={t('shell.panel.search')} aria-expanded={searchOpen} onClick={() => { setSearchOpen(!searchOpen); setQuery(''); }}>
           <Icon name="search" />
-        </button>
+        </button>}
         <button className="icon-btn has-tip tip-below" type="button" data-tip={t('shell.panel.closeTip')} aria-label={t('shell.panel.close')} aria-keyshortcuts="Control+Shift+S Meta+Shift+S" onClick={onToggle}>
           <Icon name="panel" />
         </button>
       </div>
 
-      {searchOpen && (
+      {searchOpen && role.can('students.view') && (
         <div className="ctx-search">
           <div className="search-wrap">
             <label className="sr-only" htmlFor="ctx-search">{t('shell.panel.search')}</label>
@@ -96,13 +98,13 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
         {module === 'dashboard' && (
           <>
             <Link className="nav-link" to="/" aria-current={path === '/' ? 'page' : undefined}><Icon name="home" size={18} />{t('shell.panel.overview')}</Link>
-            <Link className="nav-link" to="/students"><Icon name="users" size={18} />{CLASS_NAME}</Link>
+            {role.can('students.view') && <Link className="nav-link" to="/students"><Icon name="users" size={18} />{CLASS_NAME}</Link>}
           </>
         )}
         {module === 'students' && (
           <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">{STUDENTS.length}</span></Link>
         )}
-        {module === 'observations' && (
+        {module === 'observations' && role.can('observation.add') && (
           <>
             <Link className="nav-link" to={`/students/${studentId}/observe`} aria-current={path.endsWith('/observe') ? 'page' : undefined}><Icon name="plus" size={18} />{t('shell.panel.addObservation')}</Link>
             <p className="cap ctx-label">{t('shell.panel.latest')}</p>
@@ -114,7 +116,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             ))}
           </>
         )}
-        {module === 'reports' && (
+        {module === 'reports' && role.can('report.view') && (
           <>
             <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue', { term: labels.termShort(4) })}</p>
             {(['review', 'changes', 'draft', 'notStarted', 'approved'] as ReportStatus[]).map((st) => (
@@ -128,18 +130,18 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             )}
           </>
         )}
-        {module === 'settings' && <>
-          {SETTINGS_SECTIONS.map((sec) => (
+        {module === 'settings' && role.can('settings.view') && <>
+          {SETTINGS_SECTIONS.filter((sec) => sec.key !== 'demo' || role.can('demo.controls')).map((sec) => (
             <Link key={sec.key} className="nav-link" to={`/settings/${sec.key}`} aria-current={path === `/settings/${sec.key}` ? 'page' : undefined}>
               <Icon name={sec.icon} size={18} />
               {t(`shell.settings.sections.${sec.key}`)}
             </Link>
           ))}
-          <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>
         </>}
+        {module === 'settings' && role.can('catalog.view') && <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
       </nav>
 
-      {(module === 'students' || module === 'dashboard') && (
+      {role.can('students.view') && (module === 'students' || module === 'dashboard') && (
         <>
           <p className="cap ctx-label">{t('shell.panel.pinned')}</p>
           {pinned.length === 0 ? (

@@ -6,6 +6,7 @@ import { usePortfolio } from '../store/PortfolioContext';
 import { allSummaries } from '../store/selectors';
 import { Icon, type IconName } from './Icon';
 import { Avatar, StatusLabel } from './ui';
+import { useRole } from '../roles/RoleContext';
 
 const PAGES: { key: string; label: TKey; to: string; icon: IconName }[] = [
   { key: 'dashboard', label: 'shell.nav.dashboard', to: '/', icon: 'home' },
@@ -21,6 +22,7 @@ const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(n
  */
 export function GlobalSearch() {
   const { t } = useI18n();
+  const role = useRole();
   const navigate = useNavigate();
   const { state } = usePortfolio();
   const [open, setOpen] = useState(false);
@@ -53,12 +55,14 @@ export function GlobalSearch() {
 
   const q = query.trim().toLowerCase();
   const items = useMemo(() => {
-    const students = allSummaries(state)
+    const students = (role.can('students.view') ? allSummaries(state) : [])
       .filter((s) => !q || s.student.name.toLowerCase().includes(q))
       .map((s) => ({ kind: 'student' as const, key: s.student.id, to: `/students/${s.student.id}`, summary: s }));
-    const pages = PAGES.filter((p) => !q || t(p.label).toLowerCase().includes(q)).map((p) => ({ kind: 'page' as const, key: p.key, to: p.to, page: p }));
+    const pages = PAGES.filter((p) => (p.key === 'dashboard' ? role.can('dashboard.view') : p.key === 'students' ? role.can('students.view') : role.can('settings.view')))
+      .filter((p) => !q || t(p.label).toLowerCase().includes(q))
+      .map((p) => ({ kind: 'page' as const, key: p.key, to: p.to, page: p }));
     return [...students, ...pages];
-  }, [state, q, t]);
+  }, [state, q, t, role]);
 
   const close = () => {
     setOpen(false);

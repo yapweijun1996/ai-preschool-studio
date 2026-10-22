@@ -14,10 +14,12 @@ import { approvalBlock, observationsFor, readiness, unverifiedClaims } from '../
 import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
+import { useRole } from '../roles/RoleContext';
 
 export function ReportPreview() {
   const { id = '' } = useParams();
   const { state, dispatch } = usePortfolio();
+  const role = useRole();
   // Undefined until edited: the prefilled note follows the current language.
   const [editedNote, setEditedNote] = useState<string | undefined>(undefined);
   const [requesting, setRequesting] = useState(false);
@@ -58,6 +60,12 @@ export function ReportPreview() {
   const steps = <ReportFlow status={status} hadChanges={report.hadChanges} />;
 
   const actions = (mobile: boolean) => {
+    if (status === 'review' && !role.can('report.review')) {
+      return <Notice tone="info" icon="lock" role="status">
+        <p className="body-text">{t('shell.roles.onlyReviewer')}</p>
+        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('reviewer')}>{t('shell.roles.switchReviewer')}</button>
+      </Notice>;
+    }
     if (status === 'review') {
       return requesting ? (
         <>
@@ -74,7 +82,7 @@ export function ReportPreview() {
     if (status === 'notStarted') {
       return <Link className="btn btn-primary grow" to={`/students/${id}/studio`}>{openStudio}</Link>;
     }
-    if (status === 'changes' || status === 'draft') {
+    if ((status === 'changes' || status === 'draft') && role.can('report.submit')) {
       return (
         <>
           <Link className="btn btn-secondary" to={`/students/${id}/studio`}>{mobile ? t('pages.report.editDraft') : openStudio}</Link>
@@ -89,6 +97,12 @@ export function ReportPreview() {
           </button>
         </>
       );
+    }
+    if ((status === 'changes' || status === 'draft') && !role.can('report.submit')) {
+      return <Notice tone="info" icon="lock" role="status">
+        <p className="body-text">{t('shell.roles.draftBlocked')}</p>
+        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('teacher')}>{t('shell.roles.switchTeacher')}</button>
+      </Notice>;
     }
     return (
       <>
@@ -141,7 +155,7 @@ export function ReportPreview() {
         {(status === 'draft' || status === 'changes') && !ready.canSubmit && (
           <p id="not-ready" className="sec semibold" style={{ color: 'var(--color-warning)' }}>{t('pages.report.notReady')} · {t('pages.report.notReadyBody')}</p>
         )}
-        {status === 'review' && block?.reason === 'claims' && (
+        {status === 'review' && block?.reason === 'claims' && role.can('report.review') && (
           <Notice tone="warning" icon="lock" id="approve-blocked" role="status">
             <p className="semibold">{t('pages.report.blocked')}</p>
             <p className="body-text">{t('pages.report.blockedBody', { count: block.count })}</p>

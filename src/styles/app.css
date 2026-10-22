@@ -403,3 +403,14 @@ legend { padding: 0; margin-bottom: var(--space-2); }
   .report-layout { padding: 0; }
   .a4 { border: 0; box-shadow: none; }
 }
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: normal;
+}

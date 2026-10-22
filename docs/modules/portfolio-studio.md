@@ -13,12 +13,12 @@ Combines a student's observations, evidence-linked narrative, teacher reflection
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Evidence, narrative, Mock assistant and report readiness; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can create drafts, remove an uncited claim, link a source, replace a paragraph by applying an AI suggestion, set free-text reflection and submit a ready draft for review. |
-| Reviewer / Principal | Portfolio draft in review; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no role-specific permission, though a demo user may view and link evidence during review. |
-| School admin | Portfolio screens; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no separate admin permission. |
-| Parent | Released narrative in future family experience; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no parent account or released family view. |
+| Teacher | Evidence, narrative, Mock assistant and readiness. | Create/edit drafts, link sources, apply suggestions, set reflection and submit ready drafts. |
+| Reviewer / Principal | Portfolio draft in read-only mode. | Cannot edit the draft; review evidence linking is available from an in-review report. |
+| School admin | Read-only Students views; Studio edits are not available. | Cannot edit or submit drafts. |
+| Parent | Planned-role landing page; no report or Studio navigation. | Released narrative access is planned for Phase 3. |
 
-Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
 
 ## Flows
 

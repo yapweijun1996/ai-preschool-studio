@@ -11,6 +11,7 @@ import type { ThemePref } from '../hooks/useTheme';
 import { LANGS, useI18n, type TKey } from '../i18n';
 import { APP_VERSION, BUILD_ID, usePwa, type PwaApi, type UnsupportedReason, type UpdateStatus } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
+import { useRole } from '../roles/RoleContext';
 import { NotFound } from './NotFound';
 
 const isSection = (s: string | undefined): s is SettingsSection => SETTINGS_SECTIONS.some((x) => x.key === s);
@@ -294,6 +295,7 @@ function DemoData() {
 
 function SettingsBody({ section, bp }: { section: SettingsSection; bp: Breakpoint }) {
   const { t } = useI18n();
+  const role = useRole();
   const title = t(`shell.settings.sections.${section}`);
   const tabs = useRef<HTMLElement>(null);
   // Keep the current section's tab in view when the row scrolls on narrow screens.
@@ -304,7 +306,7 @@ function SettingsBody({ section, bp }: { section: SettingsSection; bp: Breakpoin
     <div className="page settings-page">
       {bp !== 'desktop' && (
         <nav ref={tabs} className="tabs" aria-label={t('shell.settings.title')}>
-          {SETTINGS_SECTIONS.map((s) => (
+          {SETTINGS_SECTIONS.filter((s) => s.key !== 'demo' || role.can('demo.controls')).map((s) => (
             <Link key={s.key} className="tab" to={`/settings/${s.key}`} aria-current={s.key === section ? 'page' : undefined}>
               {t(`shell.settings.sections.${s.key}`)}
             </Link>
@@ -317,11 +319,16 @@ function SettingsBody({ section, bp }: { section: SettingsSection; bp: Breakpoin
           <h1 className="h1">{title}</h1>
         </header>
       )}
-      {section === 'appearance' && <Appearance />}
-      {section === 'language' && <Language />}
-      {section === 'framework' && <FrameworkSection />}
-      {section === 'about' && <About />}
-      {section === 'demo' && <DemoData />}
+      {section === 'demo' && !role.can('demo.controls') ? (
+        <Notice tone="info" icon="lock" role="status">
+          <p className="body-text">{t('shell.settings.demo.restricted')}</p>
+          <Link className="btn btn-secondary" to="/settings/appearance">{t('shell.settings.demo.goAppearance')}</Link>
+        </Notice>
+      ) : section === 'appearance' ? <Appearance />
+      : section === 'language' ? <Language />
+      : section === 'framework' ? <FrameworkSection />
+      : section === 'about' ? <About />
+      : section === 'demo' ? <DemoData /> : null}
     </div>
   );
 }

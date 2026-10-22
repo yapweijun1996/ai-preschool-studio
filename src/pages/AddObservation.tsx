@@ -12,6 +12,7 @@ import { usePortfolio } from '../store/PortfolioContext';
 import { studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
+import { useRole } from '../roles/RoleContext';
 
 function openPicker(el: HTMLInputElement) {
   try {
@@ -36,6 +37,7 @@ export function AddObservation() {
   const { t, fmtDate } = useI18n();
   const { domainShort, milestone: milestoneLabel, term: periodLabel, termShort } = useLabels();
   const { state, dispatch } = usePortfolio();
+  const role = useRole();
   const [date, setDate] = useState(TODAY);
   const [domain, setDomain] = useState<DomainKey>('ma');
   const [milestone, setMilestone] = useState<Milestone>('developing');
@@ -56,6 +58,15 @@ export function AddObservation() {
   const demo = t('common.demoStudent');
   const term = periodLabel(4);
   const firstName = student.name.split(' ')[0];
+
+  if (!role.can('observation.add')) {
+    return <AppShell module="observations" mobileTitle={t('pages.observation.title')}>
+      {() => <div className="page"><Notice tone="info" icon="lock" role="status">
+        <p className="body-text">{t('shell.roles.observationBlocked')}</p>
+        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('teacher')}>{t('shell.roles.switchTeacher')}</button>
+      </Notice></div>}
+    </AppShell>;
+  }
 
   // Observations can be dated up to today, and never past the end of Term 4.
   const lastDay = TODAY < TERM4_END ? TODAY : TERM4_END;

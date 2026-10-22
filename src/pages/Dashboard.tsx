@@ -4,10 +4,13 @@ import { Icon } from '../components/Icon';
 import { Avatar, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME, STUDENTS, TEACHER, TODAY, daysAgo, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
+import type { TKey } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { allSummaries } from '../store/selectors';
 import { useLastObservedLabel } from './Students';
+import { DEMO_ROLES } from '../roles';
+import { useRole } from '../roles/RoleContext';
 
 const ORDER: ReportStatus[] = ['notStarted', 'draft', 'review', 'changes', 'approved'];
 
@@ -16,6 +19,8 @@ export function Dashboard() {
   const { domainShort, status: statusLabel, term: periodLabel } = useLabels();
   const lastObservedLabel = useLastObservedLabel();
   const { state } = usePortfolio();
+  const role = useRole();
+  const activeRole = DEMO_ROLES.find((item) => item.role === role.role)!;
   const summaries = allSummaries(state);
   const counts = ORDER.map((st) => ({ st, n: summaries.filter((s) => s.report.status === st).length }));
   const reasons = [
@@ -35,6 +40,30 @@ export function Dashboard() {
   const term = periodLabel(4);
   const addLabel = t('pages.shared.addObservation');
   const today = t('pages.dashboard.today', { weekday: fmtDate(TODAY, { weekday: 'long' }), date: fmtDate(TODAY) });
+
+  if (role.role === 'parent' || role.role === 'admin') {
+    const modules: TKey[] = role.role === 'parent'
+      ? ['shell.roles.familyModules', 'shell.roles.noticesModule']
+      : ['shell.roles.schoolsModule', 'shell.roles.privacyModule', 'shell.roles.retentionModule', 'shell.roles.incidentsModule', 'shell.roles.principalReportsModule'];
+    return (
+      <AppShell module="dashboard" mobileTitle={t(activeRole.labelKey)}>
+        {() => (
+          <div className="page">
+            <div className="page-title-row"><h1 className="h1">{t('shell.roles.plannedTitle', { role: t(activeRole.labelKey) })}</h1></div>
+            <section className="card card-pad stack" aria-labelledby="planned-purpose">
+              <h2 id="planned-purpose" className="h2">{t('shell.roles.planned')}</h2>
+              <p className="sec">{t(role.role === 'parent' ? 'shell.roles.parentPurpose' : 'shell.roles.adminPurpose')}</p>
+              <h3 className="sec semibold">{t('shell.roles.plannedModules')}</h3>
+              <ul className="stack" style={{ paddingLeft: 24 }}>
+                {modules.map((key) => <li key={key} className="sec">{t(key)}</li>)}
+              </ul>
+              <button className="btn btn-primary" type="button" style={{ alignSelf: 'flex-start' }} onClick={() => role.setRole('teacher')}>{t('shell.roles.returnTeacher')}</button>
+            </section>
+          </div>
+        )}
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
