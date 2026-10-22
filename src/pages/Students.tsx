@@ -4,6 +4,7 @@ import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 import { Avatar, ScrollRow, StatusLabel } from '../components/ui';
+import { AccessDenied } from '../components/AccessDenied';
 import { CLASS_NAME, daysAgo, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
@@ -75,7 +76,7 @@ export function Students() {
   const addLabel = t('pages.shared.addObservation');
 
   if (!role.can('students.view')) return <AppShell module="students" mobileTitle={t('pages.children.accessTitle')}>
-    {() => <div className="page"><section className="card card-pad stack"><h1 className="h1">{t('pages.children.accessTitle')}</h1><p className="sec muted">{t('shell.roles.accessDenied')}</p><Link className="btn btn-secondary" to="/">{t('pages.shared.back')}</Link></section></div>}
+    {() => <AccessDenied />}
   </AppShell>;
 
   return (

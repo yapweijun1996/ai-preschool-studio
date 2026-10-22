@@ -1,5 +1,11 @@
 import type { DataPort, Draft, ObservationInput, PortRefusal, PortResult } from './port';
-import { hasPrimaryGuardian, validateChild, validateCollector, validateGuardian } from '../children/domain';
+import {
+  hasPrimaryGuardian,
+  validateChild,
+  validateCollector,
+  validateGuardian,
+  withdrawRefusal
+} from '../children/domain';
 import type { Child } from '../children/domain';
 import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
@@ -67,13 +73,24 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (!can(actor.role, 'students.view')) return [];
       const guardians = getState().guardians.filter((guardian) => guardian.childIds.includes(childId));
       if (can(actor.role, 'contacts.view')) return guardians;
-      return guardians.map((guardian) => ({ ...guardian, name: 'Restricted', relationship: 'Restricted', phone: guardian.phone.replace(/^(\+65 9)\d{3}( \d{4})$/, '$1•••$2'), email: guardian.email.replace(/^[^@]+/, '••••••••') }));
+      return guardians.map((guardian) => ({
+        ...guardian,
+        name: 'Restricted',
+        relationship: 'Restricted',
+        phone: guardian.phone.replace(/^(\+65 9)\d{3}( \d{4})$/, '$1•••$2'),
+        email: guardian.email.replace(/^[^@]+/, '••••••••')
+      }));
     },
     async getCollectors(childId, actor) {
       if (!can(actor.role, 'students.view')) return [];
       const collectors = getState().collectors.filter((collector) => collector.childId === childId);
       if (can(actor.role, 'contacts.view')) return collectors;
-      return collectors.map((collector) => ({ ...collector, name: 'Restricted', relationship: 'Restricted', note: '' }));
+      return collectors.map((collector) => ({
+        ...collector,
+        name: 'Restricted',
+        relationship: 'Restricted',
+        note: ''
+      }));
     },
     async updateChild(child, actor) {
       const state = getState();
@@ -81,18 +98,32 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (!stored) return refusal('unknown-child');
       if (stored.status !== child.status) return refusal('status-change-not-allowed');
       const updated: Child = { ...child, notes: child.notes ?? stored.notes };
-      if (Object.keys(validateChild(updated)).length > 0 || !state.classes.some((item) => item.id === updated.classId)) return refusal('invalid-child');
+      if (
+        Object.keys(validateChild(updated)).length > 0 ||
+        !state.classes.some((item) => item.id === updated.classId)
+      ) return refusal('invalid-child');
       return run({ type: 'updateChild', child: updated, actor }, updated, 'invalid-child');
     },
     async upsertGuardian(guardian, actor) {
       const state = getState();
-      if (guardian.childIds.length === 0 || guardian.childIds.some((id) => !state.children[id])) return refusal('unknown-child');
+      if (
+        guardian.childIds.length === 0 ||
+        guardian.childIds.some((id) => !state.children[id])
+      ) return refusal('unknown-child');
       const stored = state.guardians.find((item) => item.id === guardian.id);
-      if (stored && [...stored.childIds].sort().join('|') !== [...guardian.childIds].sort().join('|')) return refusal('record-child-mismatch');
+      if (
+        stored &&
+        [...stored.childIds].sort().join('|') !== [...guardian.childIds].sort().join('|')
+      ) return refusal('record-child-mismatch');
       if (Object.keys(validateGuardian(guardian)).length > 0) return refusal('invalid-guardian');
-      const affected = new Set([...guardian.childIds, ...(state.guardians.find((item) => item.id === guardian.id)?.childIds ?? [])]);
+      const affected = new Set([
+        ...guardian.childIds,
+        ...(state.guardians.find((item) => item.id === guardian.id)?.childIds ?? [])
+      ]);
       const candidate = [...state.guardians.filter((item) => item.id !== guardian.id), guardian];
-      if ([...affected].some((childId) => !hasPrimaryGuardian(candidate, childId))) return refusal('primary-guardian-required');
+      if ([...affected].some((childId) => !hasPrimaryGuardian(candidate, childId))) {
+        return refusal('primary-guardian-required');
+      }
       return run({ type: 'upsertGuardian', guardian, actor }, guardian, 'invalid-guardian');
     },
     async removeGuardian(guardianId, actor) {
@@ -100,7 +131,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       const guardian = state.guardians.find((item) => item.id === guardianId);
       if (!guardian) return refusal('unknown-guardian');
       const candidate = state.guardians.filter((item) => item.id !== guardianId);
-      if (guardian.isPrimary && guardian.childIds.some((childId) => !hasPrimaryGuardian(candidate, childId))) return refusal('primary-guardian-required');
+      if (guardian.isPrimary && guardian.childIds.some((childId) => !hasPrimaryGuardian(candidate, childId))) {
+        return refusal('primary-guardian-required');
+      }
       return run({ type: 'removeGuardian', guardianId, actor }, undefined, 'unknown-guardian');
     },
     async upsertCollector(collector, actor) {
@@ -119,7 +152,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       const state = getState();
       const child = state.children[childId];
       if (!child) return refusal('unknown-child');
-      if (state.reports[childId]?.status === 'review') return refusal('report-in-review');
+      const blocked = withdrawRefusal(state.reports[childId]?.status);
+      if (blocked) return refusal(blocked);
       if (child.status === 'withdrawn') return refusal('invalid-target');
       dispatch({ type: 'withdrawChild', childId, actor });
       return success({ ...child, status: 'withdrawn' });

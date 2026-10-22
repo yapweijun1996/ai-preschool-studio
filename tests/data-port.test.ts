@@ -74,7 +74,7 @@ describe('DataPort demo adapter', () => {
   });
 
   it('preserves shared guardian links and audits every affected child', async () => {
-    const seed = initialState();
+    const seed = structuredClone(initialState());
     const original = seed.guardians.find((item) => item.childIds.includes('aria'))!;
     original.childIds = ['aria', 'chloe'];
     const h = harness(seed);
@@ -84,6 +84,20 @@ describe('DataPort demo adapter', () => {
     expect(h.state().auditEvents.slice(-2).map((event) => event.target.id).sort()).toEqual(['aria', 'chloe']);
     const unprotected = { ...guardian, isPrimary: false };
     expect(await h.adapter.upsertGuardian(unprotected)).toEqual({ ok: false, reason: 'primary-guardian-required' });
+  });
+
+  it('uses separate guardian and collector ID counters', async () => {
+    const h = harness();
+    const guardian = (await h.adapter.getGuardians('aria', teacher))[0];
+    const collector = (await h.adapter.getCollectors('aria', teacher))[0];
+    const guardianId = `guardian-${String(h.state().nextGuardianNumber).padStart(4, '0')}`;
+    const collectorId = `collector-${String(h.state().nextCollectorNumber).padStart(4, '0')}`;
+    const auditBefore = h.state().nextAuditNumber;
+    expect(await h.adapter.upsertGuardian({ ...guardian, id: guardianId, name: 'New fictional guardian' })).toMatchObject({ ok: true });
+    expect(h.state().nextGuardianNumber).toBe(Number(guardianId.slice(9)) + 1);
+    expect(await h.adapter.upsertCollector({ ...collector, id: collectorId, name: 'New fictional collector' })).toMatchObject({ ok: true });
+    expect(h.state().nextCollectorNumber).toBe(Number(collectorId.slice(10)) + 1);
+    expect(h.state().nextAuditNumber).toBe(auditBefore + 2);
   });
 
   it('returns typed child and report-in-review withdrawal refusals', async () => {

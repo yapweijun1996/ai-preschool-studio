@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useNavMemory, useVisit } from '../hooks/useNavMemory';
 import { AppShell } from '../components/AppShell';
+import { AccessDenied } from '../components/AccessDenied';
 import { Icon } from '../components/Icon';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 import { ReportFlow } from '../components/ReportFlow';
@@ -32,7 +33,7 @@ export function StudentProfile() {
   const { isPinned, togglePin } = useNavMemory();
   useVisit(id, !!sum);
   if (!role.can('students.view')) return <AppShell module="students" mobileTitle={t('pages.children.accessTitle')}>
-    {() => <div className="page"><section className="card card-pad stack"><h1 className="h1">{t('pages.children.accessTitle')}</h1><p className="sec muted">{t('shell.roles.accessDenied')}</p><Link className="btn btn-secondary" to="/">{t('pages.shared.back')}</Link></section></div>}
+    {() => <AccessDenied />}
   </AppShell>;
   if (!sum) return <NotFound />;
   const pinned = isPinned(id);

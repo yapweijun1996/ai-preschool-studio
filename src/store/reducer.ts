@@ -1,12 +1,19 @@
 // Pure portfolio state + transitions. Kept free of React so it can be unit tested.
-import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, TEACHER, STUDENTS, TODAY, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
+import {
+  ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER,
+  TEACHER, STUDENTS, TODAY, draftFromObservations, seededDrafts,
+  type Observation, type Paragraph, type ReportStatus, type Sentence
+} from '../data/demo';
 import { CURRENT_FRAMEWORK, DOMAINS, termOf, type DomainKey, type Milestone } from '../framework';
 import type { Suggestion } from '../services/mockProvider';
 import type { Role } from '../roles';
 import { asInstant, now } from '../utils/clock';
 import { auditEventForDecision } from './audit';
 import { DEMO_CHILDREN, DEMO_CLASSES, DEMO_COLLECTORS, DEMO_GUARDIANS } from '../children/demo';
-import { hasPrimaryGuardian, validateChild, validateCollector, validateGuardian, withdrawRefusal, type AuthorisedCollector, type Child, type Class, type Guardian } from '../children/domain';
+import {
+  hasPrimaryGuardian, validateChild, validateCollector, validateGuardian, withdrawRefusal,
+  type AuthorisedCollector, type Child, type Class, type Guardian
+} from '../children/domain';
 
 export interface ReportVersion {
   version: number;
@@ -28,8 +35,20 @@ export type DecisionEvent =
   | { type: 'released'; at: string; by: string; version: number }
   | { type: 'reopened'; at: string; by: string; reason: string; version: number };
 
-export type AuditAction = 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved' | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset' | 'child.updated' | 'child.withdrawn' | 'guardian.created' | 'guardian.updated' | 'guardian.removed' | 'collector.created' | 'collector.updated' | 'collector.removed';
-export type AuditSummaryKey = 'pages.audit.summaryObservationAdded' | 'pages.audit.summarySubmitted' | 'pages.audit.summaryChangesRequested' | 'pages.audit.summaryApproved' | 'pages.audit.summaryReleased' | 'pages.audit.summaryReopened' | 'pages.audit.summaryRoleSwitched' | 'pages.audit.summaryReset' | 'pages.audit.summaryChildUpdated' | 'pages.audit.summaryChildWithdrawn' | 'pages.audit.summaryGuardianCreated' | 'pages.audit.summaryGuardianUpdated' | 'pages.audit.summaryGuardianRemoved' | 'pages.audit.summaryCollectorCreated' | 'pages.audit.summaryCollectorUpdated' | 'pages.audit.summaryCollectorRemoved';
+export type AuditAction =
+  | 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved'
+  | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset' | 'child.updated'
+  | 'child.withdrawn' | 'guardian.created' | 'guardian.updated' | 'guardian.removed'
+  | 'collector.created' | 'collector.updated' | 'collector.removed';
+export type AuditSummaryKey =
+  | 'pages.audit.summaryObservationAdded' | 'pages.audit.summarySubmitted'
+  | 'pages.audit.summaryChangesRequested' | 'pages.audit.summaryApproved'
+  | 'pages.audit.summaryReleased' | 'pages.audit.summaryReopened'
+  | 'pages.audit.summaryRoleSwitched' | 'pages.audit.summaryReset'
+  | 'pages.audit.summaryChildUpdated' | 'pages.audit.summaryChildWithdrawn'
+  | 'pages.audit.summaryGuardianCreated' | 'pages.audit.summaryGuardianUpdated'
+  | 'pages.audit.summaryGuardianRemoved' | 'pages.audit.summaryCollectorCreated'
+  | 'pages.audit.summaryCollectorUpdated' | 'pages.audit.summaryCollectorRemoved';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -67,6 +86,8 @@ export interface State {
   nextObsNumber: number;
   auditEvents: AuditEvent[];
   nextAuditNumber: number;
+  nextGuardianNumber: number;
+  nextCollectorNumber: number;
   classes: Class[];
   children: Record<string, Child>;
   guardians: Guardian[];
@@ -105,17 +126,36 @@ export function initialState(): State {
       hadChanges: s.reportStatus === 'changes',
       versions: [],
       ...(s.reportStatus === 'review' ? { submittedAt: seededSubmissionDate(s.id) } : {}),
-      ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(OBSERVATIONS, s.id, 4) } : {})
+      ...(s.reportStatus === 'approved'
+        ? { frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(OBSERVATIONS, s.id, 4) }
+        : {})
     };
-  reports.rayan.comment = { by: REVIEWER, date: '2026-10-20T08:30:00.000Z', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
+  reports.rayan.comment = {
+    by: REVIEWER,
+    date: '2026-10-20T08:30:00.000Z',
+    text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.'
+  };
   const seeded = seededDrafts();
-  const seedDecisions: Record<string, DecisionEvent[]> = Object.fromEntries(STUDENTS.map((student) => [student.id, []]));
+  const seedDecisions: Record<string, DecisionEvent[]> = Object.fromEntries(
+    STUDENTS.map((student) => [student.id, []])
+  );
   for (const student of STUDENTS) {
     const report = reports[student.id];
-    if (report.status === 'review') seedDecisions[student.id] = [{ type: 'submitted', at: report.submittedAt ?? `${TODAY}T09:00:00.000Z`, by: TEACHER }];
+    if (report.status === 'review') {
+      seedDecisions[student.id] = [{
+        type: 'submitted',
+        at: report.submittedAt ?? `${TODAY}T09:00:00.000Z`,
+        by: TEACHER
+      }];
+    }
     if (report.status === 'changes') seedDecisions[student.id] = [
       { type: 'submitted', at: '2026-10-19T09:00:00.000Z', by: TEACHER },
-      { type: 'changesRequested', at: report.comment?.date ?? `${TODAY}T09:00:00.000Z`, by: REVIEWER, comment: report.comment?.text ?? '' }
+      {
+        type: 'changesRequested',
+        at: report.comment?.date ?? `${TODAY}T09:00:00.000Z`,
+        by: REVIEWER,
+        comment: report.comment?.text ?? ''
+      }
     ];
     if (report.status === 'approved') {
       const approvedAt = `2026-10-${student.id === 'meiling' ? '20' : '18'}T09:00:00.000Z`;
@@ -125,7 +165,13 @@ export function initialState(): State {
       const version: ReportVersion = {
         version: 1, approvedAt, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version,
         milestones: report.milestones ?? milestonesFrom(OBSERVATIONS, student.id, 4), paragraphs,
-        reflection, contentHash: reportContentHash(paragraphs, reflection, CURRENT_FRAMEWORK.version, report.milestones ?? milestonesFrom(OBSERVATIONS, student.id, 4)),
+        reflection,
+        contentHash: reportContentHash(
+          paragraphs,
+          reflection,
+          CURRENT_FRAMEWORK.version,
+          report.milestones ?? milestonesFrom(OBSERVATIONS, student.id, 4)
+        ),
         ...(student.id === 'meiling' ? { releasedAt: '2026-10-21T02:00:00.000Z', releasedBy: REVIEWER } : {})
       };
       report.approvedAt = approvedAt;
@@ -141,7 +187,9 @@ export function initialState(): State {
   const seededAudit = STUDENTS.flatMap((student) => seedDecisions[student.id].map((decision) => {
     const actor = { role: decision.type === 'submitted' ? 'teacher' as const : 'reviewer' as const, name: decision.by };
     return auditEventForDecision(decision, student.id, actor);
-  })).sort((a, b) => a.at.localeCompare(b.at)).map((event, index) => ({ ...event, id: `AUD-${String(index + 1).padStart(4, '0')}` }));
+  }))
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .map((event, index) => ({ ...event, id: `AUD-${String(index + 1).padStart(4, '0')}` }));
   return {
     observations: OBSERVATIONS,
     paragraphs: { ...seeded.paragraphs, aria: ARIA_PARAGRAPHS },
@@ -150,15 +198,25 @@ export function initialState(): State {
     sim: { aiDown: false, saveFail: false },
     nextObsNumber: NEXT_OBS_NUMBER,
     auditEvents: seededAudit, nextAuditNumber: seededAudit.length + 1,
+    nextGuardianNumber: DEMO_GUARDIANS.length + 1,
+    nextCollectorNumber: DEMO_COLLECTORS.length + 1,
     classes: DEMO_CLASSES, children: DEMO_CHILDREN, guardians: DEMO_GUARDIANS, collectors: DEMO_COLLECTORS
   };
 }
 
 function cloneParagraphs(paragraphs: Paragraph[]): Paragraph[] {
-  return paragraphs.map((paragraph) => ({ ...paragraph, sentences: paragraph.sentences.map((sentence) => ({ ...sentence, sources: [...sentence.sources] })) }));
+  return paragraphs.map((paragraph) => ({
+    ...paragraph,
+    sentences: paragraph.sentences.map((sentence) => ({ ...sentence, sources: [...sentence.sources] }))
+  }));
 }
 
-export function reportContentHash(paragraphs: Paragraph[], reflection: string, frameworkVersion = CURRENT_FRAMEWORK.version, milestones?: Record<DomainKey, Milestone | null>): string {
+export function reportContentHash(
+  paragraphs: Paragraph[],
+  reflection: string,
+  frameworkVersion = CURRENT_FRAMEWORK.version,
+  milestones?: Record<DomainKey, Milestone | null>
+): string {
   const canonical = JSON.stringify(canonicalize({
     frameworkVersion,
     milestones: milestones ?? null,
@@ -184,7 +242,11 @@ function canonicalize(value: unknown): unknown {
 
 function appendAudit(state: State, event: Omit<AuditEvent, 'id'>): State {
   const id = `AUD-${String(state.nextAuditNumber).padStart(4, '0')}`;
-  return { ...state, auditEvents: [...state.auditEvents, { ...event, id }], nextAuditNumber: state.nextAuditNumber + 1 };
+  return {
+    ...state,
+    auditEvents: [...state.auditEvents, { ...event, id }],
+    nextAuditNumber: state.nextAuditNumber + 1
+  };
 }
 const defaultActor: Actor = { role: 'teacher', name: TEACHER };
 
@@ -208,11 +270,13 @@ function mapSentences(state: State, studentId: string, fn: (s: Sentence) => Sent
   return { ...state, paragraphs: { ...state.paragraphs, [studentId]: next } };
 }
 
-const ownsObservation = (state: State, studentId: string, obsId: string) => state.observations.some((o) => o.id === obsId && o.studentId === studentId);
+const ownsObservation = (state: State, studentId: string, obsId: string) =>
+  state.observations.some((o) => o.id === obsId && o.studentId === studentId);
 /** Approved reports are frozen: no content action may change them. */
 const contentLocked = (state: State, studentId: string) => state.reports[studentId]?.status === 'approved';
 /** Wording is also paused while in review; linking evidence stays open so the reviewer can clear a blocked approval. */
-const editLocked = (state: State, studentId: string) => contentLocked(state, studentId) || state.reports[studentId]?.status === 'review';
+const editLocked = (state: State, studentId: string) =>
+  contentLocked(state, studentId) || state.reports[studentId]?.status === 'review';
 
 function setReport(state: State, studentId: string, patch: Partial<ReportState>): State {
   return { ...state, reports: { ...state.reports, [studentId]: { ...state.reports[studentId], ...patch } } };
@@ -227,8 +291,18 @@ export function reducer(state: State, action: Action): State {
       const term = termOf(action.obs.date);
       if (!term) return state;
       const obs = { ...action.obs, id, term };
-      const withObservation = { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
-      return appendAudit(withObservation, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'observation.added', target: { type: 'student', id: obs.studentId }, summaryKey: 'pages.audit.summaryObservationAdded' });
+      const withObservation = {
+        ...state,
+        observations: [obs, ...state.observations],
+        nextObsNumber: state.nextObsNumber + 1
+      };
+      return appendAudit(withObservation, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: 'observation.added',
+        target: { type: 'student', id: obs.studentId },
+        summaryKey: 'pages.audit.summaryObservationAdded'
+      });
     }
     case 'fillMissingDomains': {
       const student = STUDENTS.find((x) => x.id === action.studentId);
@@ -236,7 +310,8 @@ export function reducer(state: State, action: Action): State {
       if (!student || (status !== 'draft' && status !== 'changes')) return state;
       const paras = state.paragraphs[action.studentId] ?? [];
       const written = new Set(paras.filter((p) => p.sentences.length > 0).map((p) => p.domain));
-      const fresh = draftFromObservations(student, observationsFor(state, action.studentId)).filter((p) => !written.has(p.domain));
+      const fresh = draftFromObservations(student, observationsFor(state, action.studentId))
+        .filter((p) => !written.has(p.domain));
       if (fresh.length === 0) return state;
       const order = DOMAINS.map((d) => d.key);
       const merged = order
@@ -247,15 +322,27 @@ export function reducer(state: State, action: Action): State {
     case 'startDraft': {
       const student = STUDENTS.find((x) => x.id === action.studentId);
       const report = state.reports[action.studentId];
-      if (!student || !report || report.status !== 'notStarted' || (state.paragraphs[action.studentId]?.length ?? 0) > 0) return state;
+      if (
+        !student || !report || report.status !== 'notStarted' ||
+        (state.paragraphs[action.studentId]?.length ?? 0) > 0
+      ) return state;
       const paragraphs = draftFromObservations(student, observationsFor(state, action.studentId));
       if (paragraphs.length === 0) return state;
-      return setReport({ ...state, paragraphs: { ...state.paragraphs, [action.studentId]: paragraphs } }, action.studentId, { status: 'draft' });
+      return setReport(
+        { ...state, paragraphs: { ...state.paragraphs, [action.studentId]: paragraphs } },
+        action.studentId,
+        { status: 'draft' }
+      );
     }
     case 'linkSource':
-      if (contentLocked(state, action.studentId) || !ownsObservation(state, action.studentId, action.obsId)) return state;
+      if (
+        contentLocked(state, action.studentId) ||
+        !ownsObservation(state, action.studentId, action.obsId)
+      ) return state;
       return mapSentences(state, action.studentId, (s) =>
-        s.id === action.sentenceId && !s.sources.includes(action.obsId) ? { ...s, sources: [...s.sources, action.obsId] } : s
+        s.id === action.sentenceId && !s.sources.includes(action.obsId)
+          ? { ...s, sources: [...s.sources, action.obsId] }
+          : s
       );
     case 'removeSentence':
       if (editLocked(state, action.studentId)) return state;
@@ -269,7 +356,9 @@ export function reducer(state: State, action: Action): State {
         !cited.every((id) => ownsObservation(state, action.studentId, id))
       )
         return state;
-      const next = paras.map((p) => (p.id === action.suggestion.paragraphId ? { ...p, sentences: action.suggestion.after } : p));
+      const next = paras.map((p) => (
+        p.id === action.suggestion.paragraphId ? { ...p, sentences: action.suggestion.after } : p
+      ));
       return { ...state, paragraphs: { ...state.paragraphs, [action.studentId]: next } };
     }
     case 'restoreParagraph': {
@@ -314,7 +403,16 @@ export function reducer(state: State, action: Action): State {
       const paragraphs = cloneParagraphs(state.paragraphs[action.studentId] ?? []);
       const reflection = state.reflections[action.studentId] ?? '';
       const milestones = milestonesFrom(state.observations, action.studentId, 4);
-      const versionRecord: ReportVersion = { version, approvedAt: at, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version, milestones, paragraphs, reflection, contentHash: reportContentHash(paragraphs, reflection, CURRENT_FRAMEWORK.version, milestones) };
+      const versionRecord: ReportVersion = {
+        version,
+        approvedAt: at,
+        approvedBy,
+        frameworkVersion: CURRENT_FRAMEWORK.version,
+        milestones,
+        paragraphs,
+        reflection,
+        contentHash: reportContentHash(paragraphs, reflection, CURRENT_FRAMEWORK.version, milestones)
+      };
       const actor = action.actor ?? { role: 'reviewer' as const, name: approvedBy };
       const decision: DecisionEvent = { type: 'approved', at, by: approvedBy, version };
       const approved = setReport(state, action.studentId, {
@@ -346,7 +444,13 @@ export function reducer(state: State, action: Action): State {
       if (!report || report.status !== 'approved' || !reason) return state;
       const at = asInstant(action.at);
       const actor = action.actor ?? { role: 'reviewer' as const, name: action.reopenedBy };
-      const decision: DecisionEvent = { type: 'reopened', at, by: action.reopenedBy, reason, version: (report.versions.at(-1)?.version ?? 0) + 1 };
+      const decision: DecisionEvent = {
+        type: 'reopened',
+        at,
+        by: action.reopenedBy,
+        reason,
+        version: (report.versions.at(-1)?.version ?? 0) + 1
+      };
       const reopened = setReport(state, action.studentId, {
         status: 'draft', reopenedAt: at,
         approvedAt: undefined,
@@ -357,20 +461,39 @@ export function reducer(state: State, action: Action): State {
       return appendAudit(reopened, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'roleSwitched':
-      return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summaryKey: 'pages.audit.summaryRoleSwitched' });
+      return appendAudit(state, {
+        at: asInstant(action.at),
+        actor: action.actor,
+        action: 'role.switched',
+        target: { type: 'demo', id: 'role' },
+        summaryKey: 'pages.audit.summaryRoleSwitched'
+      });
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
     case 'updateChild': {
       const stored = state.children[action.child.id];
-      if (!stored || stored.status !== action.child.status || Object.keys(validateChild(action.child)).length > 0) return state;
+      if (
+        !stored || stored.status !== action.child.status ||
+        Object.keys(validateChild(action.child)).length > 0
+      ) return state;
       const next = { ...state, children: { ...state.children, [action.child.id]: action.child } };
-      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'child.updated', target: { type: 'child', id: action.child.id }, summaryKey: 'pages.audit.summaryChildUpdated' });
+      return appendAudit(next, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: 'child.updated',
+        target: { type: 'child', id: action.child.id },
+        summaryKey: 'pages.audit.summaryChildUpdated'
+      });
     }
     case 'upsertGuardian': {
       const guardian = action.guardian;
       const stored = state.guardians.find((item) => item.id === guardian.id);
       if (stored && [...stored.childIds].sort().join('|') !== [...guardian.childIds].sort().join('|')) return state;
-      if (!guardian.childIds.length || guardian.childIds.some((id) => !state.children[id]) || Object.keys(validateGuardian(guardian)).length > 0) return state;
+      if (
+        !guardian.childIds.length ||
+        guardian.childIds.some((id) => !state.children[id]) ||
+        Object.keys(validateGuardian(guardian)).length > 0
+      ) return state;
       const without = state.guardians.filter((item) => item.id !== guardian.id);
       const nextGuardians = [...without, guardian];
       const affected = new Set([...guardian.childIds, ...(stored?.childIds ?? [])]);
@@ -378,16 +501,35 @@ export function reducer(state: State, action: Action): State {
       const created = without.length === state.guardians.length;
       const actionName = created ? 'guardian.created' : 'guardian.updated';
       const summaryKey = created ? 'pages.audit.summaryGuardianCreated' : 'pages.audit.summaryGuardianUpdated';
-      const next = { ...state, guardians: nextGuardians };
-      return [...affected].reduce((current, childId) => appendAudit(current, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: childId }, summaryKey }), next);
+      const next = {
+        ...state,
+        guardians: nextGuardians,
+        nextGuardianNumber: created ? state.nextGuardianNumber + 1 : state.nextGuardianNumber
+      };
+      return [...affected].reduce((current, childId) => appendAudit(current, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: actionName,
+        target: { type: 'child', id: childId },
+        summaryKey
+      }), next);
     }
     case 'removeGuardian': {
       const guardian = state.guardians.find((item) => item.id === action.guardianId);
       if (!guardian) return state;
       const nextGuardians = state.guardians.filter((item) => item.id !== action.guardianId);
-      if (guardian.isPrimary && guardian.childIds.some((childId) => !hasPrimaryGuardian(nextGuardians, childId))) return state;
+      if (
+        guardian.isPrimary &&
+        guardian.childIds.some((childId) => !hasPrimaryGuardian(nextGuardians, childId))
+      ) return state;
       const next = { ...state, guardians: nextGuardians };
-      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'guardian.removed', target: { type: 'child', id: guardian.childIds[0] }, summaryKey: 'pages.audit.summaryGuardianRemoved' });
+      return appendAudit(next, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: 'guardian.removed',
+        target: { type: 'child', id: guardian.childIds[0] },
+        summaryKey: 'pages.audit.summaryGuardianRemoved'
+      });
     }
     case 'upsertCollector': {
       const collector = action.collector;
@@ -395,16 +537,32 @@ export function reducer(state: State, action: Action): State {
       const stored = state.collectors.find((item) => item.id === collector.id);
       if (stored && stored.childId !== collector.childId) return state;
       const existing = !!stored;
-      const next = { ...state, collectors: [...state.collectors.filter((item) => item.id !== collector.id), collector] };
+      const next = {
+        ...state,
+        collectors: [...state.collectors.filter((item) => item.id !== collector.id), collector],
+        nextCollectorNumber: existing ? state.nextCollectorNumber : state.nextCollectorNumber + 1
+      };
       const actionName = existing ? 'collector.updated' : 'collector.created';
       const summaryKey = existing ? 'pages.audit.summaryCollectorUpdated' : 'pages.audit.summaryCollectorCreated';
-      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: collector.childId }, summaryKey });
+      return appendAudit(next, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: actionName,
+        target: { type: 'child', id: collector.childId },
+        summaryKey
+      });
     }
     case 'removeCollector': {
       const collector = state.collectors.find((item) => item.id === action.collectorId);
       if (!collector) return state;
       const next = { ...state, collectors: state.collectors.filter((item) => item.id !== action.collectorId) };
-      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'collector.removed', target: { type: 'child', id: collector.childId }, summaryKey: 'pages.audit.summaryCollectorRemoved' });
+      return appendAudit(next, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: 'collector.removed',
+        target: { type: 'child', id: collector.childId },
+        summaryKey: 'pages.audit.summaryCollectorRemoved'
+      });
     }
     case 'withdrawChild': {
       const child = state.children[action.childId];
@@ -412,12 +570,24 @@ export function reducer(state: State, action: Action): State {
       if (!child || refused || child.status === 'withdrawn') return state;
       const withdrawn: Child = { ...child, status: 'withdrawn' };
       const next = { ...state, children: { ...state.children, [child.id]: withdrawn } };
-      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'child.withdrawn', target: { type: 'child', id: child.id }, summaryKey: 'pages.audit.summaryChildWithdrawn' });
+      return appendAudit(next, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: 'child.withdrawn',
+        target: { type: 'child', id: child.id },
+        summaryKey: 'pages.audit.summaryChildWithdrawn'
+      });
     }
     case 'reset': {
       const seeded = initialState();
       let fresh = { ...seeded, auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
-      fresh = appendAudit(fresh, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summaryKey: 'pages.audit.summaryReset' });
+      fresh = appendAudit(fresh, {
+        at: asInstant(action.at ?? now()),
+        actor: action.actor ?? defaultActor,
+        action: 'demo.reset',
+        target: { type: 'demo', id: 'portfolio' },
+        summaryKey: 'pages.audit.summaryReset'
+      });
       for (const event of seeded.auditEvents) {
         fresh = appendAudit(fresh, event);
       }
@@ -433,7 +603,9 @@ export interface UnverifiedClaim {
 
 export function unverifiedClaims(state: State, studentId: string): UnverifiedClaim[] {
   const paras = state.paragraphs[studentId] ?? [];
-  return paras.flatMap((p) => p.sentences.filter((s) => s.sources.length === 0).map((sentence) => ({ paragraphId: p.id, sentence })));
+  return paras.flatMap((p) => p.sentences
+    .filter((s) => s.sources.length === 0)
+    .map((sentence) => ({ paragraphId: p.id, sentence })));
 }
 
 /** What a report still needs before it can go to review or be approved. Computed from the real content. */
@@ -459,7 +631,15 @@ export function readiness(state: State, studentId: string): Readiness {
   const hasReflection = (state.reflections[studentId] ?? '').trim().length > 0;
   const domainsTotal = DOMAINS.length;
   const canSubmit = written.size === domainsTotal && hasReflection;
-  return { domainsWritten: written.size, domainsTotal, sentences, unverified, hasReflection, canSubmit, canApprove: canSubmit && unverified === 0 };
+  return {
+    domainsWritten: written.size,
+    domainsTotal,
+    sentences,
+    unverified,
+    hasReflection,
+    canSubmit,
+    canApprove: canSubmit && unverified === 0
+  };
 }
 
 export type ApprovalBlock =
@@ -484,11 +664,16 @@ export function canApprove(state: State, studentId: string): boolean {
  * A domain's milestone is the one recorded on its most recent observation in that term;
  * null when the domain has no observation yet. Milestones are never set without evidence.
  */
-export function milestonesFrom(observations: Observation[], studentId: string, term: 3 | 4): Record<DomainKey, Milestone | null> {
+export function milestonesFrom(
+  observations: Observation[],
+  studentId: string,
+  term: 3 | 4
+): Record<DomainKey, Milestone | null> {
   const obs = observations.filter((o) => o.studentId === studentId && o.term === term);
   const out = {} as Record<DomainKey, Milestone | null>;
   for (const d of DOMAINS) {
-    const latest = obs.filter((o) => o.domain === d.key).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))[0];
+    const latest = obs.filter((o) => o.domain === d.key)
+      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))[0];
     out[d.key] = latest ? latest.milestone : null;
   }
   return out;
@@ -501,7 +686,8 @@ export function observationsFor(state: State, studentId: string, term: 3 | 4 = 4
 export interface AuditFilters { action?: AuditAction; studentId?: string; from?: string; to?: string }
 export function localDateKey(instant: string): string {
   const date = new Date(instant);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-` +
+    `${String(date.getDate()).padStart(2, '0')}`;
 }
 export function selectAuditLog(events: AuditEvent[], filters: AuditFilters = {}): AuditEvent[] {
   return events.filter((event) =>

@@ -60,10 +60,6 @@ const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
   'status-change-not-allowed': 'pages.children.refusal.invalidTarget'
 };
 
-function maskedPhone(phone: string) {
-  return phone.replace(/^\+65 9\d{3} /, '+65 9••• ');
-}
-
 export function FamilyEnrolment({ childId }: { childId: string }) {
   const { t, fmtDate } = useI18n();
   const role = useRole();
@@ -170,7 +166,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
       result = await port.updateChild(updated, actor);
     } else if (dialog === 'guardian') {
       const guardian: Guardian = {
-        id: selectedGuardian?.id ?? `guardian-${targetChildId.current}-${state.nextAuditNumber}`,
+        id: selectedGuardian?.id ?? `guardian-${String(state.nextGuardianNumber).padStart(4, '0')}`,
         childIds: selectedGuardian?.childIds ?? [targetChildId.current],
         name: fields.name,
         relationship: fields.relationship,
@@ -187,7 +183,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
       result = await port.upsertGuardian(guardian, actor);
     } else if (dialog === 'collector') {
       const collector: AuthorisedCollector = {
-        id: selectedCollector?.id ?? `collector-${targetChildId.current}-${state.nextAuditNumber}`,
+        id: selectedCollector?.id ?? `collector-${String(state.nextCollectorNumber).padStart(4, '0')}`,
         childId: targetChildId.current,
         name: fields.name,
         relationship: fields.relationship,
@@ -220,6 +216,10 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
 
   if (!child) return null;
   const classRecord = classes.find((item) => item.id === child.classId);
+  const storedRelationship = (value: string) => value === 'Parent'
+    ? t('pages.children.relationshipParent')
+    : value === 'Family member' ? t('pages.children.relationshipFamilyMember') : value;
+  const storedLanguage = (value: string) => value === 'English' ? t('pages.children.languageEnglish') : value;
   const familyCanView = role.can('contacts.view');
   const canViewHealth = role.can('health.view');
   const activeDialog = dialog !== null;
@@ -270,7 +270,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
         </div>
         <div>
           <span className="cap muted">{t('pages.children.homeLanguages')}</span>
-          <strong>{child.homeLanguages}</strong>
+          <strong>{child.homeLanguages.split(', ').map(storedLanguage).join(', ')}</strong>
         </div>
       </div>
       {!editable && <p className="cap muted">{t('pages.children.readOnlyReason')}</p>}
@@ -294,10 +294,11 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
             <div className="grow">
               <strong>{guardian.name}</strong>
               <p className="sec muted">
-                {guardian.relationship}{guardian.isPrimary ? ` · ${t('pages.children.primary')}` : ''}
+                {storedRelationship(guardian.relationship)}{guardian.isPrimary ? ` · ${t('pages.children.primary')}` : ''}
               </p>
+              <p className="cap muted">{t('pages.children.preferredLanguage')}: {storedLanguage(guardian.preferredLanguage)}</p>
               <p className="sec num">
-                {role.can('contacts.view') ? guardian.phone : maskedPhone(guardian.phone)} · {guardian.email}
+                {guardian.phone} · {guardian.email}
               </p>
             </div>
             {editable && (
@@ -342,12 +343,16 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
             <div className="grow">
               <strong>{collector.name}</strong>
               <p className="sec muted">
-                {collector.relationship} · {fmtDate(collector.validFrom)}
+                {storedRelationship(collector.relationship)} · {fmtDate(collector.validFrom)}
                 {collector.validTo
                   ? ` – ${fmtDate(collector.validTo)}`
                   : ` · ${t('pages.children.noExpiry')}`}
               </p>
-              {collector.note && <p className="cap muted">{collector.note}</p>}
+              {collector.note && <p className="cap muted">
+                {collector.note === 'Identity is checked against photo ID at pick-up in Pick-up & Release (Phase 2).'
+                  ? t('pages.children.collectorPhotoIdNote')
+                  : collector.note}
+              </p>}
             </div>
             {editable && (
               <div className="row">

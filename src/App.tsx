@@ -47,7 +47,16 @@ export function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
-            <Route path="/classes" element={<Suspense fallback={<main className="page" aria-busy="true" style={{ minHeight: '72vh' }}><section className="card" style={{ minHeight: 420 }} /></main>}><Classes /></Suspense>} />
+            <Route
+              path="/classes"
+              element={
+                <Suspense fallback={<main className="page" aria-busy="true" style={{ minHeight: '72vh' }}>
+                  <section className="card" style={{ minHeight: 420 }} />
+                </main>}>
+                  <Classes />
+                </Suspense>
+              }
+            />
             <Route path="/coverage" element={<Coverage />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/students/:id" element={<StudentProfile />} />

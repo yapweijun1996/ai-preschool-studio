@@ -85,7 +85,7 @@ describe('review queue and stored schema', () => {
 
   it('bumps the serialized schema and resets old or incomplete review state', () => {
     const serialized = serializeState(initialState());
-    expect(JSON.parse(serialized).schema).toBe(9);
+    expect(JSON.parse(serialized).schema).toBe(10);
     expect(loadState(serialized).reports.ethan.submittedAt).toBe('2026-10-16T09:00:00.000Z');
     const loaded = loadState(serialized);
     const frozen = loaded.reports.meiling.versions[0];
