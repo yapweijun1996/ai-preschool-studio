@@ -6,6 +6,7 @@ test('approve, release, reopen, resubmit and approve v2 with immutable family co
   await page.getByRole('button', { name: 'Approve', exact: true }).click();
   await expect(page.getByText(/v1 · Approved/)).toBeVisible();
   await page.getByRole('button', { name: 'Release to family' }).click();
+  await expect(page.getByText('Version released to family.', { exact: true })).toBeVisible();
   await expect(page.getByText('Released to family').first()).toBeVisible();
 
   await page.getByRole('link', { name: 'Family copy' }).click();
@@ -24,6 +25,7 @@ test('approve, release, reopen, resubmit and approve v2 with immutable family co
   await dialog.getByRole('button', { name: 'Reopen report' }).click();
   await expect(page.getByText('Report reopened for amendment.', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Report status' })).toBeFocused();
+  await expect(page.getByLabel('Report versions')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
   await page.getByRole('button', { name: /Account menu/ }).click();
   await page.getByRole('menuitemradio', { name: 'Teacher', exact: true }).click();

@@ -32,6 +32,8 @@ describe('DataPort demo adapter', () => {
     expect(await adapter.getUnverifiedClaims('aria')).toEqual(unverifiedClaims(s, 'aria'));
     expect(await adapter.getDraft('aria')).toEqual({ paragraphs: s.paragraphs.aria, reflection: s.reflections.aria });
     expect(await adapter.getApprovalBlock('ethan')).toEqual(approvalBlock(s, 'ethan'));
+    expect(await adapter.getReleasedVersion('meiling')).toEqual(s.reports.meiling.versions[0]);
+    expect(await adapter.getReleasedVersion('hana')).toBeUndefined();
     expect(await adapter.getCoverage(4)).toEqual(classCoverage(s, 4));
     expect(await adapter.getNeedsAttention(4)).toEqual(needsAttention(s, 4));
     expect(await adapter.getReviewQueue()).toEqual(reviewQueue(s));

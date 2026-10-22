@@ -40,6 +40,10 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async getNeedsAttention(term) { return needsAttention(getState(), term); },
     async getReviewQueue() { return reviewQueue(getState()); },
     async getReportVersions(studentId) { return getState().reports[studentId]?.versions ?? []; },
+    async getReleasedVersion(studentId) {
+      const report = getState().reports[studentId];
+      return report?.versions.find((version) => version.version === report.releasedVersion);
+    },
     async getReportHistory(studentId) { return selectReportHistory(getState().auditEvents, studentId); },
     async getAuditLog(filters: AuditFilters = {}) { return selectAuditLog(getState().auditEvents, filters); },
     async getStudentSummary(studentId) { return studentSummary(getState(), studentId); },

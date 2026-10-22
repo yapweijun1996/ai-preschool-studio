@@ -78,6 +78,8 @@ export interface DataPort {
   releaseReport(studentId: string, releasedBy: string, atIso: string): Promise<PortResult<void>>;
   reopenReport(studentId: string, reason: string, reopenedBy: string, atIso: string): Promise<PortResult<void>>;
   getReportVersions(studentId: string): Promise<ReportVersion[]>;
+  /** Returns the frozen version currently released to families, if any. */
+  getReleasedVersion(studentId: string): Promise<ReportVersion | undefined>;
   getReportHistory(studentId: string): Promise<DecisionEvent[]>;
   getAuditLog(filters?: AuditFilters): Promise<AuditEvent[]>;
 

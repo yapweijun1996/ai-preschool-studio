@@ -32,6 +32,7 @@ export function ReportPreview() {
   const [reopenError, setReopenError] = useState(false);
   const [reopenAnnouncement, setReopenAnnouncement] = useState(false);
   const [focusStatusAfterReopen, setFocusStatusAfterReopen] = useState(false);
+  const [releaseAnnouncement, setReleaseAnnouncement] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const reopenTrigger = useRef<HTMLButtonElement>(null);
@@ -72,7 +73,12 @@ export function ReportPreview() {
   // An approved report shows the milestones it was approved with; later observations do not change it.
   const versions = report.versions;
   const latestVersion = versions.at(-1);
-  const viewingVersion = report.status === 'approved' ? versions.find((version) => version.version === (selectedVersion ?? latestVersion?.version)) : undefined;
+  const viewingVersion = report.status === 'approved'
+    ? versions.find((version) => version.version === (selectedVersion ?? latestVersion?.version))
+    : role.can('report.review') && selectedVersion !== null
+      ? versions.find((version) => version.version === selectedVersion)
+      : undefined;
+  const showVersionSelector = versions.length > 0 && (role.can('report.review') || versions.length > 1);
   const term4 = viewingVersion?.milestones ?? report.milestones ?? milestonesFor(state, id, 4);
   const ready = readiness(state, id);
   const checksDone = [ready.domainsWritten === ready.domainsTotal, ready.sentences > 0 && ready.unverified === 0, ready.hasReflection, true].filter(Boolean).length;
@@ -92,7 +98,10 @@ export function ReportPreview() {
     const at = now();
     dispatch({ type: 'approve', studentId: id, at, approvedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
   };
-  const release = () => dispatch({ type: 'release', studentId: id, at: now(), releasedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
+  const release = () => {
+    dispatch({ type: 'release', studentId: id, at: now(), releasedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
+    setReleaseAnnouncement(true);
+  };
   const reopen = () => {
     if (!reopenReason.trim()) { setReopenError(true); return; }
     dispatch({ type: 'reopen', studentId: id, reason: reopenReason, reopenedBy: REVIEWER, at: now(), actor: { role: 'reviewer', name: REVIEWER } });
@@ -183,10 +192,11 @@ export function ReportPreview() {
         {viewingVersion && (
           <div className="stack" style={{ gap: 8 }}>
             <p className="sec semibold">{t('pages.report.versionBadge', { version: viewingVersion.version, date: fmtDate(viewingVersion.approvedAt), name: viewingVersion.approvedBy })}</p>
-            {report.releasedVersion === viewingVersion.version && <p className="cap semibold" role="status">{t('pages.report.releasedBadge')}</p>}
-            {versions.length > 1 && <label className="field"><span className="field-label">{t('pages.report.versions')}</span><select className="input" value={viewingVersion.version} onChange={(event) => setSelectedVersion(Number(event.target.value))}>{versions.map((version) => <option key={version.version} value={version.version}>{t('pages.report.version', { version: version.version })}</option>)}</select></label>}
+            {report.releasedVersion === viewingVersion.version && <p className="cap semibold">{t('pages.report.releasedBadge')}</p>}
           </div>
         )}
+        {showVersionSelector && <label className="field"><span className="field-label">{t('pages.report.versions')}</span><select className="input" value={selectedVersion ?? (status === 'approved' ? latestVersion?.version ?? 0 : 0)} onChange={(event) => setSelectedVersion(Number(event.target.value) || null)}>{status !== 'approved' && role.can('report.review') && <option value={0}>{t('pages.report.currentDraft')}</option>}{versions.map((version) => <option key={version.version} value={version.version}>{t('pages.report.version', { version: version.version })}</option>)}</select></label>}
+        {releaseAnnouncement && <span className="sr-only" role="status" aria-live="polite">{t('pages.report.releaseSuccess')}</span>}
         {report.releasedVersion !== undefined && <p className="cap muted">{t('pages.report.releasedBadge')} · {t('pages.report.version', { version: report.releasedVersion })}</p>}
         <section className="stack" aria-labelledby="decision-history" style={{ gap: 8 }}>
           <h3 id="decision-history" className="sec semibold">{t('pages.report.history')}</h3>
