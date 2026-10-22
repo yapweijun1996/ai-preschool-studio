@@ -35,7 +35,7 @@ export function RoutePendingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return <RoutePendingContext.Provider value={pending}>
-    {pending && <div className="route-pending" aria-hidden="true" data-testid="route-pending"><span /></div>}
     {children}
+    {pending && <div className="route-pending" aria-hidden="true" data-testid="route-pending"><span /></div>}
   </RoutePendingContext.Provider>;
 }
