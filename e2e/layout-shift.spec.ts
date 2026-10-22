@@ -1,5 +1,39 @@
 import { expect, test } from '@playwright/test';
 
+for (const route of [
+  { path: '#/students/aria/report', ready: '.a4', name: 'report' },
+  { path: '#/catalog', ready: '.catalog-page h2', name: 'catalog' }
+]) {
+  test(`${route.name} layout shift stays below 0.05 on a slow connection`, async ({ page }) => {
+    await page.addInitScript(() => {
+      const measuredWindow = window as Window & { __layoutShiftTotal?: number };
+      measuredWindow.__layoutShiftTotal = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as (PerformanceEntry & { hadRecentInput: boolean; value: number })[]) {
+          if (!entry.hadRecentInput) measuredWindow.__layoutShiftTotal! += entry.value;
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
+
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Network.enable');
+    await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+    await cdp.send('Network.emulateNetworkConditions', {
+      offline: false,
+      latency: 150,
+      downloadThroughput: (1.6 * 1024 * 1024) / 8,
+      uploadThroughput: (750 * 1024) / 8
+    });
+
+    await page.goto(`./${route.path}`);
+    await expect(page.locator(route.ready).first()).toBeVisible();
+    await page.waitForTimeout(1500);
+    const total = await page.evaluate(() => (window as Window & { __layoutShiftTotal?: number }).__layoutShiftTotal ?? 0);
+    expect(total, `${route.name} cumulative layout shift was ${total}`).toBeLessThan(0.05);
+    await cdp.detach();
+  });
+}
+
 for (const role of ['teacher', 'reviewer'] as const) {
   test(`dashboard layout shift stays below 0.05 · ${role}`, async ({ page }) => {
     await page.addInitScript(({ role }) => {
