@@ -6,10 +6,11 @@ import { useTheme } from './hooks/useTheme';
 import { I18nProvider, type Lang } from './i18n';
 import type { Dict } from './i18n/locales/en';
 import { Dashboard } from './pages/Dashboard';
-import { AddObservation, AuditLog, Catalog, Classes, Coverage, FamilyReport, LearningProgress, NotFound, PortfolioStudio, ReportPreview, Reviews, RouteFallback, RoutePreloadHints, Settings, StudentProfile, Students } from './routes/lazyPages';
+import { AddObservation, AuditLog, Catalog, Classes, Coverage, FamilyReport, LearningProgress, NotFound, PortfolioStudio, ReportPreview, Reviews, RouteChunkSuccess, RouteFallback, RoutePreloadHints, Settings, StudentProfile, Students } from './routes/lazyPages';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 import { RoleProvider } from './roles/RoleContext';
+import { RouteErrorBoundary } from './routes/RouteErrorBoundary';
 
 /**
  * Remounts a stateful student page (Studio, Add observation, Report) when the child changes, so no draft,
@@ -32,24 +33,26 @@ export function App({ initialLang, initialDict }: { initialLang: Lang; initialDi
         <NavMemoryProvider>
         <HashRouter>
         <RoutePreloadHints />
+        <RouteErrorBoundary>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/students" element={<Suspense fallback={<RouteFallback kind="students" />}><Students /></Suspense>} />
-            <Route path="/classes" element={<Suspense fallback={<RouteFallback kind="classes" />}><Classes /></Suspense>} />
-            <Route path="/coverage" element={<Suspense fallback={<RouteFallback kind="coverage" />}><Coverage /></Suspense>} />
-            <Route path="/reviews" element={<Suspense fallback={<RouteFallback kind="reviews" />}><Reviews /></Suspense>} />
-            <Route path="/students/:id" element={<Suspense fallback={<RouteFallback kind="profile" />}><StudentProfile /></Suspense>} />
-            <Route path="/students/:id/observe" element={<Suspense fallback={<RouteFallback kind="observe" />}><PerStudent><AddObservation /></PerStudent></Suspense>} />
-            <Route path="/students/:id/progress" element={<Suspense fallback={<RouteFallback kind="progress" />}><LearningProgress /></Suspense>} />
-            <Route path="/students/:id/studio" element={<Suspense fallback={<RouteFallback kind="studio" />}><PerStudent><PortfolioStudio /></PerStudent></Suspense>} />
-            <Route path="/students/:id/report" element={<Suspense fallback={<RouteFallback kind="report" />}><PerStudent><ReportPreview /></PerStudent></Suspense>} />
-            <Route path="/students/:id/report/family" element={<Suspense fallback={<RouteFallback kind="family" />}><PerStudent><FamilyReport /></PerStudent></Suspense>} />
-            <Route path="/audit" element={<Suspense fallback={<RouteFallback kind="audit" />}><AuditLog /></Suspense>} />
+            <Route path="/" element={<RouteChunkSuccess><Dashboard /></RouteChunkSuccess>} />
+            <Route path="/students" element={<Suspense fallback={<RouteFallback kind="students" />}><RouteChunkSuccess><Students /></RouteChunkSuccess></Suspense>} />
+            <Route path="/classes" element={<Suspense fallback={<RouteFallback kind="classes" />}><RouteChunkSuccess><Classes /></RouteChunkSuccess></Suspense>} />
+            <Route path="/coverage" element={<Suspense fallback={<RouteFallback kind="coverage" />}><RouteChunkSuccess><Coverage /></RouteChunkSuccess></Suspense>} />
+            <Route path="/reviews" element={<Suspense fallback={<RouteFallback kind="reviews" />}><RouteChunkSuccess><Reviews /></RouteChunkSuccess></Suspense>} />
+            <Route path="/students/:id" element={<Suspense fallback={<RouteFallback kind="profile" />}><RouteChunkSuccess><StudentProfile /></RouteChunkSuccess></Suspense>} />
+            <Route path="/students/:id/observe" element={<Suspense fallback={<RouteFallback kind="observe" />}><RouteChunkSuccess><PerStudent><AddObservation /></PerStudent></RouteChunkSuccess></Suspense>} />
+            <Route path="/students/:id/progress" element={<Suspense fallback={<RouteFallback kind="progress" />}><RouteChunkSuccess><LearningProgress /></RouteChunkSuccess></Suspense>} />
+            <Route path="/students/:id/studio" element={<Suspense fallback={<RouteFallback kind="studio" />}><RouteChunkSuccess><PerStudent><PortfolioStudio /></PerStudent></RouteChunkSuccess></Suspense>} />
+            <Route path="/students/:id/report" element={<Suspense fallback={<RouteFallback kind="report" />}><RouteChunkSuccess><PerStudent><ReportPreview /></PerStudent></RouteChunkSuccess></Suspense>} />
+            <Route path="/students/:id/report/family" element={<Suspense fallback={<RouteFallback kind="family" />}><RouteChunkSuccess><PerStudent><FamilyReport /></PerStudent></RouteChunkSuccess></Suspense>} />
+            <Route path="/audit" element={<Suspense fallback={<RouteFallback kind="audit" />}><RouteChunkSuccess><AuditLog /></RouteChunkSuccess></Suspense>} />
             <Route path="/settings" element={<Navigate to="/settings/appearance" replace />} />
-            <Route path="/settings/:section" element={<Suspense fallback={<RouteFallback kind="settings" />}><Settings /></Suspense>} />
-            <Route path="/catalog" element={<Suspense fallback={<RouteFallback kind="catalog" />}><Catalog /></Suspense>} />
-            <Route path="*" element={<Suspense fallback={<RouteFallback kind="notFound" />}><NotFound /></Suspense>} />
+            <Route path="/settings/:section" element={<Suspense fallback={<RouteFallback kind="settings" />}><RouteChunkSuccess><Settings /></RouteChunkSuccess></Suspense>} />
+            <Route path="/catalog" element={<Suspense fallback={<RouteFallback kind="catalog" />}><RouteChunkSuccess><Catalog /></RouteChunkSuccess></Suspense>} />
+            <Route path="*" element={<Suspense fallback={<RouteFallback kind="notFound" />}><RouteChunkSuccess><NotFound /></RouteChunkSuccess></Suspense>} />
           </Routes>
+        </RouteErrorBoundary>
         </HashRouter>
         </NavMemoryProvider>
       </RoleProvider>

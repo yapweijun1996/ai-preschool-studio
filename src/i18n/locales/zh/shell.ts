@@ -6,6 +6,10 @@ export const shell: Dict['shell'] = {
   skipToContent: '跳到主要内容',
   demoStrip: '演示模式——所有学生和观察记录均为虚构的示例数据',
   demoStripCompact: '演示模式 · 虚构示例数据',
+  routeLoad: {
+    title: '无法加载此页面。请重新加载以获取最新版本。',
+    reload: '重新加载'
+  },
   roles: {
     heading: '演示角色',
     teacher: '教师',

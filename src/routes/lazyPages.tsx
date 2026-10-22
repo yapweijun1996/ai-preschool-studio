@@ -1,9 +1,10 @@
-import { lazy, useEffect } from 'react';
+import { lazy, useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppShell, type Module } from '../components/AppShell';
 import { useI18n } from '../i18n';
+import { clearChunkReloadAttempt } from './chunkRecovery';
 
-export const pageLoaders = {
+const rawPageLoaders = {
   students: () => import('../pages/Students').then((m) => ({ default: m.Students })),
   classes: () => import('../pages/Classes').then((m) => ({ default: m.Classes })),
   profile: () => import('../pages/StudentProfile').then((m) => ({ default: m.StudentProfile })),
@@ -19,6 +20,8 @@ export const pageLoaders = {
   catalog: () => import('../pages/Catalog').then((m) => ({ default: m.Catalog })),
   notFound: () => import('../pages/NotFound').then((m) => ({ default: m.NotFound }))
 };
+
+export const pageLoaders = rawPageLoaders;
 
 export const Students = lazy(pageLoaders.students);
 export const Classes = lazy(pageLoaders.classes);
@@ -36,6 +39,12 @@ export const Catalog = lazy(pageLoaders.catalog);
 export const NotFound = lazy(pageLoaders.notFound);
 
 export type PageKind = keyof typeof pageLoaders;
+
+export function RouteChunkSuccess({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  useEffect(() => clearChunkReloadAttempt(), [pathname]);
+  return children;
+}
 
 const fallbackInfo: Record<PageKind, { frame: 'list' | 'detail' | 'editor' | 'report' | 'summary' }> = {
   students: { frame: 'list' },

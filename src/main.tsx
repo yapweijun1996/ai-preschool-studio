@@ -5,7 +5,9 @@ import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/app.css';
 import { loadInitialLanguage } from './i18n';
+import { installChunkFailureRecovery } from './routes/chunkRecovery';
 
+installChunkFailureRecovery();
 const { lang, dict } = await loadInitialLanguage();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
