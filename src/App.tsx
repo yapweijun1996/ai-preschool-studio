@@ -15,6 +15,7 @@ import { StudentProfile } from './pages/StudentProfile';
 import { Students } from './pages/Students';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
+import { RoleProvider } from './roles/RoleContext';
 
 const Catalog = lazy(() => import('./pages/Catalog').then((m) => ({ default: m.Catalog })));
 
@@ -33,6 +34,7 @@ export function App() {
   return (
     <ThemeContext.Provider value={theme}>
       <I18nProvider>
+      <RoleProvider>
       <PwaProvider>
       <PortfolioProvider>
         <NavMemoryProvider>
@@ -61,6 +63,7 @@ export function App() {
         </NavMemoryProvider>
       </PortfolioProvider>
       </PwaProvider>
+      </RoleProvider>
       </I18nProvider>
     </ThemeContext.Provider>
   );
