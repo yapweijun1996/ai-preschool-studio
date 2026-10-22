@@ -62,6 +62,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async upsertGuardian(guardian, actor) {
       const state = getState();
       if (guardian.childIds.length === 0 || guardian.childIds.some((id) => !state.children[id])) return refusal('unknown-child');
+      const stored = state.guardians.find((item) => item.id === guardian.id);
+      if (stored && [...stored.childIds].sort().join('|') !== [...guardian.childIds].sort().join('|')) return refusal('record-child-mismatch');
       if (Object.keys(validateGuardian(guardian)).length > 0) return refusal('invalid-guardian');
       const affected = new Set([...guardian.childIds, ...(state.guardians.find((item) => item.id === guardian.id)?.childIds ?? [])]);
       const candidate = [...state.guardians.filter((item) => item.id !== guardian.id), guardian];

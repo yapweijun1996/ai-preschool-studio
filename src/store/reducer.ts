@@ -368,14 +368,18 @@ export function reducer(state: State, action: Action): State {
     }
     case 'upsertGuardian': {
       const guardian = action.guardian;
-      if (!state.children[guardian.childIds[0]] || Object.keys(validateGuardian(guardian)).length > 0) return state;
+      const stored = state.guardians.find((item) => item.id === guardian.id);
+      if (stored && [...stored.childIds].sort().join('|') !== [...guardian.childIds].sort().join('|')) return state;
+      if (!guardian.childIds.length || guardian.childIds.some((id) => !state.children[id]) || Object.keys(validateGuardian(guardian)).length > 0) return state;
       const without = state.guardians.filter((item) => item.id !== guardian.id);
       const nextGuardians = [...without, guardian];
+      const affected = new Set([...guardian.childIds, ...(stored?.childIds ?? [])]);
+      if ([...affected].some((childId) => !hasPrimaryGuardian(nextGuardians, childId))) return state;
       const created = without.length === state.guardians.length;
       const actionName = created ? 'guardian.created' : 'guardian.updated';
       const summaryKey = created ? 'pages.audit.summaryGuardianCreated' : 'pages.audit.summaryGuardianUpdated';
       const next = { ...state, guardians: nextGuardians };
-      return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: guardian.childIds[0] }, summaryKey });
+      return [...affected].reduce((current, childId) => appendAudit(current, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: childId }, summaryKey }), next);
     }
     case 'removeGuardian': {
       const guardian = state.guardians.find((item) => item.id === action.guardianId);

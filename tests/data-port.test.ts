@@ -61,6 +61,19 @@ describe('DataPort demo adapter', () => {
     expect(await h.adapter.updateChild({ ...aria, status: 'active' })).toEqual({ ok: false, reason: 'status-change-not-allowed' });
   });
 
+  it('preserves shared guardian links and audits every affected child', async () => {
+    const seed = initialState();
+    const original = seed.guardians.find((item) => item.childIds.includes('aria'))!;
+    original.childIds = ['aria', 'chloe'];
+    const h = harness(seed);
+    const guardian = (await h.adapter.getGuardians('aria'))[0];
+    expect(await h.adapter.upsertGuardian({ ...guardian, name: 'Updated fictional guardian' })).toMatchObject({ ok: true });
+    expect((await h.adapter.getGuardians('chloe')).some((item) => item.id === guardian.id)).toBe(true);
+    expect(h.state().auditEvents.slice(-2).map((event) => event.target.id).sort()).toEqual(['aria', 'chloe']);
+    const unprotected = { ...guardian, isPrimary: false };
+    expect(await h.adapter.upsertGuardian(unprotected)).toEqual({ ok: false, reason: 'primary-guardian-required' });
+  });
+
   it('returns typed child and report-in-review withdrawal refusals', async () => {
     const { adapter, state } = harness();
     expect(await adapter.withdrawChild('missing')).toEqual({ ok: false, reason: 'unknown-child' });

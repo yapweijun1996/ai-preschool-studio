@@ -160,7 +160,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     } else if (dialog === 'guardian') {
       const guardian: Guardian = {
         id: selectedGuardian?.id ?? `guardian-${targetChildId.current}-${state.nextAuditNumber}`,
-        childIds: [targetChildId.current],
+        childIds: selectedGuardian?.childIds ?? [targetChildId.current],
         name: fields.name,
         relationship: fields.relationship,
         phone: fields.phone,
