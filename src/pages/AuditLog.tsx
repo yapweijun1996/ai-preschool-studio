@@ -70,19 +70,16 @@ export function AuditLog() {
     setTo('');
   };
   const eventCard = (event: AuditEvent) => (
-    <article className="card stack" style={{ padding: 16, gap: 8 }} key={event.id}>
-      <div className="row">
-        <strong className="grow">{t(auditActionLabel[event.action])}</strong>
-        <span className="cap muted">{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</span>
+    <article className="card card-pad audit-mobile-card" key={event.id}>
+      <div className="audit-mobile-card-head">
+        <strong>{t(auditActionLabel[event.action])}</strong>
+        <time className="cap muted num" dateTime={event.at}>{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</time>
       </div>
       <p className="sec">{summary(event)}</p>
-      <p className="cap muted">
-        {t('pages.audit.actor')}: {event.actor.name} ·{' '}
-        {t(`shell.roles.${event.actor.role}`)}
-      </p>
-      <p className="cap muted">
-        {t('pages.audit.child')}: {event.target.type === 'student' ? childName(event.target.id) : '—'}
-      </p>
+      <div className="audit-mobile-meta">
+        <span className="audit-mobile-actor"><strong>{event.actor.name}</strong><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></span>
+        <span className="cap muted">{t('pages.audit.child')}: {event.target.type === 'student' ? childName(event.target.id) : '—'}</span>
+      </div>
     </article>
   );
 
@@ -90,14 +87,15 @@ export function AuditLog() {
     <AppShell module="settings" crumbs={[{ label: t('pages.audit.title') }]} mobileTitle={t('pages.audit.title')}>
       {() => (
         <>
+          <div className="page audit-page">
           <div className="page-head">
             <div className="grow">
               <h1 className="h1">{t('pages.audit.title')}</h1>
               <p className="sec muted">{t('pages.audit.subtitle')}</p>
             </div>
           </div>
-          <section className="card card-pad stack" aria-label={t('pages.audit.title')}>
-            <div className="row" style={{ flexWrap: 'wrap', alignItems: 'end' }}>
+          <section className="card card-pad audit-filters" aria-label={t('pages.audit.title')}>
+            <div className="audit-filter-row">
               <label className="field">
                 <span className="field-label">{t('pages.audit.action')}</span>
                 <select className="input" value={action} onChange={(event) => setAction(event.target.value)}>
@@ -123,7 +121,7 @@ export function AuditLog() {
               <button className="btn btn-secondary" type="button" onClick={clear}>{t('pages.audit.clear')}</button>
             </div>
           </section>
-          <section className="stack" style={{ minHeight: 260, marginTop: 20 }} aria-live="polite">
+          <section className="audit-results stack" aria-live="polite">
             {loading && (
               <div className="skel" role="status" aria-label={t('pages.audit.title')} style={{ minHeight: 180 }} />
             )}
@@ -143,15 +141,16 @@ export function AuditLog() {
             {!loading && !error && events.length > 0 && (
               <>
                 <div className="audit-table-wrap card">
-                  <table className="data-table">
-                    <caption className="sr-only">{t('pages.audit.title')}</caption>
+                  <div className="audit-table-scroll" role="region" aria-label={t('pages.audit.title')} tabIndex={0}>
+                  <table className="audit-table">
+                    <caption>{t('pages.audit.title')}</caption>
                     <thead>
                       <tr>
-                        <th>{t('pages.audit.action')}</th>
-                        <th>{t('pages.audit.child')}</th>
-                        <th>{t('pages.audit.actor')}</th>
-                        <th>{t('pages.audit.summary')}</th>
-                        <th>{t('pages.audit.timestamp')}</th>
+                        <th scope="col">{t('pages.audit.action')}</th>
+                        <th scope="col">{t('pages.audit.child')}</th>
+                        <th scope="col">{t('pages.audit.actor')}</th>
+                        <th scope="col">{t('pages.audit.summary')}</th>
+                        <th scope="col">{t('pages.audit.timestamp')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -160,20 +159,21 @@ export function AuditLog() {
                           <td>{t(auditActionLabel[event.action])}</td>
                           <td>{event.target.type === 'student' ? childName(event.target.id) : '—'}</td>
                           <td>
-                            {event.actor.name}<br />
-                            <span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span>
+                            <span className="audit-actor"><strong>{event.actor.name}</strong><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></span>
                           </td>
                           <td>{summary(event)}</td>
-                          <td><time dateTime={event.at}>{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</time></td>
+                          <td className="audit-timestamp"><time dateTime={event.at}>{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</time></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
                 <div className="audit-mobile-list">{events.map(eventCard)}</div>
               </>
             )}
           </section>
+          </div>
         </>
       )}
     </AppShell>
