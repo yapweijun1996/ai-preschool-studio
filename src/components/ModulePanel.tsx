@@ -9,6 +9,7 @@ import { usePortfolio } from '../store/PortfolioContext';
 import type { Module } from './AppShell';
 import { Icon, type IconName } from './Icon';
 import { Avatar } from './ui';
+import { useRole } from '../roles/RoleContext';
 
 export type SettingsSection = 'appearance' | 'language' | 'framework' | 'about' | 'demo';
 
@@ -47,6 +48,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
   const { pinned, recent } = useNavMemory();
   const { state } = usePortfolio();
   const { t, fmtDate } = useI18n();
+  const role = useRole();
   const labels = useLabels();
   const pwa = usePwa();
   const moduleLabel = t(`shell.module.${module}`);
@@ -96,13 +98,13 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
         {module === 'dashboard' && (
           <>
             <Link className="nav-link" to="/" aria-current={path === '/' ? 'page' : undefined}><Icon name="home" size={18} />{t('shell.panel.overview')}</Link>
-            <Link className="nav-link" to="/students"><Icon name="users" size={18} />{CLASS_NAME}</Link>
+            {role.can('students.view') && <Link className="nav-link" to="/students"><Icon name="users" size={18} />{CLASS_NAME}</Link>}
           </>
         )}
         {module === 'students' && (
           <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">{STUDENTS.length}</span></Link>
         )}
-        {module === 'observations' && (
+        {module === 'observations' && role.can('observation.add') && (
           <>
             <Link className="nav-link" to={`/students/${studentId}/observe`} aria-current={path.endsWith('/observe') ? 'page' : undefined}><Icon name="plus" size={18} />{t('shell.panel.addObservation')}</Link>
             <p className="cap ctx-label">{t('shell.panel.latest')}</p>
@@ -114,7 +116,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             ))}
           </>
         )}
-        {module === 'reports' && (
+        {module === 'reports' && role.can('report.view') && (
           <>
             <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue', { term: labels.termShort(4) })}</p>
             {(['review', 'changes', 'draft', 'notStarted', 'approved'] as ReportStatus[]).map((st) => (
@@ -128,14 +130,14 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             )}
           </>
         )}
-        {module === 'settings' && <>
+        {module === 'settings' && (role.can('settings.demo') || role.can('catalog.view')) && <>
           {SETTINGS_SECTIONS.map((sec) => (
             <Link key={sec.key} className="nav-link" to={`/settings/${sec.key}`} aria-current={path === `/settings/${sec.key}` ? 'page' : undefined}>
               <Icon name={sec.icon} size={18} />
               {t(`shell.settings.sections.${sec.key}`)}
             </Link>
           ))}
-          <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>
+          {role.can('catalog.view') && <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
         </>}
       </nav>
 

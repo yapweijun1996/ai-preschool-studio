@@ -4,7 +4,7 @@ export const shell = {
   skipToContent: 'Skip to content',
   demoStrip: 'Demo mode — all students and observations are fictional sample data',
   demoStripCompact: 'Demo mode · fictional sample data',
-  roles: { heading: 'Demo role', teacher: 'Teacher', reviewer: 'Reviewer / Principal', admin: 'School admin', parent: 'Parent', viewingAs: 'Viewing as: {role} (demo role — not access control)' },
+  roles: { heading: 'Demo role', teacher: 'Teacher', reviewer: 'Reviewer / Principal', admin: 'School admin', parent: 'Parent', viewingAs: 'Viewing as: {role} (demo role — not access control)', plannedTitle: '{role} view planned', planned: 'Planned role view', plannedModules: 'Planned modules', parentPurpose: 'The family experience will let guardians view released reports, receive notices, manage consents and complete a morning declaration.', adminPurpose: 'School administrators will manage schools and accounts, privacy and retention workflows, incidents and principal reporting.', returnTeacher: 'Switch back to Teacher', familyModules: 'Family Portal — Phase 3', noticesModule: 'Notices — Phase 3', schoolsModule: 'Schools & Accounts — Phase 4', privacyModule: 'Privacy Centre — Phase 4', retentionModule: 'Records Retention — Phase 4', incidentsModule: 'Incidents & Notifiable Events — Phase 4', principalReportsModule: 'Principal Reports — Phase 4' , studioReadOnly: 'Reviewer access is read-only. Only the teacher can edit this draft.', onlyReviewer: 'Only the reviewer can approve or request changes.', switchReviewer: 'Switch to reviewer (demo)' },
   back: 'Back',
   breadcrumb: 'Breadcrumb',
   search: {

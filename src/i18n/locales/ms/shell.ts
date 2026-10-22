@@ -6,7 +6,7 @@ export const shell: Dict['shell'] = {
   skipToContent: 'Langkau ke kandungan',
   demoStrip: 'Mod demo — semua murid dan pemerhatian ialah data contoh rekaan',
   demoStripCompact: 'Mod demo · data contoh rekaan',
-  roles: { heading: 'Peranan demo', teacher: 'Guru', reviewer: 'Penyemak / Pengetua', admin: 'Pentadbir sekolah', parent: 'Ibu bapa', viewingAs: 'Melihat sebagai: {role} (peranan demo — bukan kawalan akses)' },
+  roles: { heading: 'Peranan demo', teacher: 'Guru', reviewer: 'Penyemak / Pengetua', admin: 'Pentadbir sekolah', parent: 'Ibu bapa', viewingAs: 'Melihat sebagai: {role} (peranan demo — bukan kawalan akses)', plannedTitle: 'Paparan {role} dirancang', planned: 'Paparan peranan dirancang', plannedModules: 'Modul yang dirancang', parentPurpose: 'Pengalaman keluarga akan membolehkan penjaga melihat laporan yang diterbitkan, menerima notis, mengurus persetujuan dan melengkapkan pengisytiharan pagi.', adminPurpose: 'Pentadbir sekolah akan mengurus sekolah dan akaun, aliran kerja privasi dan penyimpanan, insiden serta laporan pengetua.', returnTeacher: 'Kembali kepada Guru', familyModules: 'Portal Keluarga — Fasa 3', noticesModule: 'Notis — Fasa 3', schoolsModule: 'Sekolah & Akaun — Fasa 4', privacyModule: 'Pusat Privasi — Fasa 4', retentionModule: 'Penyimpanan Rekod — Fasa 4', incidentsModule: 'Insiden & Peristiwa yang Perlu Dilaporkan — Fasa 4', principalReportsModule: 'Laporan Pengetua — Fasa 4' , studioReadOnly: 'Akses penyemak adalah baca sahaja. Hanya guru boleh mengedit draf ini.', onlyReviewer: 'Hanya penyemak boleh meluluskan atau meminta perubahan.', switchReviewer: 'Tukar kepada penyemak (demo)' },
   back: 'Kembali',
   breadcrumb: 'Laluan navigasi',
   search: {

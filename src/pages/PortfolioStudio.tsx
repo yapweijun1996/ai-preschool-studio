@@ -19,6 +19,7 @@ import { observationsFor, readiness, unverifiedClaims } from '../store/reducer';
 import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
+import { useRole } from '../roles/RoleContext';
 
 type MobileTab = 'evidence' | 'write' | 'ai';
 
@@ -28,6 +29,7 @@ export function PortfolioStudio() {
   const { t } = useI18n();
   const { term: periodLabel } = useLabels();
   const { state, dispatch } = usePortfolio();
+  const role = useRole();
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
   const paragraphs = state.paragraphs[id] ?? [];
@@ -103,7 +105,7 @@ export function PortfolioStudio() {
   const claims = unverifiedClaims(state, id);
   const linkedIds = new Set(paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.sources)));
   // Approved: frozen. In review: wording paused until the reviewer responds.
-  const locked = report.status === 'approved' || report.status === 'review';
+  const locked = report.status === 'approved' || report.status === 'review' || !role.can('draft.edit');
   const written = new Set(paragraphs.filter((p) => p.sentences.length > 0).map((p) => p.domain));
   const missing = DOMAINS.filter((d) => !written.has(d.key)).map((d) => ({ domain: d.key, hasObs: observations.some((o) => o.domain === d.key) }));
   const fill = () => dispatch({ type: 'fillMissingDomains', studentId: id });
@@ -214,7 +216,9 @@ export function PortfolioStudio() {
   );
 
   const statusNotice =
-    whyBlocked && !ready.canSubmit && !locked ? (
+    !role.can('draft.edit') ? (
+      <Notice tone="info" icon="lock" role="status"><p className="body-text">{t('shell.roles.studioReadOnly')}</p></Notice>
+    ) : whyBlocked && !ready.canSubmit && !locked ? (
       <Notice tone="warning" icon="lock" id="why-blocked" role="status">
         <p className="semibold">{t('pages.report.notReady')}</p>
         <p className="body-text">{t('pages.report.notReadyBody')}</p>
@@ -242,7 +246,7 @@ export function PortfolioStudio() {
       mobileActions={
         <>
           <Link className="btn btn-secondary" to={`/students/${id}/report`}>{t('pages.studio.preview')}</Link>
-          {submitButton('btn btn-primary grow')}
+          {role.can('report.submit') && submitButton('btn btn-primary grow')}
         </>
       }
     >
@@ -267,7 +271,7 @@ export function PortfolioStudio() {
                   </>
                 )}
                 {bp === 'desktop' && <Link className="btn btn-secondary" to={`/students/${id}/report`}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>}
-                {submitButton('btn btn-primary')}
+                {role.can('report.submit') && submitButton('btn btn-primary')}
               </div>
             </div>
           )}
