@@ -15,8 +15,8 @@ bytes; score and timing assertions use the median of the three CI runs.
 | Assertion | Threshold | Severity |
 |---|---:|---|
 | Script resource size | ≤ 174,080 bytes (170 KB) | Error |
-| Stylesheet resource size | ≤ 240,640 bytes (235 KB) | Error |
-| Total resource size | ≤ 595,456 bytes (581.5 KB) | Error |
+| Stylesheet resource size | ≤ 9,237 bytes (9.0 KiB) | Error |
+| Total resource size | ≤ 236,811 bytes (231.3 KiB) | Error |
 | Accessibility score | ≥ 0.95 | Error |
 | Best Practices score | ≥ 0.90 | Error |
 | Cumulative Layout Shift | ≤ 0.10 | Error |
@@ -53,16 +53,23 @@ production routes and fails on requests outside the page origin; LHCI's
 `resource-summary:third-party:count` is not used because Lighthouse counts the
 GitHub Pages host itself as third party.
 
-Inter Variable and Noto Sans SC are bundled from Fontsource. Inter uses its
-Latin variable face; Noto Sans SC includes 400, 500, 600 and 700 with Unicode
-ranges, so the browser fetches only glyph slices used by each page. The service
-worker precaches the app shell and caches same-origin assets, including fonts,
-on first use. The build emits 785 font files (22,137,340 bytes total, about
-21.1 MiB); a local dashboard load fetched five font files totaling 164,604
-transfer bytes. Its measured total resource transfer was 517,604 bytes.
+Inter Variable is self-hosted as one Latin-only WOFF2 (48,256 bytes); the
+service worker precaches the app shell and runtime-caches this font on first
+use. Chinese uses the operating system's native CJK font from the platform
+stack (`PingFang SC`, `Hiragino Sans GB`, `Microsoft YaHei`, `Noto Sans CJK SC`,
+`Noto Sans SC`, `Source Han Sans SC`). This is the standard zh-CN UI pattern:
+the large system CJK fonts are already installed, avoiding hundreds of
+Unicode-range requests and avoiding a web-font dependency for Chinese glyphs.
+There are no third-party font requests.
 
-The stylesheet and total limits are 15% above those measured dashboard values
-(rounded up). The existing script limit remains 174,080 bytes.
+The manager's previous build emitted 785 WOFF/WOFF2 files (about 21.1 MiB) and
+its render-blocking main CSS was 510.16 KB raw / 208.94 KB gzip; `dist` was 24
+MB. The Inter-only build emits one WOFF2, a 38.75 KB main CSS file (7.19 KB
+gzip), and a 612,091-byte `dist` directory. Both CSS bundles together are
+8,032 gzip bytes. For the budget baseline, emitted HTML/CSS/JS are counted at
+gzip size and WOFF2 at its file size: 205,922 bytes across app assets. The
+stylesheet (8,032 bytes) and total limits are 15% above these build figures,
+rounded up. The existing script limit remains 174,080 bytes.
 
 ## Reading the CI report
 
