@@ -84,23 +84,38 @@ export function I18nProvider({ children, initial, initialDict }: { children: Rea
   const [loadingLang, setLoadingLang] = useState(false);
   const [requestedLang, setRequestedLang] = useState<Lang | null>(null);
   const languageRequest = useRef(0);
+  const pendingLang = useRef<Lang | null>(null);
   const languageIndicator = useRef<number | undefined>(undefined);
   const meta = LANGS.find((l) => l.key === lang)!;
   useEffect(() => {
     document.documentElement.lang = meta.htmlLang;
   }, [meta.htmlLang]);
   const setLang = useCallback((l: Lang) => {
-    if (l === lang) return;
+    if (pendingLang.current === l) return;
+    if (l === lang) {
+      if (pendingLang.current !== null) {
+        languageRequest.current += 1;
+        pendingLang.current = null;
+        if (languageIndicator.current !== undefined) window.clearTimeout(languageIndicator.current);
+        languageIndicator.current = undefined;
+        setLoadingLang(false);
+        setRequestedLang(null);
+      }
+      return;
+    }
     const requestId = ++languageRequest.current;
+    pendingLang.current = l;
     if (languageIndicator.current !== undefined) window.clearTimeout(languageIndicator.current);
     languageIndicator.current = window.setTimeout(() => { setRequestedLang(l); setLoadingLang(true); }, 40);
     void Promise.all([loadDict(l), new Promise((resolve) => window.setTimeout(resolve, 180))]).then(([next]) => {
       if (requestId !== languageRequest.current) return;
       setDict(next);
       setLangState(l);
+      pendingLang.current = null;
       try { localStorage.setItem(KEY, l); } catch { /* ignore */ }
     }).finally(() => {
       if (requestId !== languageRequest.current) return;
+      pendingLang.current = null;
       if (languageIndicator.current !== undefined) window.clearTimeout(languageIndicator.current);
       languageIndicator.current = undefined;
       setLoadingLang(false);
