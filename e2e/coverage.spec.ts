@@ -41,6 +41,15 @@ test('mobile coverage uses child cards without the wide table', async ({ page })
   await expect(page.locator('.coverage-table-card')).toBeHidden();
   await expect(page.locator('.coverage-mobile-list .coverage-mobile-card').first()).toBeVisible();
   await expect(page.locator('.coverage-mobile-area')).toHaveCount(80);
+  await expect(page.getByRole('group', { name: 'Learning areas for Aria Tan' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Add observation for Aria Tan, English' })).toBeVisible();
+});
+
+test('coverage horizontal table scroll is a named region', async ({ page }) => {
+  await page.goto('./#/coverage');
+  const tableScroll = page.getByRole('region', { name: 'Evidence coverage by child and learning area' });
+  await expect(tableScroll).toBeVisible();
+  await expect(tableScroll).not.toHaveAttribute('tabindex', '0');
 });
 
 test('review queue is oldest first and opens the selected child report', async ({ page }) => {
