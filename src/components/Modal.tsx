@@ -32,8 +32,10 @@ export function Modal({ labelledBy, describedBy, onClose, children, backdropClas
     document.addEventListener('keydown', onDocumentKeyDown);
     return () => {
       document.removeEventListener('keydown', onDocumentKeyDown);
-      if (trigger?.isConnected) trigger.focus();
-      else if (fallbackFocusRef?.current?.isConnected) fallbackFocusRef.current.focus();
+      window.setTimeout(() => {
+        if (trigger?.isConnected) trigger.focus();
+        else if (fallbackFocusRef?.current?.isConnected) fallbackFocusRef.current.focus();
+      }, 0);
     };
   }, [fallbackFocusRef]);
 

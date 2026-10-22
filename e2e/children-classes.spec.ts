@@ -127,6 +127,7 @@ test('withdrawn children are hidden from Students until included', async ({ page
   await page.locator('.family-section').getByRole('button', { name: 'Withdraw child' }).click();
   await page.getByRole('dialog', { name: 'Confirm withdrawal' }).getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('.family-facts')).toContainText('Withdrawn');
+  await expect(page.locator('#family-heading')).toBeFocused();
   await page.locator('a[href="#/students"]').first().click();
   await expect(page.locator('.page').getByRole('link', { name: /Aria Tan/ })).toHaveCount(0);
   await page.getByRole('checkbox', { name: 'Include withdrawn children' }).check();
