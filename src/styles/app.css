@@ -154,7 +154,7 @@ html:not(:lang(zh)) body { word-break: keep-all; overflow-wrap: break-word; }
 .crumb-current { padding: 0 6px; color: var(--color-text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
 .crumbs li:only-child .crumb-current { color: var(--color-text-muted); font-weight: 400; padding-left: 0; }
 /* Global search */
-.search-trigger { display: inline-flex; align-items: center; gap: var(--space-2); flex: 0 1 360px; min-width: 0; height: 40px; padding: 0 6px 0 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-muted); color: var(--color-text-muted); font: inherit; font-size: 14px; cursor: pointer; }
+.search-trigger { display: inline-flex; align-items: center; gap: var(--space-2); flex: 0 1 360px; min-width: 0; height: 40px; padding: 0 6px 0 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-muted); color: var(--color-text); font: inherit; font-size: 14px; cursor: pointer; }
 .search-trigger:hover { border-color: var(--color-border-strong); color: var(--color-text); }
 .search-trigger-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
 .app:not(.is-tablet) .search-trigger-text.sr-only { position: static; width: auto; height: auto; padding: 0; margin: 0; overflow: hidden; clip: auto; white-space: nowrap; border: 0; }
