@@ -7,38 +7,56 @@ dashboard (`#/`), students (`#/students`), Aria's report
 Actions and use the filesystem upload target; they are not sent to a public
 reporting service.
 
-## Budgets
+## Assertions
 
-| Measure | Limit | Basis |
+LHCI enforces these assertions on each route. Resource sizes are measured in
+bytes; score and timing assertions use the median of the three CI runs.
+
+| Assertion | Threshold | Severity |
 |---|---:|---|
-| Script transfer | 170 KB | `npm run build` reports 143.46 KB gzip for the main bundle and 6.00 KB for the catalog chunk. Their 149.46 KB total is about 13.7% below the budget. |
-| Stylesheet transfer | 15 KB | Build output reports 6.96 KB and 0.84 KB gzip (7.80 KB combined); the limit leaves room for normal styling growth. |
-| Total transfer | 400 KB | Leaves room above the current roughly 158 KB compressed build output for HTML, route-specific assets, and future small assets while keeping the initial mobile page bounded. |
-| Third-party resources | 0 | The app is self-contained; CI should catch external scripts, styles, fonts, and other third-party requests. |
-| First Contentful Paint | 2,000 ms | Keeps initial visible content within two seconds on Lighthouse's default mobile profile. |
-| Time to Interactive | 3,500 ms | Allows the heavier React routes to hydrate while keeping interaction readiness bounded. |
-| Largest Contentful Paint | 2,500 ms | Matches the two-and-a-half-second target for the main page content. |
-| Cumulative Layout Shift | 0.10 | Limits unexpected movement during loading. |
-| Performance score | 0.85 minimum; warning below 0.90 | The minimum is a CI error threshold; scores from 0.85 to 0.89 produce a warning. |
-| Accessibility score | 0.95 minimum | Keeps the existing accessibility quality bar in place for every route. |
-| Best Practices score | 0.90 minimum | Requires a strong baseline for browser and web platform practices. |
+| Script resource size | ≤ 174,080 bytes (170 KB) | Error |
+| Stylesheet resource size | ≤ 15,360 bytes (15 KB) | Error |
+| Total resource size | ≤ 409,600 bytes (400 KB) | Error |
+| Third-party resource count | ≤ 0 | Error |
+| Accessibility score | ≥ 0.95 | Error |
+| Best Practices score | ≥ 0.90 | Error |
+| Cumulative Layout Shift | ≤ 0.10 | Error |
+| Performance score | ≥ 0.90 | Warn |
+| First Contentful Paint | ≤ 2,000 ms | Warn |
+| Largest Contentful Paint | ≤ 2,500 ms | Warn |
+| Total Blocking Time | ≤ 200 ms | Warn |
+| Time to Interactive | ≤ 3,500 ms | Warn |
 
-Transfer sizes are Lighthouse's measured network sizes, which use compression
-when available. Build gzip numbers provide a reproducible local baseline; the
-browser's reported transfer can also include HTML and runtime-loaded resources.
+Error assertions fail the Lighthouse job. Warn assertions report regressions
+without failing it during the baseline period. After one week of CI medians,
+the speed assertions (performance score and timing metrics) move to error.
+
+## First live measurement (2026-10-22)
+
+The manager ran `@lhci/cli` 0.15.1 against the live site with mobile emulation,
+one run, and network traffic through a proxy, so timings are pessimistic. These
+are baseline observations, not CI medians:
+
+| Route | Performance | Accessibility | Best Practices | FCP | LCP | TBT | CLS |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `#/` | 0.82 | 1.00 | 1.00 | 3,432 ms | 3,432 ms | 0 ms | 0 |
+| `#/students/aria/report` | 0.91 | — | — | 2,679 ms | 2,679 ms | 116 ms | 0 |
+
+The largest improvement lever is the single entry chunk, about 460 KB raw / 140
+KB gzip. Route-level code splitting is a follow-up.
 
 ## Reading the CI report
 
 Open the workflow run's **Artifacts** section and download `lighthouse-report`.
 The `.lighthouseci` directory contains the individual Lighthouse JSON reports,
 the manifest linking each run to its URL, and the local report HTML. Review all
-three runs for a route before attributing a budget failure to a code change;
-mobile timings can vary between runs. The job log also warns when a performance
-score falls below 0.90, while scores below 0.85 fail the Lighthouse assertion.
+three runs for a route before attributing an assertion result to a code change;
+mobile timings can vary between runs. LHCI reports warn-level speed assertions
+and fails the error-level assertions.
 
 ## Changing a budget
 
-Update the matching entry in `budget.json` or `lighthouserc.json`. Include a
-specific reason in the pull request, such as a measured asset addition or a
-product requirement, and cite the new local build size or Lighthouse evidence.
-Keep the limit close to the measured need and recheck all four routes in CI.
+Update the matching assertion in `lighthouserc.json`. Include a specific reason
+in the pull request, such as a measured asset addition or a product requirement,
+and cite the new local build size or Lighthouse evidence. Keep the limit close
+to the measured need and recheck all four routes in CI.
