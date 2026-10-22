@@ -15,10 +15,25 @@ access-control boundary. Studio Platform enforces real access.
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Portfolio screens, student list, observations, reports and Settings | Add observations, edit and submit drafts, view reports; review actions are explained and can be reached by switching role. |
-| Reviewer / Principal | Students, reports and read-only Studio | Request changes, approve unblocked reports and link evidence while a report is in review. |
-| School admin | Read-only Students, Settings and an admin planned page | Use demo controls; planned administration modules are listed with roadmap phases. |
-| Parent | Parent planned page; student navigation is hidden | See planned Family Portal and Notices modules with roadmap phases; switch back to Teacher. |
+| Teacher | Dashboard, portfolio screens, student list, observations, reports and personal Settings | Add observations, edit and submit drafts, view reports, and use demo controls; review actions are explained and can be reached by switching role. |
+| Reviewer / Principal | Dashboard, students, reports, read-only Studio and personal Settings | Request changes, approve unblocked reports and link evidence while a report is in review. |
+| School admin | Dashboard, read-only Students, Settings and an admin planned page | Use demo controls; planned administration modules are listed with roadmap phases. |
+| Parent | Dashboard, personal Settings and parent planned page; student navigation is hidden | See planned Family Portal and Notices modules with roadmap phases; switch back to Teacher. |
+
+Capabilities are assigned in the complete matrix below. Every role can view personal Settings (`settings.view`) and the dashboard (`dashboard.view`). Demo simulation controls, including the Demo data Settings section and Demo menu items, require `demo.controls` (Teacher and School admin only).
+
+| Capability | Teacher | Reviewer | School admin | Parent |
+|---|---:|---:|---:|---:|
+| `dashboard.view` | ✓ | ✓ | ✓ | ✓ |
+| `students.view` | ✓ | ✓ | ✓ | — |
+| `observation.add` | ✓ | — | — | — |
+| `draft.edit` | ✓ | — | — | — |
+| `report.submit` | ✓ | — | — | — |
+| `report.review` | — | ✓ | — | — |
+| `report.view` | ✓ | ✓ | — | — |
+| `settings.view` | ✓ | ✓ | ✓ | ✓ |
+| `demo.controls` | ✓ | — | ✓ | — |
+| `catalog.view` | ✓ | ✓ | ✓ | — |
 
 The capability union and complete role matrix have one owner in [`src/roles/index.ts`](../../src/roles/index.ts).
 The React provider in `src/roles/RoleContext.tsx` stores the selected role in tab-scoped
@@ -35,7 +50,8 @@ not part of portfolio state or the data port.
 ## Screens and states
 
 The switcher is available in desktop Account and mobile/tablet More. Parent and admin landing pages
-show their purpose and planned modules with phase numbers. Reviewer Studio is read-only with a reason.
+show their purpose and planned modules with phase numbers. Read-only Studio and blocked draft actions
+explain the restriction and offer a switch to the teacher where appropriate.
 Teacher review actions are replaced by a reason and a switch-to-reviewer action. All UI restrictions
 are demo affordances, not security controls.
 
