@@ -370,11 +370,10 @@ export function reducer(state: State, action: Action): State {
       if (!state.children[guardian.childIds[0]] || Object.keys(validateGuardian(guardian)).length > 0) return state;
       const without = state.guardians.filter((item) => item.id !== guardian.id);
       const nextGuardians = [...without, guardian];
-      if (!hasPrimaryGuardian(nextGuardians, guardian.childIds[0])) return state;
       const created = without.length === state.guardians.length;
-      const next = { ...state, guardians: nextGuardians };
       const actionName = created ? 'guardian.created' : 'guardian.updated';
       const summaryKey = created ? 'pages.audit.summaryGuardianCreated' : 'pages.audit.summaryGuardianUpdated';
+      const next = { ...state, guardians: nextGuardians };
       return appendAudit(next, { at: asInstant(action.at ?? now()), actor: action.actor ?? defaultActor, action: actionName, target: { type: 'child', id: guardian.childIds[0] }, summaryKey });
     }
     case 'removeGuardian': {
@@ -388,7 +387,9 @@ export function reducer(state: State, action: Action): State {
     case 'upsertCollector': {
       const collector = action.collector;
       if (!state.children[collector.childId] || Object.keys(validateCollector(collector)).length > 0) return state;
-      const existing = state.collectors.some((item) => item.id === collector.id);
+      const stored = state.collectors.find((item) => item.id === collector.id);
+      if (stored && stored.childId !== collector.childId) return state;
+      const existing = !!stored;
       const next = { ...state, collectors: [...state.collectors.filter((item) => item.id !== collector.id), collector] };
       const actionName = existing ? 'collector.updated' : 'collector.created';
       const summaryKey = existing ? 'pages.audit.summaryCollectorUpdated' : 'pages.audit.summaryCollectorCreated';

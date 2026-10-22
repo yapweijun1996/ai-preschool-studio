@@ -77,6 +77,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async upsertCollector(collector, actor) {
       const state = getState();
       if (!state.children[collector.childId]) return refusal('unknown-child');
+      const existing = state.collectors.find((item) => item.id === collector.id);
+      if (existing && existing.childId !== collector.childId) return refusal('record-child-mismatch');
       if (Object.keys(validateCollector(collector)).length > 0) return refusal('invalid-collector');
       return run({ type: 'upsertCollector', collector, actor }, collector, 'invalid-collector');
     },

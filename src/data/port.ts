@@ -26,7 +26,8 @@ export type PortRefusal =
   | 'primary-guardian-required'
   | 'unknown-collector'
   | 'invalid-collector'
-  | 'report-in-review';
+  | 'report-in-review'
+  | 'record-child-mismatch';
 
 
 export type PortResult<T> = { ok: true; value: T } | { ok: false; reason: PortRefusal };

@@ -5,6 +5,7 @@ import { useI18n } from '../i18n';
 import { useRole } from '../roles/RoleContext';
 import { demoRole } from '../roles';
 import { useDataPort, usePortfolio } from '../store/PortfolioContext';
+import type { PortRefusal, PortResult } from '../data/port';
 import {
   validateChild,
   validateCollector,
@@ -32,7 +33,7 @@ const ERROR_KEYS: Record<FieldError, TKey> = {
   'date-format': 'pages.children.errorDate',
   'date-order': 'pages.children.errorDateOrder'
 };
-const REFUSAL_KEYS: Record<string, TKey> = {
+const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
   'unknown-child': 'pages.children.refusal.unknownChild',
   'invalid-child': 'pages.children.refusal.invalidChild',
   'unknown-guardian': 'pages.children.refusal.unknownGuardian',
@@ -41,7 +42,18 @@ const REFUSAL_KEYS: Record<string, TKey> = {
   'unknown-collector': 'pages.children.refusal.unknownCollector',
   'invalid-collector': 'pages.children.refusal.invalidCollector',
   'report-in-review': 'pages.children.refusal.reportInReview',
-  'invalid-target': 'pages.children.refusal.invalidTarget'
+  'invalid-target': 'pages.children.refusal.invalidTarget',
+  'record-child-mismatch': 'pages.children.refusal.invalidTarget',
+  'unknown-student': 'pages.children.refusal.invalidTarget',
+  'wrong-child-observation': 'pages.children.refusal.invalidTarget',
+  'date-outside-period': 'pages.children.refusal.invalidTarget',
+  'report-locked': 'pages.children.refusal.invalidTarget',
+  'report-not-editable': 'pages.children.refusal.invalidTarget',
+  'not-ready': 'pages.children.refusal.invalidTarget',
+  'unverified-claims': 'pages.children.refusal.invalidTarget',
+  'no-observations': 'pages.children.refusal.invalidTarget',
+  'not-approved': 'pages.children.refusal.invalidTarget',
+  'reason-required': 'pages.children.refusal.invalidTarget'
 };
 
 function maskedPhone(phone: string) {
@@ -66,6 +78,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
   const [saved, setSaved] = useState(false);
   const firstField = useRef<HTMLInputElement | null>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const targetChildId = useRef(childId);
   const actor: Actor = { role: role.role, name: demoRole(role.role).name };
   const editable = role.can('children.edit');
 
@@ -81,6 +94,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     collector?: AuthorisedCollector
   ) => {
     returnFocus.current = trigger;
+    targetChildId.current = childId;
     setSelectedGuardian(guardian);
     setSelectedCollector(collector);
     setErrors({});
@@ -128,7 +142,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     event.preventDefault();
     if (!child) return;
     setErrors({}); setFormError(''); setSaving(true); setSaved(false);
-    let result: { ok: boolean; reason?: string };
+    let result: PortResult<unknown>;
     if (dialog === 'child') {
       const updated: Child = {
         ...child,
@@ -144,8 +158,8 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
       result = await port.updateChild(updated, actor);
     } else if (dialog === 'guardian') {
       const guardian: Guardian = {
-        id: selectedGuardian?.id ?? `guardian-${childId}-${state.nextAuditNumber}`,
-        childIds: [childId],
+        id: selectedGuardian?.id ?? `guardian-${targetChildId.current}-${state.nextAuditNumber}`,
+        childIds: [targetChildId.current],
         name: fields.name,
         relationship: fields.relationship,
         phone: fields.phone,
@@ -161,8 +175,8 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
       result = await port.upsertGuardian(guardian, actor);
     } else if (dialog === 'collector') {
       const collector: AuthorisedCollector = {
-        id: selectedCollector?.id ?? `collector-${childId}-${state.nextAuditNumber}`,
-        childId,
+        id: selectedCollector?.id ?? `collector-${targetChildId.current}-${state.nextAuditNumber}`,
+        childId: targetChildId.current,
         name: fields.name,
         relationship: fields.relationship,
         validFrom: fields.validFrom,
@@ -176,20 +190,20 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     } else { setSaving(false); return; }
     setSaving(false);
     if (result.ok) { setSaved(true); close(); }
-    else { setFormError(t(REFUSAL_KEYS[result.reason ?? 'invalid-child'])); }
+    else { setFormError(t(REFUSAL_KEYS[result.reason])); }
   };
 
   const removeOrWithdraw = async () => {
     if (!dialog) return;
     setSaving(true); setFormError('');
-    const result = dialog === 'removeGuardian' && selectedGuardian
+    const result: PortResult<unknown> = dialog === 'removeGuardian' && selectedGuardian
       ? await port.removeGuardian(selectedGuardian.id, actor)
       : dialog === 'removeCollector' && selectedCollector
         ? await port.removeCollector(selectedCollector.id, actor)
         : dialog === 'withdraw' ? await port.withdrawChild(childId, actor) : { ok: false, reason: 'invalid-target' };
     setSaving(false);
     if (result.ok) { setSaved(true); close(); }
-    else setFormError(t(REFUSAL_KEYS[result.reason ?? 'invalid-target']));
+    else setFormError(t(REFUSAL_KEYS[result.reason]));
   };
 
   if (!child) return null;

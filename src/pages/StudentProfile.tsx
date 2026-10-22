@@ -157,7 +157,7 @@ export function StudentProfile() {
             </aside>
           </div>
           <Suspense fallback={<section className="card card-pad" aria-busy="true" style={{ minHeight: 320 }}><p className="sec muted" role="status">{t('pages.children.loadingFamily')}</p></section>}>
-            <FamilyEnrolment childId={id} />
+            <FamilyEnrolment key={id} childId={id} />
           </Suspense>
         </div>
       )}

@@ -72,6 +72,22 @@ test('school admin sees the typed reason when withdrawal is blocked by an in-rev
   await expect(family.getByText('Active', { exact: true })).toBeVisible();
 });
 
+test('an open collector editor cannot move Aria’s record to Chloe after route navigation', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
+  await page.goto('./#/students/aria');
+  const family = page.locator('.family-section');
+  const collectors = family.locator('.family-subsection').filter({ has: page.getByRole('heading', { name: 'Authorised collectors' }) });
+  await collectors.getByRole('button', { name: 'Edit' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Authorised collector details' });
+  await page.goto('./#/students/chloe');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('.family-section').locator('.family-subsection').filter({ has: page.getByRole('heading', { name: 'Authorised collectors' }) }).getByText('Fictional Collector 01')).toHaveCount(0);
+  await page.goto('./#/students/aria');
+  await expect(page.locator('.family-section').getByText('Fictional Collector 01')).toBeVisible();
+  await page.goto('./#/audit');
+  await expect(page.locator('.audit-table-wrap')).not.toContainText('Chloe Ng');
+});
+
 test('teacher sees guardian contacts and health notes but has no edit actions', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'teacher'));
   await page.goto('./#/students/aria');

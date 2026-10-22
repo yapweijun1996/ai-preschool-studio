@@ -44,6 +44,13 @@ describe('DataPort demo adapter', () => {
     expect(JSON.stringify(h.state().auditEvents.slice(-3))).not.toContain('Updated fictional note');
   });
 
+  it('refuses changing the child attached to an existing collector', async () => {
+    const h = harness();
+    const collector = (await h.adapter.getCollectors('aria'))[0];
+    expect(await h.adapter.upsertCollector({ ...collector, childId: 'chloe' })).toEqual({ ok: false, reason: 'record-child-mismatch' });
+    expect(h.state().collectors.find((item) => item.id === collector.id)?.childId).toBe('aria');
+  });
+
   it('returns typed child and report-in-review withdrawal refusals', async () => {
     const { adapter, state } = harness();
     expect(await adapter.withdrawChild('missing')).toEqual({ ok: false, reason: 'unknown-child' });
