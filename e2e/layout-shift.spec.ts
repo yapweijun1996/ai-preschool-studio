@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 for (const route of [
+  { path: '#/students', ready: '.row-link', name: 'students' },
+  { path: '#/students/aria/studio', ready: '.studio-head h1', name: 'studio' },
   { path: '#/students/aria/report', ready: '.a4', name: 'report' },
   { path: '#/catalog', ready: '.catalog-page h2', name: 'catalog' },
   { path: '#/classes', ready: '.class-roster .row-link', name: 'classes' }

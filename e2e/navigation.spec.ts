@@ -23,6 +23,7 @@ test.describe('breadcrumb, search and domain links · desktop 1440', () => {
 
   test('Ctrl+K opens search; keyboard picks a student; Esc returns focus', async ({ page }) => {
     await page.goto('./#/');
+    await expect(page.locator('#rp-h')).toBeVisible();
     const trigger = page.getByRole('button', { name: 'Search students or pages' });
     await page.keyboard.press('Control+k');
     const dialog = page.getByRole('dialog', { name: 'Search' });

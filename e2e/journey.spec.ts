@@ -63,6 +63,7 @@ test.describe('desktop 1440 journey', () => {
 
   test('AI unavailable and save failed states', async ({ page }) => {
     await page.goto('./#/students/aria/studio');
+    await expect(page.locator('.studio-head h1')).toBeVisible();
     await page.getByRole('button', { name: 'More' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Simulate AI unavailable' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Simulate save failure' }).click();
@@ -76,6 +77,7 @@ test.describe('desktop 1440 journey', () => {
 
   test('dark theme', async ({ page }) => {
     await page.goto('./#/students/aria/studio');
+    await expect(page.locator('.studio-head h1')).toBeVisible();
     await page.getByRole('button', { name: /^Theme:/ }).click();
     await page.getByRole('menuitemradio', { name: 'Dark' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');

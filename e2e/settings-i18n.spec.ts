@@ -9,6 +9,8 @@ test.describe('language menu · desktop 1440', () => {
 
   test('switch to 中文, persist across reload, then Bahasa Melayu and back to English', async ({ page }) => {
     await page.goto('./#/students');
+    await expect(page.getByRole('heading', { level: 1, name: 'My Students' })).toBeVisible();
+    await page.waitForTimeout(500);
     const html = page.locator('html');
     await expect(html).toHaveAttribute('lang', 'en');
 
@@ -125,6 +127,8 @@ test.describe('settings · desktop 1440', () => {
     await page.goto('./#/settings');
     await expect(page).toHaveURL(/#\/settings\/appearance$/);
     await page.goto('./#/students');
+    await expect(page.getByRole('heading', { level: 1, name: 'My Students' })).toBeVisible();
+    await page.waitForTimeout(500);
     await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'More' }).click();
     await page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Settings' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Appearance' })).toBeVisible();
@@ -145,6 +149,8 @@ test.describe('settings · mobile 390', () => {
 
   test('language and Settings from the More sheet; 44px targets on Appearance', async ({ page }) => {
     await page.goto('./#/students');
+    await expect(page.getByRole('heading', { level: 1, name: 'My Students' })).toBeVisible();
+    await page.waitForTimeout(500);
     await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'More' }).click();
     const sheet = page.getByRole('menu', { name: 'More' });
     await expect(sheet.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute('aria-checked', 'true');

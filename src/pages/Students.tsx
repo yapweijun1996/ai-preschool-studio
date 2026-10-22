@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 import { Avatar, ScrollRow, StatusLabel } from '../components/ui';
 import { AccessDenied } from '../components/AccessDenied';
-import { CLASS_NAME, daysAgo, type ReportStatus } from '../data/demo';
+import { CLASS_NAME, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDataPort } from '../store/PortfolioContext';
@@ -13,29 +13,9 @@ import { useRole } from '../roles/RoleContext';
 import { demoRole } from '../roles';
 import type { ChildRead } from '../data/port';
 import type { StudentSummary } from '../store/selectors';
+import { useAgoLabel, useLastObservedLabel } from '../hooks/useStudentLabels';
 
 const FILTERS: (ReportStatus | 'all')[] = ['all', 'notStarted', 'draft', 'review', 'changes', 'approved'];
-
-/** "Last observed 3 days ago" in the current language. */
-export function useLastObservedLabel() {
-  const { t } = useI18n();
-  return (iso: string | undefined): string => {
-    if (!iso) return t('pages.shared.notObserved');
-    const n = daysAgo(iso);
-    if (n <= 0) return t('pages.shared.lastObservedToday');
-    return t('pages.shared.lastObservedDays', { count: n });
-  };
-}
-
-/** "3 days ago" for a column already headed "Last observed". */
-export function useAgoLabel() {
-  const { t } = useI18n();
-  return (iso: string | undefined): string => {
-    if (!iso) return t('pages.shared.notObserved');
-    const n = daysAgo(iso);
-    return n <= 0 ? t('pages.shared.today') : t('pages.shared.daysAgo', { count: n });
-  };
-}
 
 export function Students() {
   const { t } = useI18n();

@@ -16,7 +16,7 @@ import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
 import { milestonesFor, studentSummary } from '../store/selectors';
 import { NotFound } from './NotFound';
-import { useLastObservedLabel } from './Students';
+import { useLastObservedLabel } from '../hooks/useStudentLabels';
 import { useRole } from '../roles/RoleContext';
 
 const FamilyEnrolment = lazy(() => import('../components/FamilyEnrolment').then((module) => ({ default: module.FamilyEnrolment })));

@@ -67,6 +67,7 @@ test.describe('UI polish · tablet 1024', () => {
   test.use({ viewport: { width: 1024, height: 768 }, hasTouch: true });
   test('Chinese domain names wrap as whole words in English', async ({ page }) => {
     await page.goto('./#/');
+    await expect(page.locator('#rp-h')).toBeVisible();
     const split = await page.evaluate(() => {
       const word = '社交与情绪';
       const walker = document.createTreeWalker(document.querySelector('main')!, NodeFilter.SHOW_TEXT);

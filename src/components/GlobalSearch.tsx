@@ -48,19 +48,21 @@ export function GlobalSearch() {
     const onKey = (e: globalThis.KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setOpen(true);
+        showSearch();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const showSearch = () => {
+    setQuery('');
+    setActive(0);
+    setOpen(true);
+  };
+
   useEffect(() => {
-    if (open) {
-      setQuery('');
-      setActive(0);
-      input.current?.focus();
-    }
+    if (open) input.current?.focus();
   }, [open]);
 
   const q = query.trim().toLowerCase();
@@ -119,7 +121,7 @@ export function GlobalSearch() {
 
   return (
     <>
-      <button ref={trigger} className="search-trigger has-tip tip-below" type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" data-tip={`${t('shell.search.label')} · ${shortcut}`} aria-keyshortcuts="Control+K Meta+K">
+      <button ref={trigger} className="search-trigger has-tip tip-below" type="button" onClick={showSearch} aria-haspopup="dialog" data-tip={`${t('shell.search.label')} · ${shortcut}`} aria-keyshortcuts="Control+K Meta+K">
         <Icon name="search" size={18} />
         <span className="search-trigger-text">{t('shell.search.trigger')}</span>
         <kbd className="search-trigger-kbd" aria-hidden="true">{shortcut}</kbd>

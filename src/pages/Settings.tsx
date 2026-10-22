@@ -101,16 +101,18 @@ function Appearance() {
 }
 
 function Language() {
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, loadingLang } = useI18n();
+  const [selectedLang, setSelectedLang] = useState(lang);
+  useEffect(() => { if (!loadingLang) setSelectedLang(lang); }, [lang, loadingLang]);
   const hint = useId();
   return (
     <Section title={t('shell.settings.language.legend')}>
-      <fieldset className="stack" aria-describedby={hint}>
+      <fieldset className="stack" aria-describedby={hint} aria-busy={loadingLang}>
         <legend className="sr-only">{t('shell.settings.language.legend')}</legend>
         <p id={hint} className="sec muted">{t('shell.settings.language.hint')}</p>
         <div className="choice-list">
           {LANGS.map((l) => (
-            <Choice key={l.key} name="lang" lang={l.htmlLang} checked={lang === l.key} onChange={() => setLang(l.key)}>
+            <Choice key={l.key} name="lang" lang={l.htmlLang} checked={selectedLang === l.key} onChange={() => { setSelectedLang(l.key); setLang(l.key); }}>
               {l.label}
             </Choice>
           ))}

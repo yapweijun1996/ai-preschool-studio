@@ -98,11 +98,11 @@ function ThemeMenu() {
 
 /** English / 中文 / Bahasa Melayu as menuitemradio items; each name is shown in its own language. */
 function LanguageItems({ close }: { close: () => void }) {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, requestedLang } = useI18n();
   return (
     <>
       {LANGS.map((l) => (
-        <button key={l.key} className="menu-item" type="button" role="menuitemradio" aria-checked={lang === l.key} onClick={() => { setLang(l.key); close(); }}>
+        <button key={l.key} className="menu-item" type="button" role="menuitemradio" aria-checked={(requestedLang ?? lang) === l.key} onClick={() => { setLang(l.key); window.setTimeout(close, 100); }}>
           <span className="grow" lang={l.htmlLang}>{l.label}</span>
           {lang === l.key && <Icon name="check" size={18} className="ic-primary" />}
         </button>
@@ -112,14 +112,14 @@ function LanguageItems({ close }: { close: () => void }) {
 }
 
 function LanguageMenu() {
-  const { lang, t } = useI18n();
+  const { lang, t, loadingLang } = useI18n();
   const meta = LANGS.find((l) => l.key === lang)!;
   return (
     <Menu
       label={t('shell.language.label')}
       style={{ top: 'calc(100% + 8px)', right: 0 }}
       trigger={({ onClick, expanded, ref }) => (
-        <button ref={ref} className="btn btn-ghost lang-btn" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-label={`${meta.short}, ${t('shell.language.current', { name: meta.label })}`}>
+        <button ref={ref} className="btn btn-ghost lang-btn" type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={expanded} aria-busy={loadingLang} aria-label={`${meta.short}, ${t('shell.language.current', { name: meta.label })}`}>
           <Icon name="languages" />
           <span lang={meta.htmlLang}>{meta.short}</span>
         </button>

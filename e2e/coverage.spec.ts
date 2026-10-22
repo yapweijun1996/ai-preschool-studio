@@ -95,6 +95,7 @@ test('switching to Parent on coverage and reviews does not trigger a React error
   page.on('pageerror', (error) => pageErrors.push(error.message));
   for (const path of ['./#/coverage', './#/reviews']) {
     await page.goto(path);
+    await expect(page.getByRole('heading', { name: path.endsWith('/reviews') ? 'Waiting for you' : 'Evidence coverage' })).toBeVisible();
     await page.getByRole('button', { name: /account/i }).click();
     await page.getByRole('menuitemradio', { name: 'Parent', exact: true }).click();
     await expect(page.getByRole('main')).toBeVisible();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeT, type TKey } from '../src/i18n';
+import { makeT as makeTypedT, type TKey, type Lang } from '../src/i18n';
 import { en } from '../src/i18n/locales/en';
 import { ms } from '../src/i18n/locales/ms';
 import { zh } from '../src/i18n/locales/zh';
@@ -20,6 +20,10 @@ function flatten(tree: Tree, prefix = ''): Record<string, string> {
 const placeholders = (s: string) => [...new Set(Array.from(s.matchAll(/\{(\w+)\}/g), (m) => m[1]))].sort();
 
 const EN = flatten(en as unknown as Tree);
+
+function makeT(lang: Lang) {
+  return makeTypedT(lang, lang === 'zh' ? zh : lang === 'ms' ? ms : en);
+}
 
 describe.each([
   ['zh', zh],
@@ -105,13 +109,13 @@ describe('makeT', () => {
     expect(makeT('en')('pages.dashboard.greeting')).toBe('Good morning, {name}');
   });
 
-  it('falls back to English when a key is missing in the current language', () => {
+  it('falls back to the key when a required key is absent from the current language', () => {
     const key = 'pages.dashboard.greeting';
     const zhPages = zh.pages.dashboard as Record<string, string>;
     const saved = zhPages.greeting;
     delete zhPages.greeting;
     try {
-      expect(makeT('zh')(key, { name: 'Ms. Lim' })).toBe('Good morning, Ms. Lim');
+      expect(makeT('zh')(key, { name: 'Ms. Lim' })).toBe(key);
     } finally {
       zhPages.greeting = saved;
     }

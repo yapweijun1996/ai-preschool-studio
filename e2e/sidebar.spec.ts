@@ -141,8 +141,9 @@ test.describe('mobile 390 shell', () => {
 test.describe('wide 1920 content', () => {
   test.use({ viewport: { width: 1920, height: 1000 } });
   test('pages are fluid (fill the main column) and tab rows have no stray scrollbar', async ({ page }) => {
-    for (const path of ['./#/', './#/students', './#/students/aria']) {
+    for (const [path, ready] of [['./#/', '#rp-h'], ['./#/students', '.table-head'], ['./#/students/aria', '.domain-grid > article']] as const) {
       await page.goto(path);
+      await expect(page.locator(ready).first()).toBeVisible();
       const main = await page.locator('main').evaluate((el) => el.getBoundingClientRect());
       const pg = await page.locator('main .page').first().evaluate((el) => el.getBoundingClientRect());
       expect(Math.abs(pg.width - main.width)).toBeLessThanOrEqual(1);

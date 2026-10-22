@@ -9,7 +9,7 @@ import type { TKey } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDataPort, usePortfolio } from '../store/PortfolioContext';
 import { allSummaries } from '../store/selectors';
-import { useLastObservedLabel } from './Students';
+import { useLastObservedLabel } from '../hooks/useStudentLabels';
 import { demoRole } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { ReviewQueue } from '../coverage';

@@ -46,6 +46,7 @@ test.describe('profile · 1440', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
   test('domains stay two per row when the column is narrower', async ({ page }) => {
     await page.goto('./#/students/aria');
+    await expect(page.locator('.domain-grid > article').first()).toBeVisible();
     const tops = await page.locator('.domain-grid > article').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
     expect(new Set(tops).size).toBe(2);
   });
