@@ -1,0 +1,72 @@
+/* AI Preschool Studio v1 tokens — values copied 1:1 from design/tokens.json.
+   Light is the default; dark is a full blue-black set, not an inversion. */
+:root {
+  --color-primary: #167D68;
+  --color-primary-hover: #116653;
+  --color-primary-text: #FFFFFF;
+  --color-primary-soft: #E7F3EF;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F1F5F9;
+  --color-text: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border: #E2E8F0;
+  --color-border-strong: #7C8BA1;
+  --color-danger: #B42318;
+  --color-danger-soft: #FEF3F2;
+  --color-warning: #9A6700;
+  --color-warning-soft: #FFF8E6;
+  --color-success: var(--color-primary);
+  --color-info: #1D4ED8;
+  --color-info-soft: #EEF3FE;
+  --color-focus: #2563EB;
+
+  --shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
+  --shadow-overlay: 0 12px 32px rgba(15,23,42,0.16);
+
+  --font-sans: Inter, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-cjk: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --header-height: 64px;
+  --icon-rail-width: 64px;
+  --sidebar-panel-width: 260px;
+  --touch-target: 44px;
+  --mobile-tabbar-height: 64px;
+  --content-max: 1440px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+}
+
+:root[data-theme="dark"] {
+  --color-primary: #34B894;
+  --color-primary-hover: #4FCBA8;
+  --color-primary-text: #052E24;
+  --color-primary-soft: #123A31;
+  --color-bg: #0B1220;
+  --color-surface: #111A2B;
+  --color-surface-muted: #18233A;
+  --color-text: #E2E8F0;
+  --color-text-muted: #94A3B8;
+  --color-border: #26334A;
+  --color-border-strong: #5B6B85;
+  --color-danger: #F97066;
+  --color-danger-soft: #3A1A1A;
+  --color-warning: #F5B544;
+  --color-warning-soft: #33270F;
+  --color-info: #93C5FD;
+  --color-info-soft: #16264A;
+  --color-focus: #60A5FA;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-overlay: 0 12px 32px rgba(0,0,0,0.55);
+  color-scheme: dark;
+}
