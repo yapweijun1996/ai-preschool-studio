@@ -3,14 +3,15 @@ import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, TODAY, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
-import { formatApprovalAt } from '../i18n';
 import {
   approvalBlock,
   observationsFor,
   readiness,
   reducer,
+  selectAuditLog,
   unverifiedClaims,
   type Action,
+  type AuditFilters,
   type State
 } from '../store/reducer';
 
@@ -36,6 +37,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async getCoverage(term) { return classCoverage(getState(), term); },
     async getNeedsAttention(term) { return needsAttention(getState(), term); },
     async getReviewQueue() { return reviewQueue(getState()); },
+    async getReportVersions(studentId) { return getState().reports[studentId]?.versions ?? []; },
+    async getReportHistory(studentId) { return getState().reports[studentId]?.decisions ?? []; },
+    async getAuditLog(filters: AuditFilters = {}) { return selectAuditLog(getState().auditEvents, filters); },
     async getStudentSummary(studentId) { return studentSummary(getState(), studentId); },
     async getCurrentFramework() { return frameworkFor(undefined); },
     async getPeriod(date) { return periodOf(date); },
@@ -125,8 +129,23 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (block?.reason === 'claims') return refusal('unverified-claims');
       if (block?.reason === 'incomplete') return refusal('not-ready');
       if (block) return refusal('invalid-target');
-      dispatch({ type: 'approve', studentId, at: formatApprovalAt(at) });
+      dispatch({ type: 'approve', studentId, at, approvedBy });
       return success({ approvedBy, at });
+    },
+    async releaseReport(studentId, releasedBy, at) {
+      const report = getState().reports[studentId];
+      if (!report) return refusal('unknown-student');
+      const latest = report.versions.at(-1);
+      if (report.status !== 'approved' || !latest) return refusal('not-approved');
+      if (report.releasedVersion === latest.version) return success(undefined);
+      return run({ type: 'release', studentId, at, releasedBy }, undefined, 'invalid-target');
+    },
+    async reopenReport(studentId, reason, reopenedBy, at) {
+      const report = getState().reports[studentId];
+      if (!report) return refusal('unknown-student');
+      if (!reason.trim()) return refusal('reason-required');
+      if (report.status !== 'approved') return refusal('invalid-target');
+      return run({ type: 'reopen', studentId, reason, reopenedBy, at }, undefined, 'invalid-target');
     }
   };
 }

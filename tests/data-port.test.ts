@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDemoAdapter } from '../src/data/demoAdapter';
 import { classCoverage, needsAttention, reviewQueue } from '../src/coverage';
-import { formatApprovalAt } from '../src/i18n';
 import { STUDENTS } from '../src/data/demo';
 import { CURRENT_FRAMEWORK, frameworkFor, periodOf } from '../src/framework';
 import { allSummaries, milestonesFor, studentSummary } from '../src/store/selectors';
@@ -87,7 +86,9 @@ describe('DataPort demo adapter', () => {
     const h = harness(seed);
     const result = await h.adapter.approve('ethan', 'Reviewer One', '2026-10-22T09:00:00.000Z');
     expect(result).toEqual({ ok: true, value: { approvedBy: 'Reviewer One', at: '2026-10-22T09:00:00.000Z' } });
-    expect(h.state().reports.ethan.approvedAt).toBe(formatApprovalAt('2026-10-22T09:00:00.000Z'));
+    expect(h.state().reports.ethan.approvedAt).toBe('2026-10-22T09:00:00.000Z');
+    expect(h.state().reports.ethan.approvedBy).toBe('Reviewer One');
+    expect(h.state().reports.ethan.versions[0].approvedBy).toBe('Reviewer One');
   });
 
   it('supports each remaining port write against reducer actions', async () => {

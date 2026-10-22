@@ -85,12 +85,12 @@ describe('review queue and stored schema', () => {
 
   it('bumps the serialized schema and resets old or incomplete review state', () => {
     const serialized = serializeState(initialState());
-    expect(JSON.parse(serialized).schema).toBe(5);
+    expect(JSON.parse(serialized).schema).toBe(6);
     expect(loadState(serialized).reports.ethan.submittedAt).toBe('2026-10-16');
-    const old = JSON.stringify({ schema: 4, state: initialState() });
+    const old = JSON.stringify({ schema: 5, state: initialState() });
     expect(loadState(old).reports.ethan.submittedAt).toBe('2026-10-16');
     const incomplete = initialState();
     delete incomplete.reports.ethan.submittedAt;
-    expect(loadState(JSON.stringify({ schema: 5, state: incomplete })).reports.ethan.submittedAt).toBe('2026-10-16');
+    expect(loadState(JSON.stringify({ schema: 6, state: incomplete })).reports.ethan.submittedAt).toBe('2026-10-16');
   });
 });

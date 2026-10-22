@@ -36,9 +36,9 @@ export function App() {
   return (
     <ThemeContext.Provider value={theme}>
       <I18nProvider>
-      <RoleProvider>
       <PwaProvider>
       <PortfolioProvider>
+      <RoleProvider>
         <NavMemoryProvider>
         <HashRouter>
           <Routes>
@@ -65,9 +65,9 @@ export function App() {
           </Routes>
         </HashRouter>
         </NavMemoryProvider>
+      </RoleProvider>
       </PortfolioProvider>
       </PwaProvider>
-      </RoleProvider>
       </I18nProvider>
     </ThemeContext.Provider>
   );

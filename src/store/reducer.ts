@@ -1,7 +1,39 @@
 // Pure portfolio state + transitions. Kept free of React so it can be unit tested.
-import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, STUDENTS, TODAY, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
+import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, TEACHER, STUDENTS, TODAY, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
 import { CURRENT_FRAMEWORK, DOMAINS, termOf, type DomainKey, type Milestone } from '../framework';
 import type { Suggestion } from '../services/mockProvider';
+import type { Role } from '../roles';
+
+export interface ReportVersion {
+  version: number;
+  approvedAt: string;
+  approvedBy: string;
+  frameworkVersion: string;
+  milestones: Record<DomainKey, Milestone | null>;
+  paragraphs: Paragraph[];
+  reflection: string;
+  contentHash: string;
+  releasedAt?: string;
+  releasedBy?: string;
+}
+
+export type DecisionEvent =
+  | { type: 'submitted'; at: string; by: string }
+  | { type: 'changesRequested'; at: string; by: string; comment: string }
+  | { type: 'approved'; at: string; by: string; version: number }
+  | { type: 'released'; at: string; by: string; version: number }
+  | { type: 'reopened'; at: string; by: string; reason: string; version: number };
+
+export type AuditAction = 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved' | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset';
+export interface AuditEvent {
+  id: string;
+  at: string;
+  actor: { role: Role; name: string };
+  action: AuditAction;
+  target: { type: 'student' | 'demo'; id: string };
+  summary: string;
+}
+export interface Actor { role: Role; name: string }
 
 export interface ReportState {
   status: ReportStatus;
@@ -13,6 +45,11 @@ export interface ReportState {
   frameworkVersion?: string;
   /** Term 4 milestones as approved; later observations do not change an approved report. */
   milestones?: Record<DomainKey, Milestone | null>;
+  approvedBy?: string;
+  versions: ReportVersion[];
+  reopenedAt?: string;
+  releasedVersion?: number;
+  decisions: DecisionEvent[];
 }
 
 export interface State {
@@ -22,10 +59,12 @@ export interface State {
   reports: Record<string, ReportState>;
   sim: { aiDown: boolean; saveFail: boolean };
   nextObsNumber: number;
+  auditEvents: AuditEvent[];
+  nextAuditNumber: number;
 }
 
 export type Action =
-  | { type: 'addObservation'; obs: Omit<Observation, 'id'> }
+  | { type: 'addObservation'; obs: Omit<Observation, 'id'>; actor?: Actor; at?: string }
   | { type: 'startDraft'; studentId: string }
   | { type: 'fillMissingDomains'; studentId: string }
   | { type: 'linkSource'; studentId: string; sentenceId: string; obsId: string }
@@ -33,9 +72,12 @@ export type Action =
   | { type: 'applySuggestion'; studentId: string; suggestion: Suggestion }
   | { type: 'restoreParagraph'; studentId: string; paragraph: Paragraph }
   | { type: 'setReflection'; studentId: string; text: string }
-  | { type: 'submitForReview'; studentId: string; submittedAt: string }
-  | { type: 'requestChanges'; studentId: string; text: string; date: string }
-  | { type: 'approve'; studentId: string; at: string }
+  | { type: 'submitForReview'; studentId: string; submittedAt: string; actor?: Actor }
+  | { type: 'requestChanges'; studentId: string; text: string; date: string; actor?: Actor }
+  | { type: 'approve'; studentId: string; at: string; approvedBy?: string; actor?: Actor }
+  | { type: 'release'; studentId: string; at: string; releasedBy: string; actor?: Actor }
+  | { type: 'reopen'; studentId: string; reason: string; at: string; reopenedBy: string; actor?: Actor }
+  | { type: 'roleSwitched'; from: Role; to: Role; actor: Actor; at: string }
   | { type: 'setSim'; key: keyof State['sim']; value: boolean }
   | { type: 'reset' };
 
@@ -45,20 +87,76 @@ export function initialState(): State {
     reports[s.id] = {
       status: s.reportStatus,
       hadChanges: s.reportStatus === 'changes',
+      versions: [], decisions: [],
       ...(s.reportStatus === 'review' ? { submittedAt: seededSubmissionDate(s.id) } : {}),
       ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(OBSERVATIONS, s.id, 4) } : {})
     };
   reports.rayan.comment = { by: REVIEWER, date: '2026-10-20', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
   const seeded = seededDrafts();
+  for (const student of STUDENTS) {
+    const report = reports[student.id];
+    if (report.status === 'review') report.decisions = [{ type: 'submitted', at: report.submittedAt ?? TODAY, by: TEACHER }];
+    if (report.status === 'changes') report.decisions = [
+      { type: 'submitted', at: '2026-10-19', by: TEACHER },
+      { type: 'changesRequested', at: report.comment?.date ?? TODAY, by: REVIEWER, comment: report.comment?.text ?? '' }
+    ];
+    if (report.status === 'approved') {
+      const approvedAt = `2026-10-${student.id === 'meiling' ? '20' : '18'}T09:00:00.000Z`;
+      const approvedBy = REVIEWER;
+      const paragraphs = cloneParagraphs(seeded.paragraphs[student.id] ?? []);
+      const reflection = seeded.reflections[student.id] ?? '';
+      const version: ReportVersion = {
+        version: 1, approvedAt, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version,
+        milestones: report.milestones ?? milestonesFrom(OBSERVATIONS, student.id, 4), paragraphs,
+        reflection, contentHash: reportContentHash(paragraphs, reflection),
+        ...(student.id === 'meiling' ? { releasedAt: '2026-10-21T02:00:00.000Z', releasedBy: REVIEWER } : {})
+      };
+      report.approvedAt = approvedAt;
+      report.approvedBy = approvedBy;
+      report.versions = [version];
+      report.decisions = [{ type: 'approved', at: approvedAt, by: approvedBy, version: 1 }];
+      if (version.releasedAt) {
+        report.releasedVersion = 1;
+        report.decisions.push({ type: 'released', at: version.releasedAt, by: REVIEWER, version: 1 });
+      }
+    }
+  }
+  const auditEvents: AuditEvent[] = [
+    { id: 'AUD-0001', at: '2026-10-20T09:00:00.000Z', actor: { role: 'reviewer', name: REVIEWER }, action: 'report.approved', target: { type: 'student', id: 'meiling' }, summary: 'Report approved v1' },
+    { id: 'AUD-0002', at: '2026-10-21T02:00:00.000Z', actor: { role: 'reviewer', name: REVIEWER }, action: 'report.released', target: { type: 'student', id: 'meiling' }, summary: 'Report v1 released to family' },
+    { id: 'AUD-0003', at: '2026-10-21T00:00:00.000Z', actor: { role: 'teacher', name: TEACHER }, action: 'report.submitted', target: { type: 'student', id: 'ethan' }, summary: 'Report submitted for review' },
+    { id: 'AUD-0004', at: '2026-10-20T00:00:00.000Z', actor: { role: 'reviewer', name: REVIEWER }, action: 'report.changesRequested', target: { type: 'student', id: 'rayan' }, summary: 'Changes requested: add evidence' }
+  ];
   return {
     observations: OBSERVATIONS,
     paragraphs: { ...seeded.paragraphs, aria: ARIA_PARAGRAPHS },
     reflections: { ...seeded.reflections, aria: ARIA_REFLECTION },
     reports,
     sim: { aiDown: false, saveFail: false },
-    nextObsNumber: NEXT_OBS_NUMBER
+    nextObsNumber: NEXT_OBS_NUMBER,
+    auditEvents, nextAuditNumber: auditEvents.length + 1
   };
 }
+
+function cloneParagraphs(paragraphs: Paragraph[]): Paragraph[] {
+  return paragraphs.map((paragraph) => ({ ...paragraph, sentences: paragraph.sentences.map((sentence) => ({ ...sentence, sources: [...sentence.sources] })) }));
+}
+
+export function reportContentHash(paragraphs: Paragraph[], reflection: string): string {
+  const canonical = JSON.stringify({ paragraphs, reflection });
+  let hash = 2166136261;
+  for (let i = 0; i < canonical.length; i += 1) {
+    hash ^= canonical.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
+function appendAudit(state: State, event: Omit<AuditEvent, 'id'>): State {
+  const id = `AUD-${String(state.nextAuditNumber).padStart(4, '0')}`;
+  return { ...state, auditEvents: [...state.auditEvents, { ...event, id }], nextAuditNumber: state.nextAuditNumber + 1 };
+}
+const defaultActor: Actor = { role: 'teacher', name: TEACHER };
 
 function seededSubmissionDate(studentId: string): string {
   const dates: Record<string, string> = {
@@ -99,7 +197,8 @@ export function reducer(state: State, action: Action): State {
       const term = termOf(action.obs.date);
       if (!term) return state;
       const obs = { ...action.obs, id, term };
-      return { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
+      const withObservation = { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
+      return appendAudit(withObservation, { at: action.at ?? TODAY, actor: action.actor ?? defaultActor, action: 'observation.added', target: { type: 'student', id: obs.studentId }, summary: `Observation added: ${obs.id}` });
     }
     case 'fillMissingDomains': {
       const student = STUDENTS.find((x) => x.id === action.studentId);
@@ -157,30 +256,73 @@ export function reducer(state: State, action: Action): State {
       if (!r || r.status === 'approved' || r.status === 'review' || r.status === 'notStarted') return state;
       // Only a structurally complete draft goes to review.
       if (!readiness(state, action.studentId).canSubmit) return state;
-      return setReport(state, action.studentId, { status: 'review', submittedAt: action.submittedAt });
+      const actor = action.actor ?? defaultActor;
+      const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: action.submittedAt, decisions: [...r.decisions, { type: 'submitted', at: action.submittedAt, by: actor.name }] });
+      return appendAudit(submitted, { at: action.submittedAt, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summary: 'Report submitted for review' });
     }
     case 'requestChanges': {
       if (state.reports[action.studentId]?.status !== 'review') return state;
-      return setReport(state, action.studentId, {
+      const actor = action.actor ?? { role: 'reviewer' as const, name: REVIEWER };
+      const changed = setReport(state, action.studentId, {
         status: 'changes',
         hadChanges: true,
-        comment: { by: REVIEWER, date: action.date, text: action.text }
+        comment: { by: actor.name, date: action.date, text: action.text },
+        decisions: [...state.reports[action.studentId].decisions, { type: 'changesRequested', at: action.date, by: actor.name, comment: action.text }]
       });
+      return appendAudit(changed, { at: action.date, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summary: `Changes requested: ${action.text}` });
     }
     case 'approve': {
       // Approval is blocked while any claim lacks evidence.
       if (!canApprove(state, action.studentId)) return state;
-      return setReport(state, action.studentId, {
+      const report = state.reports[action.studentId];
+      const approvedBy = action.approvedBy ?? action.actor?.name ?? REVIEWER;
+      const version = (report.versions.at(-1)?.version ?? 0) + 1;
+      const paragraphs = cloneParagraphs(state.paragraphs[action.studentId] ?? []);
+      const reflection = state.reflections[action.studentId] ?? '';
+      const versionRecord: ReportVersion = { version, approvedAt: action.at, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(state.observations, action.studentId, 4), paragraphs, reflection, contentHash: reportContentHash(paragraphs, reflection) };
+      const actor = action.actor ?? { role: 'reviewer' as const, name: approvedBy };
+      const approved = setReport(state, action.studentId, {
         status: 'approved',
         approvedAt: action.at,
+        approvedBy,
         frameworkVersion: CURRENT_FRAMEWORK.version,
-        milestones: milestonesFrom(state.observations, action.studentId, 4)
+        milestones: versionRecord.milestones,
+        versions: [...report.versions, versionRecord],
+        decisions: [...report.decisions, { type: 'approved', at: action.at, by: approvedBy, version }]
       });
+      return appendAudit(approved, { at: action.at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summary: `Report approved v${version}` });
     }
+    case 'release': {
+      const report = state.reports[action.studentId];
+      const latest = report?.versions.at(-1);
+      if (!report || report.status !== 'approved' || !latest || report.releasedVersion === latest.version) return state;
+      const actor = action.actor ?? { role: 'reviewer' as const, name: action.releasedBy };
+      const version = { ...latest, releasedAt: action.at, releasedBy: action.releasedBy };
+      const released = setReport(state, action.studentId, {
+        versions: [...report.versions.slice(0, -1), version], releasedVersion: latest.version,
+        decisions: [...report.decisions, { type: 'released', at: action.at, by: action.releasedBy, version: latest.version }]
+      });
+      return appendAudit(released, { at: action.at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summary: `Report v${latest.version} released to family` });
+    }
+    case 'reopen': {
+      const report = state.reports[action.studentId];
+      const reason = action.reason.trim();
+      if (!report || report.status !== 'approved' || !reason) return state;
+      const actor = action.actor ?? { role: 'reviewer' as const, name: action.reopenedBy };
+      const reopened = setReport(state, action.studentId, {
+        status: 'draft', reopenedAt: action.at,
+        decisions: [...report.decisions, { type: 'reopened', at: action.at, by: action.reopenedBy, reason, version: (report.versions.at(-1)?.version ?? 0) + 1 }]
+      });
+      return appendAudit(reopened, { at: action.at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summary: `Report reopened: ${reason}` });
+    }
+    case 'roleSwitched':
+      return appendAudit(state, { at: action.at, actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summary: `Role switched from ${action.from} to ${action.to}` });
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
-    case 'reset':
-      return initialState();
+    case 'reset': {
+      const fresh = { ...initialState(), auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
+      return appendAudit(fresh, { at: TODAY, actor: defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summary: 'Demo data reset' });
+    }
   }
 }
 
@@ -254,4 +396,14 @@ export function milestonesFrom(observations: Observation[], studentId: string, t
 
 export function observationsFor(state: State, studentId: string, term: 3 | 4 = 4): Observation[] {
   return state.observations.filter((o) => o.studentId === studentId && o.term === term);
+}
+
+export interface AuditFilters { action?: AuditAction; studentId?: string; from?: string; to?: string }
+export function selectAuditLog(events: AuditEvent[], filters: AuditFilters = {}): AuditEvent[] {
+  return events.filter((event) =>
+    (!filters.action || event.action === filters.action) &&
+    (!filters.studentId || event.target.id === filters.studentId) &&
+    (!filters.from || event.at.slice(0, 10) >= filters.from) &&
+    (!filters.to || event.at.slice(0, 10) <= filters.to)
+  ).sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id));
 }
