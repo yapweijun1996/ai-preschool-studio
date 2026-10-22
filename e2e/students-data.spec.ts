@@ -143,6 +143,7 @@ test.describe('re-review fixes · desktop 1440', () => {
 
   test('the app shell stays mounted when switching child from a profile', async ({ page }) => {
     await page.goto('./#/students/aria');
+    await expect(page.getByRole('heading', { name: 'Aria Tan' })).toBeVisible();
     await page.evaluate(() => {
       (window as Window & { __profileApp?: Element }).__profileApp = document.querySelector('.app')!;
     });
