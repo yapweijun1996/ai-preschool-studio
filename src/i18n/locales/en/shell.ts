@@ -30,6 +30,7 @@ export const shell = {
     switchReviewer: 'Switch to reviewer (demo)',
     observationBlocked: 'Only the teacher can add observations in this demo.',
     switchTeacher: 'Switch to teacher (demo)',
+    dataAccessBlocked: 'Class evidence and review details are available to staff roles.',
   },
   back: 'Back',
   breadcrumb: 'Breadcrumb',

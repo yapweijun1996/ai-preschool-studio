@@ -32,6 +32,7 @@ export const shell: Dict['shell'] = {
     switchReviewer: '切换为审核人（演示）',
     observationBlocked: '在此演示中，只有教师可以添加观察记录。',
     switchTeacher: '切换为教师（演示）',
+    dataAccessBlocked: '班级证据和审核详情仅供教职员工查看。',
   },
   back: '返回',
   breadcrumb: '导航路径',

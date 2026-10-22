@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
-import { Avatar } from '../components/ui';
+import { Avatar, Notice } from '../components/ui';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useRole } from '../roles/RoleContext';
@@ -11,8 +11,20 @@ import type { QueuedReport } from '../coverage';
 
 export function Reviews() {
   const role = useRole();
-  if (!role.can('reviews.view') && role.role !== 'teacher') return <Navigate to="/" replace />;
+  if (!role.can('reviews.view') && role.role !== 'teacher') return <AccessDenied />;
   return <ReviewsContent />;
+}
+
+function AccessDenied() {
+  const { t } = useI18n();
+  const role = useRole();
+  return <AppShell module="reports" mobileTitle={t('pages.reviews.title')}>
+    {() => <div className="page"><Notice tone="info" icon="lock" role="status">
+      <p className="body-text">{t('shell.roles.dataAccessBlocked')}</p>
+      <div className="row"><Link className="btn btn-secondary" to="/">{t('pages.report.backToDashboard')}</Link>
+        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('teacher')}>{t('shell.roles.switchTeacher')}</button></div>
+    </Notice></div>}
+  </AppShell>;
 }
 
 function ReviewsContent() {

@@ -32,6 +32,7 @@ export const shell: Dict['shell'] = {
     switchReviewer: 'Tukar kepada penyemak (demo)',
     observationBlocked: 'Hanya guru boleh menambah pemerhatian dalam demo ini.',
     switchTeacher: 'Tukar kepada guru (demo)',
+    dataAccessBlocked: 'Bukti kelas dan butiran semakan hanya tersedia kepada kakitangan.',
   },
   back: 'Kembali',
   breadcrumb: 'Laluan navigasi',
