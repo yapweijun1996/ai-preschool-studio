@@ -22,10 +22,21 @@ export function useLastObservedLabel() {
   };
 }
 
+/** "3 days ago" for a column already headed "Last observed". */
+export function useAgoLabel() {
+  const { t } = useI18n();
+  return (iso: string | undefined): string => {
+    if (!iso) return t('pages.shared.notObserved');
+    const n = daysAgo(iso);
+    return n <= 0 ? t('pages.shared.today') : t('pages.shared.daysAgo', { count: n });
+  };
+}
+
 export function Students() {
   const { t } = useI18n();
   const { status: statusLabel } = useLabels();
   const lastObservedLabel = useLastObservedLabel();
+  const agoLabel = useAgoLabel();
   const { state } = usePortfolio();
   const [params, setParams] = useSearchParams();
   const fromUrl = params.get('status') as ReportStatus | 'all' | null;
@@ -44,7 +55,6 @@ export function Students() {
     (s) => (filter === 'all' || s.report.status === filter) && s.student.name.toLowerCase().includes(query.trim().toLowerCase())
   );
   const term = t('common.term4');
-  const demo = t('common.demoStudent');
   const addLabel = t('pages.shared.addObservation');
 
   return (
@@ -113,11 +123,11 @@ export function Students() {
                     <Avatar initials={s.student.initials} />
                     <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 2 }}>
                       <span className="strong">{s.student.name}</span>
-                      <span className="cap muted">{bp === 'desktop' ? demo : `${demo} · ${lastObservedLabel(s.lastObserved)}`}</span>
+                      {bp !== 'desktop' && <span className="cap muted">{lastObservedLabel(s.lastObserved)}</span>}
                       {bp === 'mobile' && <StatusLabel status={s.report.status} />}
                     </span>
                   </span>
-                  {bp === 'desktop' && <span className="sec num" style={{ width: 200 }}>{lastObservedLabel(s.lastObserved)}</span>}
+                  {bp === 'desktop' && <span className="sec num" style={{ width: 200 }}>{agoLabel(s.lastObserved)}</span>}
                   {bp === 'desktop' && <span className="sec num" style={{ width: 180 }}>{t('pages.shared.observations', { count: s.count })}</span>}
                   {bp !== 'mobile' && <span style={{ width: bp === 'desktop' ? 200 : 'auto' }}><StatusLabel status={s.report.status} /></span>}
                   <Icon name="chevronRight" />

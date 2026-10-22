@@ -59,7 +59,7 @@ export function AiPanel({
   headerless?: boolean;
 }) {
   const { t } = useI18n();
-  const { domainFull } = useLabels();
+  const { domainFull, domainShort } = useLabels();
   const actionLabel = (a: AiAction) => t(`pages.studio.ai.actions.${a}`);
   const target = paragraphs.find((p) => p.id === targetId);
   const busy = ai.kind === 'loading';
@@ -89,7 +89,7 @@ export function AiPanel({
           <div className="field">
             <label className="field-label" htmlFor="ai-target">{t('pages.studio.ai.paragraph')}</label>
             <select id="ai-target" className="input" value={targetId} onChange={(e) => onTarget(e.target.value)} disabled={busy || locked}>
-              {paragraphs.map((p) => <option key={p.id} value={p.id}>{domainFull(p.domain)}</option>)}
+              {paragraphs.map((p) => <option key={p.id} value={p.id}>{domainShort(p.domain)}</option>)}
             </select>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>

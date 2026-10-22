@@ -181,6 +181,7 @@ export function PortfolioStudio() {
   return (
     <AppShell
       module="students"
+      focus
       currentStudentId={id}
       crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name, to: `/students/${id}` }, { label: t('pages.studio.title') }]}
       mobileTitle={student.name}
@@ -197,10 +198,10 @@ export function PortfolioStudio() {
       {(bp) => (
         <>
           {bp !== 'mobile' && (
-            <div className="page-head">
+            <div className="page-head studio-head">
               <Link className="icon-btn" to={`/students/${id}`} aria-label={t('pages.shared.backToProfileOf', { name: student.name })} title={t('pages.shared.backToProfile')}><Icon name="arrowLeft" /></Link>
               {bp === 'desktop' && <Avatar initials={student.initials} />}
-              <div className="grow">
+              <div className="studio-title">
                 <h1 className="h1">{t('pages.studio.title')}</h1>
                 <p className="sec muted">{student.name} · {demo} · {CLASS_NAME} · {term}</p>
               </div>

@@ -354,6 +354,8 @@ export interface AppShellProps {
   module: Module;
   /** Breadcrumb trail for the top bar (desktop and tablet); defaults to the module name. */
   crumbs?: Crumb[];
+  /** Focus mode (Studio): the desktop context panel starts closed here; opening it is not persisted. */
+  focus?: boolean;
   currentStudentId?: string;
   mobileTitle: string;
   mobileSubtitle?: string;
@@ -363,7 +365,7 @@ export interface AppShellProps {
   children: (bp: Breakpoint) => ReactNode;
 }
 
-export function AppShell({ module, crumbs, currentStudentId, mobileTitle, mobileSubtitle, mobileBack, mobileTrailing, mobileActions, children }: AppShellProps) {
+export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle, mobileSubtitle, mobileBack, mobileTrailing, mobileActions, children }: AppShellProps) {
   const bp = useBreakpoint();
   // Tablets up to 1024px keep the tablet page layouts but navigate with the bottom tab bar (no rail, no panel).
   const tabNav = useBottomTabs();
@@ -372,6 +374,7 @@ export function AppShell({ module, crumbs, currentStudentId, mobileTitle, mobile
   // Read synchronously so the panel state is right on first paint (no flash).
   const [desktopOpen, setDesktopOpen] = useState(readPanelOpen);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [focusOpen, setFocusOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const setPanelOpen = useCallback((v: boolean) => {
@@ -380,13 +383,14 @@ export function AppShell({ module, crumbs, currentStudentId, mobileTitle, mobile
   }, []);
 
   const toggle = useCallback(() => {
-    if (bp === 'desktop') {
+    if (bp === 'desktop' && focus) setFocusOpen((o) => !o);
+    else if (bp === 'desktop') {
       setDesktopOpen((o) => {
         writePanelOpen(!o);
         return !o;
       });
     } else setOverlayOpen((o) => !o);
-  }, [bp]);
+  }, [bp, focus]);
 
   // Layout effect: the shortcut must work as soon as the page is visible after a route change.
   useLayoutEffect(() => {
@@ -465,7 +469,7 @@ export function AppShell({ module, crumbs, currentStudentId, mobileTitle, mobile
     );
   }
 
-  const panelVisible = bp === 'desktop' ? desktopOpen : overlayOpen;
+  const panelVisible = bp === 'desktop' ? (focus ? focusOpen : desktopOpen) : overlayOpen;
 
   return (
     <div className={`app is-${bp}`}>

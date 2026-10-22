@@ -12,6 +12,14 @@ import { studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
+function openPicker(el: HTMLInputElement) {
+  try {
+    el.showPicker?.();
+  } catch {
+    /* not allowed without a user gesture, or unsupported: the input still takes typed dates */
+  }
+}
+
 type Phase = { kind: 'editing' } | { kind: 'saving' } | { kind: 'saved'; id: string } | { kind: 'failed' };
 
 const TIPS = ['tip1', 'tip2', 'tip3'] as const;
@@ -24,7 +32,7 @@ const formKey = (f: Form) => JSON.stringify([f.date, f.domain, f.milestone, f.te
 
 export function AddObservation() {
   const { id = '' } = useParams();
-  const { t } = useI18n();
+  const { t, fmtDate } = useI18n();
   const { domainShort, milestone: milestoneLabel } = useLabels();
   const { state, dispatch } = usePortfolio();
   const [date, setDate] = useState(TODAY);
@@ -133,7 +141,21 @@ export function AddObservation() {
                     </div>
                     <div className="field">
                       <label className="field-label" htmlFor="obs-date">{t('pages.observation.date')}</label>
-                      <input id="obs-date" className="input num" type="date" value={date} max={TODAY} onChange={(e) => setDate(e.target.value)} />
+                      {/* Shown in the app's date format; the native picker opens on click, Enter or Space. */}
+                      <div className="input date-field">
+                        <span className="num grow" aria-hidden="true">{date ? fmtDate(date) : ''}</span>
+                        <Icon name="calendar" size={18} />
+                        <input
+                          id="obs-date"
+                          className="date-native"
+                          type="date"
+                          value={date}
+                          max={TODAY}
+                          onChange={(e) => setDate(e.target.value)}
+                          onClick={(e) => openPicker(e.currentTarget)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(e.currentTarget); } }}
+                        />
+                      </div>
                     </div>
                   </div>
                   <fieldset>

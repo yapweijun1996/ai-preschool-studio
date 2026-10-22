@@ -17,7 +17,7 @@ export const shell = {
   },
   nav: {
     main: 'Main',
-    dashboard: 'Dashboard',
+    dashboard: 'Home',
     students: 'Students',
     observations: 'Observations',
     reports: 'Reports',
@@ -124,7 +124,7 @@ export const shell = {
       system: 'System',
       layoutHeading: 'Layout',
       panel: 'Show the sidebar panel on desktop',
-      panelHint: 'Applies at desktop width (1200px and wider). Ctrl+Shift+S also toggles it.'
+      panelHint: 'Applies at desktop width (1200px and wider). Ctrl+Shift+S also toggles it. The AI Portfolio Studio opens with it closed for more writing space.'
     },
     language: {
       legend: 'App language',

@@ -106,10 +106,9 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             <Link className="nav-link" to={`/students/${studentId}/observe`} aria-current={path.endsWith('/observe') ? 'page' : undefined}><Icon name="plus" size={18} />{t('shell.panel.addObservation')}</Link>
             <p className="cap ctx-label">{t('shell.panel.latest')}</p>
             {latestObs.map((o) => (
-              <Link key={o.id} className="nav-link" to={`/students/${o.studentId}`}>
-                <span className="src">{o.id}</span>
-                <span className="grow nav-text">{byId(o.studentId)?.name.split(' ')[0]} · {labels.domainShort(o.domain).split(' ')[0]}</span>
-                <span className="cap muted nav-meta num">{fmtDate(o.date, { day: 'numeric', month: 'short' })}</span>
+              <Link key={o.id} className="nav-link nav-link-2" to={`/students/${o.studentId}`}>
+                <span className="nav-2-top"><span className="src">{o.id}</span><span className="cap muted num">{fmtDate(o.date, { day: 'numeric', month: 'short' })}</span></span>
+                <span className="nav-text">{byId(o.studentId)?.name} · {labels.domainShort(o.domain)}</span>
               </Link>
             ))}
           </>

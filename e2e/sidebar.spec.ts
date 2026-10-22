@@ -24,7 +24,7 @@ test.describe('ChatGPT-style sidebar · desktop 1440', () => {
     await expect(page.getByRole('complementary', { name: 'Students sidebar' })).toBeHidden();
 
     // Rail icons still navigate while the panel is collapsed.
-    await rail.getByRole('link', { name: 'Dashboard' }).click();
+    await rail.getByRole('link', { name: 'Home' }).click();
     await expect(page.getByRole('heading', { name: 'Good morning, Ms. Lim' })).toBeVisible();
 
     await page.keyboard.press('Control+Shift+S');
@@ -88,13 +88,13 @@ test.describe('tablet 1024 bottom tabs', () => {
     await expect(page.locator('.rail')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Open sidebar' })).toHaveCount(0);
     // Every tab shows its label at tablet width.
-    for (const name of ['Dashboard', 'Students', 'Observations', 'Reports', 'More']) await expect(nav.getByText(name, { exact: true })).toBeVisible();
+    for (const name of ['Home', 'Students', 'Observations', 'Reports', 'More']) await expect(nav.getByText(name, { exact: true })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Students' })).toHaveAttribute('aria-current', 'page');
     // Top bar keeps language, theme and account.
     await expect(page.getByRole('button', { name: /^Language:/ })).toBeVisible();
     await page.screenshot(shot('23-tablet-tabbar'));
-    await nav.getByRole('link', { name: 'Dashboard' }).click();
-    await expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
+    await nav.getByRole('link', { name: 'Home' }).click();
+    await expect(nav.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
     await nav.getByRole('button', { name: 'More' }).click();
     await page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Settings' }).click();
     await expect(page).toHaveURL(/#\/settings\/appearance$/);

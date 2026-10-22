@@ -18,11 +18,18 @@ export function Dashboard() {
   const { state } = usePortfolio();
   const summaries = allSummaries(state);
   const counts = ORDER.map((st) => ({ st, n: summaries.filter((s) => s.report.status === st).length }));
-  const actions = [
+  const reasons = [
     ...summaries.filter((s) => s.unverified > 0).map((s) => ({ s, to: `/students/${s.student.id}/studio`, text: t('pages.dashboard.draftClaims', { count: s.unverified }), label: <VerifyLabel /> })),
     ...summaries.filter((s) => s.report.status === 'changes').map((s) => ({ s, to: `/students/${s.student.id}/studio`, text: s.report.comment?.text ?? t('pages.dashboard.reviewerRequested'), label: <StatusLabel status="changes" /> })),
     ...summaries.filter((s) => s.lastObserved && daysAgo(s.lastObserved) >= 14).map((s) => ({ s, to: `/students/${s.student.id}/observe`, text: lastObservedLabel(s.lastObserved), label: <StatusLabel status={s.report.status} /> }))
   ];
+  // One row per student: the most urgent reason sets the link and label; every reason is listed.
+  const actions = reasons.reduce<{ s: (typeof reasons)[number]['s']; to: string; texts: string[]; label: (typeof reasons)[number]['label'] }[]>((acc, r) => {
+    const row = acc.find((a) => a.s.student.id === r.s.student.id);
+    if (row) row.texts.push(r.text);
+    else acc.push({ s: r.s, to: r.to, texts: [r.text], label: r.label });
+    return acc;
+  }, []);
   const recent = [...state.observations].filter((o) => o.term === 4).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   const nameOf = (id: string) => STUDENTS.find((s) => s.id === id)!.name;
   const term = t('common.term4');
@@ -50,12 +57,12 @@ export function Dashboard() {
               <section className="card" aria-labelledby="ar-h" style={{ overflow: 'hidden' }}>
                 <div className="card-head"><h2 id="ar-h" className="h2 grow">{t('pages.dashboard.actionRequired')}</h2><span className="cap muted">{t('pages.dashboard.items', { count: actions.length })}</span></div>
                 {actions.length === 0 && <p className="sec muted" style={{ padding: '0 20px 20px' }}>{t('pages.dashboard.nothing')}</p>}
-                {actions.map(({ s, to, text, label }, i) => (
-                  <Link key={i} className="row-link" to={to}>
+                {actions.map(({ s, to, texts, label }) => (
+                  <Link key={s.student.id} className="row-link" to={to}>
                     <Avatar initials={s.student.initials} />
                     <span className="grow" style={{ display: 'flex', flexDirection: 'column' }}>
                       <span className="strong">{s.student.name}</span>
-                      <span className="sec muted">{text}</span>
+                      {texts.map((text, j) => <span key={j} className="sec muted">{text}</span>)}
                     </span>
                     {bp !== 'mobile' && label}
                     <Icon name="chevronRight" />
@@ -66,7 +73,7 @@ export function Dashboard() {
                 <div className="row"><h2 id="rp-h" className="h2 grow">{t('pages.dashboard.reportsHeading', { term })}</h2><Link className="btn btn-ghost" to="/students">{t('pages.dashboard.viewStudents')}</Link></div>
                 <ul style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? 'repeat(2, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))', gap: 12 }}>
                   {counts.map(({ st, n }) => (
-                    <li key={st} className="stack" style={{ gap: 8, padding: 12, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                    <li key={st} className="stack report-tile" style={{ gap: 8, padding: 12, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
                       <StatusLabel status={st} />
                       <span className="sec num"><span className="strong">{n}</span> {t('pages.dashboard.studentsUnit', { count: n })}</span>
                     </li>

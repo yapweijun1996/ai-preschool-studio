@@ -112,6 +112,22 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .profile-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
 @container (min-width: 1040px) { .domain-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .profile-head { gap: var(--space-3); }
+/* Dashboard report tiles: long status names wrap inside the tile instead of overflowing it. */
+.report-tile { min-width: 0; }
+/* Two-line sidebar entry: chip + date, then name · domain. */
+.nav-link-2 { flex-direction: column; align-items: stretch; justify-content: center; gap: 2px; padding-top: 6px; padding-bottom: 6px; }
+.nav-2-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+/* Date field in the app's format; the transparent native input on top opens the picker. */
+.input.date-field { position: relative; display: flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+.date-field .ic { flex: none; color: var(--color-text-muted); }
+.date-native { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.date-field:focus-within { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* Studio header: the title block shrinks (subtitle truncates) before the actions wrap. */
+.studio-head .studio-title { flex: 1 1 240px; min-width: 240px; }
+.studio-head .studio-title .sec { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-tile .status { white-space: normal; }
+/* English/Malay UI: keep Chinese words (e.g. 社交与情绪) whole when a line wraps. */
+html:not(:lang(zh)) body { word-break: keep-all; overflow-wrap: break-word; }
 /* Readable line length for observation text and notes on wide screens. */
 .measure { max-width: 80ch; }
 .note-line { display: flex; align-items: flex-start; gap: var(--space-2); margin-top: calc(-1 * var(--space-2)); }
@@ -274,6 +290,9 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .chip:hover { background: var(--color-surface-muted); }
 .chip[aria-pressed="true"], .chip[aria-checked="true"] { background: var(--color-primary-soft); color: var(--color-primary-hover); border-color: var(--color-primary); font-weight: 600; }
 .chip-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+/* Filter chips that scroll sideways on one row instead of wrapping. */
+.chip-row.scroll { flex-wrap: nowrap; flex-shrink: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; padding-bottom: 2px; }
+.chip-row.scroll > * { flex: none; }
 .is-mobile .chip-row.scroll { flex-wrap: nowrap; overflow-x: auto; margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4); }
 
 /* Milestone dots — always paired with the milestone word */

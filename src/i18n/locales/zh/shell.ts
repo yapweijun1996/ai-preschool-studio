@@ -19,7 +19,7 @@ export const shell: Dict['shell'] = {
   },
   nav: {
     main: '主导航',
-    dashboard: '仪表板',
+    dashboard: '首页',
     students: '学生',
     observations: '观察记录',
     reports: '报告',
@@ -125,7 +125,7 @@ export const shell: Dict['shell'] = {
       system: '跟随系统',
       layoutHeading: '布局',
       panel: '在桌面端显示侧边栏面板',
-      panelHint: '适用于桌面宽度（1200px 及以上）。也可按 Ctrl+Shift+S 切换。'
+      panelHint: '适用于桌面宽度（1200px 及以上）。也可按 Ctrl+Shift+S 切换。AI 学习档案工作室打开时会收起侧边栏，留出更多写作空间。'
     },
     language: {
       legend: '应用语言',

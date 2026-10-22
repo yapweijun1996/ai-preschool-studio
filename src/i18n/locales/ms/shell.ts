@@ -19,7 +19,7 @@ export const shell: Dict['shell'] = {
   },
   nav: {
     main: 'Navigasi utama',
-    dashboard: 'Papan pemuka',
+    dashboard: 'Utama',
     students: 'Murid',
     observations: 'Pemerhatian',
     reports: 'Laporan',
@@ -125,7 +125,7 @@ export const shell: Dict['shell'] = {
       system: 'Ikut sistem',
       layoutHeading: 'Susun atur',
       panel: 'Tunjukkan panel bar sisi pada desktop',
-      panelHint: 'Digunakan pada lebar desktop (1200px dan ke atas). Ctrl+Shift+S juga menogolnya.'
+      panelHint: 'Digunakan pada lebar desktop (1200px dan ke atas). Ctrl+Shift+S juga menogolnya. Studio Portfolio AI dibuka dengan panel ini ditutup untuk ruang menulis yang lebih luas.'
     },
     language: {
       legend: 'Bahasa aplikasi',

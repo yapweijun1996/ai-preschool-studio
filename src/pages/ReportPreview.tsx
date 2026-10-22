@@ -201,7 +201,6 @@ export function ReportPreview() {
                 <h1 className="h1">{t('pages.report.title')}</h1>
                 <p className="sec muted">{student.name} · {t('common.demoStudent')} · {term} · {t('pages.report.subtitleA4')}</p>
               </div>
-              <StatusLabel status={status} />
             </div>
           )}
           <div className="report-layout">
