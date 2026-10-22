@@ -10,7 +10,7 @@ test.describe('language menu · desktop 1440', () => {
   test('switch to 中文, persist across reload, then Bahasa Melayu and back to English', async ({ page }) => {
     await page.goto('./#/students');
     await expect(page.getByRole('heading', { level: 1, name: 'My Students' })).toBeVisible();
-    await page.waitForTimeout(500);
+    await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
     const html = page.locator('html');
     await expect(html).toHaveAttribute('lang', 'en');
 
@@ -128,7 +128,7 @@ test.describe('settings · desktop 1440', () => {
     await expect(page).toHaveURL(/#\/settings\/appearance$/);
     await page.goto('./#/students');
     await expect(page.getByRole('heading', { level: 1, name: 'My Students' })).toBeVisible();
-    await page.waitForTimeout(500);
+    await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
     await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'More' }).click();
     await page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Settings' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Appearance' })).toBeVisible();
@@ -150,11 +150,18 @@ test.describe('settings · mobile 390', () => {
   test('language and Settings from the More sheet; 44px targets on Appearance', async ({ page }) => {
     await page.goto('./#/students');
     await expect(page.getByRole('heading', { level: 1, name: 'My Students' })).toBeVisible();
-    await page.waitForTimeout(500);
-    await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'More' }).click();
+    await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
+    const moreButton = page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'More' });
+    await expect(page.locator('.app')).toHaveClass(/is-mobile/);
+    await moreButton.focus();
+    await page.keyboard.press('Enter');
+    await expect(moreButton).toHaveAttribute('aria-expanded', 'true');
     const sheet = page.getByRole('menu', { name: 'More' });
     await expect(sheet.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute('aria-checked', 'true');
-    await sheet.getByRole('menuitemradio', { name: '中文' }).click();
+    const chineseLanguage = sheet.getByRole('menuitemradio', { name: '中文' });
+    await chineseLanguage.focus();
+    await expect(chineseLanguage).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hans');
     await expect(page.getByText('演示模式 · 虚构示例数据')).toBeVisible();
 
