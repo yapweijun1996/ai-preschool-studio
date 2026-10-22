@@ -13,12 +13,12 @@ Shows observation-derived milestones, observation counts and changes between Ter
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Student profile and learning progress; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can view profiles/progress, pin students, add observations and open the portfolio. |
-| Reviewer / Principal | Student profile and progress; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no distinct reviewer permissions. |
-| School admin | Student profile and progress; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no distinct admin permissions. |
-| Parent | Family-facing progress; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no parent account or permission. |
+| Teacher | Student profiles and learning progress. | View progress, pin students, add observations and open/edit portfolios. |
+| Reviewer / Principal | Student profiles and learning progress. | View progress and reports; Studio is read-only. |
+| School admin | Read-only Students views; own landing lists planned admin modules. | View students; administration modules remain planned. |
+| Parent | Planned-role landing page; no student navigation. | Family Portal is planned for Phase 3. |
 
-Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
 
 ## Flows
 

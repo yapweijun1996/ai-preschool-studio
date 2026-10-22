@@ -13,12 +13,12 @@ Provides the single versioned vocabulary for learning areas, milestones and repo
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Framework labels and Settings › Learning framework; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can view framework and use its labels in observation, progress, studio and report screens. |
-| Reviewer / Principal | Framework labels and Settings › Learning framework; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no separate reviewer permission exists. |
-| School admin | Framework labels and Settings › Learning framework; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no separate admin permission exists. |
-| Parent | Framework labels in the planned family experience; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no parent account or permission exists. |
+| Teacher | Framework labels in Settings and portfolio workflows. | View framework and use its labels for observations, progress and reports. |
+| Reviewer / Principal | Framework labels and report evidence. | View framework labels while reviewing. |
+| School admin | Read-only Students and Settings. | View framework; demo controls remain available in Settings. |
+| Parent | Planned-role landing page. | Family-facing framework views are planned for Phase 3. |
 
-Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
 
 ## Flows
 

@@ -13,12 +13,12 @@ Provides shared navigation, responsive shell, settings, search, language/theme c
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Teacher portfolio navigation, search, settings and update status; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can navigate all demo screens, search students/pages, change theme/language and manage demo controls. |
-| Reviewer / Principal | Reviewer portfolio navigation; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no role-based navigation or access restrictions. |
-| School admin | Admin screens in a future design; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no school-admin screens or permissions. |
-| Parent | Family screens in a future design; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no parent account or permissions. |
+| Teacher | Dashboard, students, observations, reports and Settings. | Add observations, edit/submit drafts, review demo settings; see Teacher-only links. |
+| Reviewer / Principal | Students, reports and read-only Studio. | Review reports and link evidence while in review; cannot edit drafts or add observations. |
+| School admin | Read-only Students plus Settings; planned-role landing page. | Use demo settings; admin modules are listed with roadmap phases. |
+| Parent | Planned-role landing page; student navigation is hidden. | Return to Teacher; family modules are listed with roadmap phases. |
 
-Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
 
 ## Flows
 

@@ -13,12 +13,12 @@ Captures teacher-authored, fictional evidence for a student and makes it availab
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Student observation form and evidence; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can add observations for fictional students and retry a simulated save failure. |
-| Reviewer / Principal | Evidence in portfolio/report views; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no distinct reviewer permissions or review queue. |
-| School admin | Evidence views; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no distinct admin permissions. |
-| Parent | Evidence only through a future family experience; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no parent account or permission. |
+| Teacher | Observation forms and evidence views. | Add fictional observations; only teacher has this capability. |
+| Reviewer / Principal | Evidence in student, portfolio and report views. | Review linked evidence; cannot add observations. |
+| School admin | Read-only Students views; no observation form navigation. | Cannot add observations. |
+| Parent | Planned-role landing page; no student or evidence navigation. | Family experience is planned for Phase 3. |
 
-Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
 
 ## Flows
 

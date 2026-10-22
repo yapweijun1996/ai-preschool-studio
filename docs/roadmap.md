@@ -13,7 +13,7 @@ Status values: **done**, **in progress**, **planned**.
 | Quality gates: axe WCAG 2.2 AA scan on every route, Firefox and WebKit runs | done (v0.5.0) |
 | Component catalog route with every component state, plus visual regression | in progress (catalog done v0.5.0; visual regression planned) |
 | Data port interface (demo adapter now; platform adapter later) | in progress (contract + demo adapter; pages migrate next) |
-| Demo role switcher (Teacher, Reviewer/Principal, School admin, Parent) | planned |
+| Demo role switcher (Teacher, Reviewer/Principal, School admin, Parent) | done (v0.6.0) |
 | Module spec template and specs for existing modules | done |
 | Lighthouse budget in CI | planned |
 
