@@ -55,6 +55,16 @@ describe('DataPort demo adapter', () => {
     expect(await harness().adapter.setReflection('meiling', 'new text')).toEqual({ ok: false, reason: 'report-locked' });
   });
 
+  it('returns a typed refusal for every remaining closed-union reason', async () => {
+    const h = harness();
+    expect(await h.adapter.addObservation({ studentId: 'missing', date: '2026-10-22', domain: 'en', text: 'A sufficiently detailed observation.', milestone: 'developing', hasPhoto: false })).toEqual({ ok: false, reason: 'unknown-student' });
+    expect(await h.adapter.removeSentence('ethan', 's-ethan-en-1')).toEqual({ ok: false, reason: 'report-not-editable' });
+    expect(await h.adapter.startDraft('aria')).toEqual({ ok: false, reason: 'invalid-target' });
+    const empty = initialState();
+    empty.observations = empty.observations.filter((observation) => observation.studentId !== 'arjun');
+    expect(await harness(empty).adapter.startDraft('arjun')).toEqual({ ok: false, reason: 'no-observations' });
+  });
+
   it('refuses submission before readiness', async () => {
     expect(await harness().adapter.submitForReview('arjun')).toEqual({ ok: false, reason: 'not-ready' });
   });
