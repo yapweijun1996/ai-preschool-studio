@@ -7,6 +7,11 @@ const remote = process.env.BASE_URL;
 // PW_PORT lets parallel runs (e.g. several worktrees) use separate preview servers.
 const port = process.env.PW_PORT ?? '4173';
 
+const optionalBrowsers = (process.env.PW_BROWSERS ?? '')
+  .split(',')
+  .map(browser => browser.trim())
+  .filter(browser => browser === 'firefox' || browser === 'webkit');
+
 export default defineConfig({
   testDir: 'e2e',
   timeout: 30_000,
@@ -18,8 +23,12 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { browserName: 'chromium' } },
-    { name: 'firefox', testIgnore: '**/a11y.spec.ts', use: { browserName: 'firefox', viewport: { width: 1440, height: 900 } } },
-    { name: 'webkit', testIgnore: '**/a11y.spec.ts', use: { browserName: 'webkit', viewport: { width: 1440, height: 900 } } }
+    ...(optionalBrowsers.includes('firefox')
+      ? [{ name: 'firefox', testIgnore: '**/a11y.spec.ts', use: { browserName: 'firefox' as const, viewport: { width: 1440, height: 900 } } }]
+      : []),
+    ...(optionalBrowsers.includes('webkit')
+      ? [{ name: 'webkit', testIgnore: '**/a11y.spec.ts', use: { browserName: 'webkit' as const, viewport: { width: 1440, height: 900 } } }]
+      : [])
   ],
   webServer: remote
     ? undefined
