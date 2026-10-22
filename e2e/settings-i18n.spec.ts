@@ -26,7 +26,8 @@ test.describe('language menu · desktop 1440', () => {
     await expect(rail.getByRole('link', { name: '学生' })).toHaveAttribute('aria-current', 'page');
     await expect(rail.getByRole('link', { name: '学生' })).toHaveAttribute('data-tip', '学生');
     await expect(rail.getByRole('button', { name: '更多' })).toBeVisible();
-    await expect(page.locator('.topbar-context')).toHaveText('学生');
+    await expect(page.locator('.ctx-head')).toHaveText('学生');
+    await expect(page.locator('.topbar-context')).toHaveCount(0);
     await expect(page.getByRole('button', { name: '语言：中文' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^主题：/ })).toBeVisible();
     await expect(page.getByText('演示模式——所有学生和观察记录均为虚构的示例数据')).toBeVisible();
@@ -65,7 +66,7 @@ test.describe('settings · desktop 1440', () => {
     await page.getByRole('menu', { name: 'Account' }).getByRole('menuitem', { name: 'Settings' }).click();
     await expect(page).toHaveURL(/#\/settings\/appearance$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Appearance' })).toBeVisible();
-    await expect(page.locator('.topbar-context')).toHaveText('Settings');
+    await expect(page.locator('.ctx-head')).toHaveText('Settings');
     const panel = page.getByRole('complementary', { name: 'Settings sidebar' });
     await expect(panel.getByRole('link', { name: 'Appearance' })).toHaveAttribute('aria-current', 'page');
     await expect(panel.getByRole('link', { name: 'About & updates' })).toBeVisible();
@@ -93,7 +94,7 @@ test.describe('settings · desktop 1440', () => {
     await page.getByRole('radio', { name: '中文' }).check();
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hans');
     await expect(page.getByRole('heading', { level: 1, name: '语言' })).toBeVisible();
-    await expect(page.locator('.topbar-context')).toHaveText('设置');
+    await expect(page.locator('.ctx-head')).toHaveText('设置');
     await page.screenshot(shot('33-settings-language-zh-dark'));
     await page.getByRole('radio', { name: 'English' }).check();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');

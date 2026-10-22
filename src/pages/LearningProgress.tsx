@@ -9,7 +9,7 @@ import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
-import { studentSummary } from '../store/selectors';
+import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
@@ -46,6 +46,8 @@ export function LearningProgress() {
   if (!sum) return <NotFound />;
   const { student } = sum;
   const t4 = observationsFor(state, id, 4);
+  const m3 = milestonesFor(state, id, 3);
+  const m4 = milestonesFor(state, id, 4);
   const t3 = observationsFor(state, id, 3);
   const term3 = t('common.term3');
   const term4 = t('common.term4');
@@ -87,9 +89,17 @@ export function LearningProgress() {
               const sources = t4.filter((o) => o.domain === d.key).map((o) => o.id);
               const n3 = t3.filter((o) => o.domain === d.key).length;
               const n4 = sources.length;
-              const before = student.term3[d.key];
-              const after = student.term4[d.key];
-              const note = NOTES[id]?.[d.key] ?? (before === after ? t('pages.progress.still', { milestone: label(after) }) : t('pages.progress.moved', { from: label(before), to: label(after) }));
+              const before = m3[d.key];
+              const after = m4[d.key];
+              const note =
+                NOTES[id]?.[d.key] ??
+                (!after
+                  ? t('pages.progress.notYet')
+                  : !before
+                    ? t('pages.progress.firstSeen', { milestone: label(after) })
+                    : before === after
+                      ? t('pages.progress.still', { milestone: label(after) })
+                      : t('pages.progress.moved', { from: label(before), to: label(after) }));
               return (
                 <div key={d.key} id={`domain-${d.key}`} tabIndex={focusDomain === d.key ? -1 : undefined} className={focusDomain === d.key ? 'row-focus' : undefined} style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr 1fr' : '1.3fr 1fr 1fr 1.6fr', gap: 16, padding: 20, borderTop: '1px solid var(--color-border)', alignItems: 'start' }}>
                   <h2 className="strong" style={{ gridColumn: bp === 'mobile' ? '1 / -1' : undefined }}>{domainFull(d.key)}</h2>

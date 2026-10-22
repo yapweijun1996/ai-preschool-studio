@@ -17,7 +17,8 @@ test.describe('breadcrumb, search and domain links · desktop 1440', () => {
     await expect(page.getByRole('link', { name: 'Back to My Students' })).toHaveCount(0);
     await crumbs.getByRole('link', { name: 'Students' }).click();
     await expect(page).toHaveURL(/#\/students$/);
-    await expect(crumbs.getByRole('listitem')).toHaveCount(1);
+    // One-level page with the panel open: the panel header names it, the top bar does not repeat it.
+    await expect(crumbs).toHaveCount(0);
   });
 
   test('Ctrl+K opens search; keyboard picks a student; Esc returns focus', async ({ page }) => {
@@ -27,7 +28,7 @@ test.describe('breadcrumb, search and domain links · desktop 1440', () => {
     const dialog = page.getByRole('dialog', { name: 'Search' });
     const box = dialog.getByRole('combobox', { name: 'Search' });
     await expect(box).toBeFocused();
-    await expect(dialog.getByRole('option')).toHaveCount(15);
+    await expect(dialog.getByRole('option')).toHaveCount(23);
     await box.fill('mei');
     await expect(dialog.getByRole('option')).toHaveCount(1);
     await expect(dialog.getByRole('option', { name: /Mei Ling Chua/ })).toHaveAttribute('aria-selected', 'true');

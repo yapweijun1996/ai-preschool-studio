@@ -10,7 +10,7 @@ import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
-import { studentSummary } from '../store/selectors';
+import { milestonesFor, studentSummary } from '../store/selectors';
 import { NotFound } from './NotFound';
 import { useLastObservedLabel } from './Students';
 
@@ -25,6 +25,7 @@ export function StudentProfile() {
   useVisit(id, !!sum);
   if (!sum) return <NotFound />;
   const pinned = isPinned(id);
+  const term4 = milestonesFor(state, id, 4);
   const { student, report } = sum;
   const obs = observationsFor(state, id).sort((a, b) => b.date.localeCompare(a.date));
   const byDomain = (k: string) => obs.filter((o) => o.domain === k);
@@ -57,7 +58,7 @@ export function StudentProfile() {
                 {bp !== 'mobile' && <h1 className="h1">{student.name}</h1>}
                 <span className="status st-draft">{demo}</span>
               </div>
-              <p className="sec muted">{CLASS_NAME} · {t('pages.profile.age', { age: student.age })} · {lastObservedLabel(sum.lastObserved)}</p>
+              <p className="sec muted"><span className="nowrap">{CLASS_NAME}</span> · <span className="nowrap">{t('pages.profile.age', { age: student.age })}</span> · <span className="nowrap">{lastObservedLabel(sum.lastObserved)}</span></p>
             </div>
             <button className="icon-btn pin-btn has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinLabel} data-tip={pinLabel}>
               <Icon name="pin" />
@@ -87,8 +88,8 @@ export function StudentProfile() {
                         </h3>
                         <Icon name="chevronRight" size={18} className="card-link-chevron" />
                       </div>
-                      <MilestoneDots milestone={student.term4[d.key]} />
-                      <p className="sec muted num">{list.length ? t('pages.profile.domainObs', { count: list.length, date: fmtDate(list[0].date) }) : t('pages.profile.notSeeded')}</p>
+                      <MilestoneDots milestone={term4[d.key]} />
+                      <p className="sec muted num">{list.length ? t('pages.profile.domainObs', { count: list.length, date: fmtDate(list[0].date) }) : t('pages.profile.noObsDomain')}</p>
                     </article>
                   );
                 })}

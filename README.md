@@ -15,8 +15,14 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
 - **AI Portfolio Studio** — Evidence | Narrative | AI Assistant. AI edits appear as a diff with
   Apply / Reject / Regenerate (Undo after apply). Every fact carries an `OBS-xxxx` source chip;
   sentences without evidence are flagged **Needs teacher verification**.
-- **Report flow** — Draft → In review → Changes requested → Approved. Approve is blocked, with the
-  reason shown, while any claim lacks evidence.
+- **Report flow** — Draft → In review → Changes requested → Approved. A report goes to review
+  only when all four domains are written and the teacher reflection is added; Approve is also
+  blocked, with the reason shown, while any claim lacks evidence. The "Before approval" checks
+  are computed from the report's real content.
+- **Demo data** — 20 fictional students in K2 Sunflower. Observation counts, last-observed dates
+  and every milestone are derived from the observation records (a domain's milestone is the one on
+  its latest observation; no observation → "Not yet observed"). A not-started report can start a
+  draft from the child's own observations (fixed template, not AI).
 - **Domains** are always bilingual: English 英语, Chinese 华语, Mathematics 数学,
   Social-Emotional 社交与情绪发展. Milestones are dots + words (Emerging / Developing /
   Consistently demonstrated) — no scores, percentages or rankings.
@@ -58,13 +64,13 @@ npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ (relative base, hash routing)
 npm test             # unit tests (reducer, approval rules, Mock provider, i18n, PWA state machine)
-npm run e2e          # Playwright: journey, sidebar, profile, navigation, polish, i18n, settings, real service-worker updates
+npm run e2e          # Playwright: journey, sidebar, profile, navigation, polish, all-students data, i18n, settings, real service-worker updates
 npm run icons        # regenerate PWA icons (needs Chromium; see PW_CHROMIUM below)
 ```
 
 If Chromium is already installed elsewhere, point Playwright at it:
 `PW_CHROMIUM=/path/to/chrome npm run e2e`. `BASE_URL=<deployed url> npx playwright test
-e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts e2e/polish.spec.ts` runs the suite against a deployed site.
+e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts e2e/polish.spec.ts e2e/students-data.spec.ts` runs the suite against a deployed site.
 
 Version identity: `package.json` version + short commit SHA, baked in at build time and
 published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
@@ -74,7 +80,7 @@ published as `version.json`. Override with `APP_VERSION` / `BUILD_ID` env vars.
 `.github/workflows/deploy-pages.yml` runs on every push to `main` (and on demand from the
 Actions tab): `npm ci` → `npm test` → `npm run build` → publishes `dist/` to GitHub Pages →
 **live smoke**: waits until the live `version.json` reports this commit's build, then runs the
-journey, sidebar, profile, navigation and polish e2e specs against the live URL.
+journey, sidebar, profile, navigation, polish and students-data e2e specs against the live URL.
 
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pages on a

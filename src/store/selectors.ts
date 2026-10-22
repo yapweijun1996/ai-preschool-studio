@@ -1,10 +1,12 @@
-import { SEED_SUMMARY, STUDENTS, type Student } from '../data/demo';
+import { DOMAINS, STUDENTS, type DomainKey, type Milestone, type Student } from '../data/demo';
 import { observationsFor, unverifiedClaims, type ReportState, type State } from './reducer';
 
 export interface StudentSummary {
   student: Student;
   report: ReportState;
+  /** Term 4 observations. */
   count: number;
+  /** Most recent observation date (any term). */
   lastObserved?: string;
   unverified: number;
 }
@@ -12,14 +14,12 @@ export interface StudentSummary {
 export function studentSummary(state: State, id: string): StudentSummary | undefined {
   const student = STUDENTS.find((s) => s.id === id);
   if (!student) return undefined;
-  const own = observationsFor(state, id);
-  const seed = SEED_SUMMARY[id];
-  const count = (seed?.count ?? 0) + own.length;
-  const dates = own.map((o) => o.date).concat(seed ? [seed.lastObserved] : []).sort();
+  const all = state.observations.filter((o) => o.studentId === id);
+  const dates = all.map((o) => o.date).sort();
   return {
     student,
     report: state.reports[id],
-    count,
+    count: observationsFor(state, id, 4).length,
     lastObserved: dates[dates.length - 1],
     unverified: unverifiedClaims(state, id).length
   };
@@ -27,4 +27,20 @@ export function studentSummary(state: State, id: string): StudentSummary | undef
 
 export function allSummaries(state: State): StudentSummary[] {
   return STUDENTS.map((s) => studentSummary(state, s.id)!);
+}
+
+export type Milestones = Record<DomainKey, Milestone | null>;
+
+/**
+ * A domain's milestone is the one recorded on its most recent observation in that term;
+ * null when the domain has no observation yet. Milestones are never set without evidence.
+ */
+export function milestonesFor(state: State, id: string, term: 3 | 4 = 4): Milestones {
+  const obs = observationsFor(state, id, term);
+  const out = {} as Milestones;
+  for (const d of DOMAINS) {
+    const latest = obs.filter((o) => o.domain === d.key).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))[0];
+    out[d.key] = latest ? latest.milestone : null;
+  }
+  return out;
 }

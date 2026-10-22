@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
-import { Avatar, StatusLabel } from '../components/ui';
+import { Avatar, ScrollRow, StatusLabel } from '../components/ui';
 import { CLASS_NAME, STUDENTS, daysAgo, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
@@ -61,31 +61,33 @@ export function Students() {
     <AppShell
       module="students"
       mobileTitle={t('pages.students.title')}
-      mobileSubtitle={`${CLASS_NAME} · ${term}`}
+      mobileSubtitle={`${CLASS_NAME} · ${term} · ${t('pages.students.count', { count: STUDENTS.length })}`}
       mobileActions={<Link className="btn btn-primary btn-block" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link>}
     >
       {(bp) => (
         <div className="page">
-          <div className="page-title-row">
-            <div className="grow">
-              {bp !== 'mobile' && <h1 className="h1">{t('pages.students.title')}</h1>}
-              <p className="sec muted">{CLASS_NAME} · {term} · {t('pages.students.count', { count: STUDENTS.length })}</p>
+          {bp !== 'mobile' && (
+            <div className="page-title-row">
+              <div className="grow">
+                <h1 className="h1">{t('pages.students.title')}</h1>
+                <p className="sec muted">{CLASS_NAME} · {term} · {t('pages.students.count', { count: STUDENTS.length })}</p>
+              </div>
+              <Link className="btn btn-primary" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link>
             </div>
-            {bp !== 'mobile' && <Link className="btn btn-primary" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link>}
-          </div>
+          )}
           <div className="row" style={{ gap: 12, alignItems: 'center' }}>
             <div className="search-wrap" style={{ width: bp === 'mobile' ? '100%' : 320 }}>
               <label className="sr-only" htmlFor="st-search">{t('pages.students.search')}</label>
               <Icon name="search" />
               <input id="st-search" className="input" type="search" placeholder={t('pages.students.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
-            <div className="chip-row scroll" role="group" aria-label={t('pages.students.filterLabel')}>
+            <ScrollRow className="chip-row scroll" role="group" aria-label={t('pages.students.filterLabel')}>
               {FILTERS.map((f) => (
                 <button key={f} className="chip" type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>
                   {f === 'all' ? t('pages.shared.all') : statusLabel(f)}
                 </button>
               ))}
-            </div>
+            </ScrollRow>
           </div>
 
           {loading ? (
@@ -124,7 +126,7 @@ export function Students() {
                     <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 2 }}>
                       <span className="strong">{s.student.name}</span>
                       {bp !== 'desktop' && <span className="cap muted">{lastObservedLabel(s.lastObserved)}</span>}
-                      {bp === 'mobile' && <StatusLabel status={s.report.status} />}
+                      {bp === 'mobile' && <span><StatusLabel status={s.report.status} /></span>}
                     </span>
                   </span>
                   {bp === 'desktop' && <span className="sec num" style={{ width: 200 }}>{agoLabel(s.lastObserved)}</span>}

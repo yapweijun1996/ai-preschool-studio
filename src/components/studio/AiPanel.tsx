@@ -76,7 +76,12 @@ export function AiPanel({
           </div>
         </div>
       )}
-      {ai.kind === 'unavailable' ? (
+      {paragraphs.length === 0 ? (
+        <div className="panel-body" style={{ alignItems: 'flex-start' }}>
+          <div className="state-icon"><Icon name="sparkles" size={24} /></div>
+          <p className="sec">{t('pages.studio.aiEmpty')}</p>
+        </div>
+      ) : ai.kind === 'unavailable' ? (
         <div className="panel-body" style={{ alignItems: 'flex-start' }}>
           <div className="state-icon"><Icon name="cloudOff" size={24} /></div>
           <p className="strong" role="alert">{t('pages.studio.ai.unavailable')}</p>
@@ -149,7 +154,9 @@ export function AiPanel({
 
           <div className="card card-pad stack" style={{ gap: 8 }}>
             <p className="sec semibold">{t('pages.studio.ai.claimCheck')}</p>
-            {claims.length === 0 ? (
+            {paragraphs.every((p) => p.sentences.length === 0) ? (
+              <p className="sec muted">{t('pages.studio.aiNoSentences')}</p>
+            ) : claims.length === 0 ? (
               <p className="sec row" style={{ gap: 6 }}><Icon name="check" size={16} className="ic-primary" />{t('pages.studio.ai.allLinked')}</p>
             ) : (
               claims.map((c) => (

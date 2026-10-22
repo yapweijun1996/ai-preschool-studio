@@ -41,8 +41,6 @@ export interface Student {
   initials: string;
   age: number;
   homeLanguages: string;
-  term3: Record<DomainKey, Milestone>;
-  term4: Record<DomainKey, Milestone>;
   reportStatus: ReportStatus;
 }
 
@@ -69,42 +67,36 @@ export interface Paragraph {
   sentences: Sentence[];
 }
 
-const m = (en: Milestone, zh: Milestone, ma: Milestone, se: Milestone) => ({ en, zh, ma, se });
+const s = (id: string, name: string, initials: string, age: number, homeLanguages: string, reportStatus: ReportStatus): Student => ({ id, name, initials, age, homeLanguages, reportStatus });
 
 export const STUDENTS: Student[] = [
-  { id: 'aria', name: 'Aria Tan', initials: 'AT', age: 5, homeLanguages: 'English, 华语', term3: m('developing', 'emerging', 'developing', 'emerging'), term4: m('consistent', 'developing', 'developing', 'developing'), reportStatus: 'draft' },
-  { id: 'ethan', name: 'Ethan Koh', initials: 'EK', age: 5, homeLanguages: 'English', term3: m('developing', 'developing', 'emerging', 'developing'), term4: m('developing', 'developing', 'developing', 'consistent'), reportStatus: 'review' },
-  { id: 'meiling', name: 'Mei Ling Chua', initials: 'MC', age: 5, homeLanguages: '华语, English', term3: m('developing', 'consistent', 'developing', 'developing'), term4: m('consistent', 'consistent', 'developing', 'consistent'), reportStatus: 'approved' },
-  { id: 'rayan', name: 'Rayan Iskandar', initials: 'RI', age: 5, homeLanguages: 'Malay, English', term3: m('emerging', 'emerging', 'developing', 'developing'), term4: m('developing', 'emerging', 'developing', 'developing'), reportStatus: 'changes' },
-  { id: 'sofia', name: 'Sofia Fernandez', initials: 'SF', age: 5, homeLanguages: 'Spanish, English', term3: m('developing', 'emerging', 'emerging', 'developing'), term4: m('developing', 'developing', 'developing', 'developing'), reportStatus: 'draft' },
-  { id: 'daniel', name: 'Daniel Wong', initials: 'DW', age: 5, homeLanguages: 'English, 华语', term3: m('developing', 'developing', 'developing', 'emerging'), term4: m('consistent', 'developing', 'consistent', 'developing'), reportStatus: 'review' },
-  { id: 'hana', name: 'Hana Goh', initials: 'HG', age: 5, homeLanguages: 'English', term3: m('consistent', 'developing', 'developing', 'developing'), term4: m('consistent', 'developing', 'consistent', 'consistent'), reportStatus: 'approved' },
-  { id: 'arjun', name: 'Arjun Nair', initials: 'AN', age: 4, homeLanguages: 'Tamil, English', term3: m('emerging', 'emerging', 'emerging', 'developing'), term4: m('emerging', 'emerging', 'developing', 'developing'), reportStatus: 'notStarted' },
-  { id: 'zoe', name: 'Zoe Teo', initials: 'ZT', age: 5, homeLanguages: 'English', term3: m('developing', 'emerging', 'developing', 'developing'), term4: m('developing', 'developing', 'developing', 'consistent'), reportStatus: 'draft' },
-  { id: 'lucas', name: 'Lucas Ong', initials: 'LO', age: 5, homeLanguages: 'English, 华语', term3: m('emerging', 'developing', 'developing', 'emerging'), term4: m('developing', 'developing', 'developing', 'developing'), reportStatus: 'draft' },
-  { id: 'nuraisyah', name: 'Nur Aisyah', initials: 'NA', age: 5, homeLanguages: 'Malay, English', term3: m('developing', 'emerging', 'developing', 'developing'), term4: m('consistent', 'developing', 'developing', 'consistent'), reportStatus: 'approved' },
-  { id: 'kai', name: 'Kai Chen', initials: 'KC', age: 4, homeLanguages: '华语', term3: m('emerging', 'developing', 'emerging', 'emerging'), term4: m('emerging', 'developing', 'emerging', 'emerging'), reportStatus: 'notStarted' }
+  s('aria', 'Aria Tan', 'AT', 5, 'English, 华语', 'draft'),
+  s('ethan', 'Ethan Koh', 'EK', 5, 'English', 'review'),
+  s('meiling', 'Mei Ling Chua', 'MC', 5, '华语, English', 'approved'),
+  s('rayan', 'Rayan Iskandar', 'RI', 5, 'Malay, English', 'changes'),
+  s('sofia', 'Sofia Fernandez', 'SF', 5, 'Spanish, English', 'draft'),
+  s('daniel', 'Daniel Wong', 'DW', 5, 'English, 华语', 'review'),
+  s('hana', 'Hana Goh', 'HG', 5, 'English', 'approved'),
+  s('arjun', 'Arjun Nair', 'AN', 4, 'Tamil, English', 'notStarted'),
+  s('zoe', 'Zoe Teo', 'ZT', 5, 'English', 'draft'),
+  s('lucas', 'Lucas Ong', 'LO', 5, 'English, 华语', 'draft'),
+  s('nuraisyah', 'Nur Aisyah', 'NA', 5, 'Malay, English', 'approved'),
+  s('kai', 'Kai Chen', 'KC', 4, '华语', 'notStarted'),
+  s('priya', 'Priya Raman', 'PR', 5, 'Tamil, English', 'review'),
+  s('aiden', 'Aiden Lee', 'AL', 5, 'English, 华语', 'draft'),
+  s('siti', 'Siti Aminah', 'SA', 5, 'Malay, English', 'approved'),
+  s('chloe', 'Chloe Ng', 'CN', 5, 'English, 华语', 'draft'),
+  s('irfan', 'Muhammad Irfan', 'MI', 4, 'Malay', 'notStarted'),
+  s('weiming', 'Wei Ming Ho', 'WH', 5, '华语', 'review'),
+  s('isabelle', 'Isabelle Chan', 'IC', 5, 'English', 'approved'),
+  s('rohan', 'Rohan Menon', 'RM', 5, 'Malayalam, English', 'draft')
 ];
-
-// Summary figures for students whose individual observations are not seeded.
-export const SEED_SUMMARY: Record<string, { lastObserved: string; count: number }> = {
-  ethan: { lastObserved: '2026-10-20', count: 11 },
-  meiling: { lastObserved: '2026-10-19', count: 12 },
-  rayan: { lastObserved: '2026-10-06', count: 6 },
-  sofia: { lastObserved: '2026-10-18', count: 9 },
-  daniel: { lastObserved: '2026-10-17', count: 10 },
-  hana: { lastObserved: '2026-10-21', count: 13 },
-  arjun: { lastObserved: '2026-10-03', count: 4 },
-  zoe: { lastObserved: '2026-10-20', count: 12 },
-  lucas: { lastObserved: '2026-10-16', count: 8 },
-  nuraisyah: { lastObserved: '2026-10-19', count: 11 },
-  kai: { lastObserved: '2026-10-01', count: 0 }
-};
 
 const o = (id: string, studentId: string, date: string, domain: DomainKey, milestone: Milestone, text: string, hasPhoto = false, term: 3 | 4 = 4): Observation =>
   ({ id, studentId, date, domain, milestone, text, hasPhoto, term });
 
-export const OBSERVATIONS: Observation[] = [
+// Hand-written observations (Aria's full portfolio plus a few others the demo script points at).
+const HAND_OBSERVATIONS: Observation[] = [
   o('OBS-0156', 'aria', '2026-10-21', 'se', 'developing', 'Said “I feel sad because my tower fell” and asked a friend to help rebuild it.'),
   o('OBS-0151', 'aria', '2026-10-20', 'se', 'developing', 'Took turns at the block corner and handed a peer the last arch block without being asked.', true),
   o('OBS-0149', 'aria', '2026-10-17', 'en', 'consistent', 'Read “I can see a red bus” aloud from a class book, pointing to each word.'),
@@ -115,8 +107,157 @@ export const OBSERVATIONS: Observation[] = [
   o('OBS-0155', 'hana', '2026-10-21', 'ma', 'consistent', 'Sorted counters into groups of five and counted on to 20.'),
   o('OBS-0154', 'ethan', '2026-10-20', 'zh', 'developing', 'Answered “你叫什么名字？” with his full name during role play.'),
   o('OBS-0153', 'zoe', '2026-10-20', 'en', 'developing', 'Wrote the first letter of her name on a drawing label.'),
-  o('OBS-0150', 'rayan', '2026-10-06', 'ma', 'developing', 'Matched number cards 1–5 to sets of shells.')
+  // Rayan's only Mathematics observation: the reviewer asks for a second one.
+  o('OBS-0150', 'rayan', '2026-10-06', 'ma', 'consistent', 'Matched number cards 1–5 to sets of shells.')
 ];
+
+// Fictional observation texts per domain (verb phrases, so a narrative sentence is "<First name> <text>").
+const POOL: Record<DomainKey, string[]> = {
+  en: [
+    'Retold a picture book to a friend using “first”, “next” and “last”.',
+    'Pointed to each word while reading the class big book aloud.',
+    'Wrote the first letter of a friend’s name on a birthday card.',
+    'Asked “why” questions about a story and listened to the answer.',
+    'Named three things that start with the sound /s/ at circle time.',
+    'Described a drawing in two full sentences to the teacher.',
+    'Joined in the repeated line of a rhyme without a prompt.',
+    'Made a sign for the block corner that read “DO NOT TOUCH”.'
+  ],
+  zh: [
+    'Greeted the 华语 teacher with “早安” and answered “你好吗？”.',
+    'Named six fruits in 华语 during a market role play.',
+    'Sang 《小星星》 with the group and did the actions.',
+    'Counted from 一 to 十 in 华语 while setting the table.',
+    'Used “我要…” to ask for a crayon in 华语.',
+    'Pointed to the 大 and 小 picture cards when asked in 华语.',
+    'Retold the start of a 华语 picture book with prompts.'
+  ],
+  ma: [
+    'Counted 12 cups one by one and said the total.',
+    'Sorted buttons by colour and then by size.',
+    'Continued a red-blue-red-blue bead pattern to the end of the string.',
+    'Compared two towers and said which one was taller.',
+    'Matched number cards 1–10 to sets of shells.',
+    'Shared eight crackers equally between two plates.',
+    'Found three triangles in the playground and named them.'
+  ],
+  se: [
+    'Waited for a turn on the slide and let a younger child go first.',
+    'Said “I am angry” and took a break in the calm corner.',
+    'Helped a friend zip a bag without being asked.',
+    'Joined a new group at the sand tray and suggested a game.',
+    'Brought a tissue to a classmate who was crying.',
+    'Tidied the block corner with two friends after play.',
+    'Said sorry after bumping into a friend and checked they were fine.'
+  ]
+};
+
+type Plan = {
+  /** Date of the most recent generated Term 4 observation. */
+  last: string;
+  /** Term 3 milestones (en, zh, ma, se); one observation each. */
+  t3: [Milestone, Milestone, Milestone, Milestone];
+  /** Term 4: [milestone, number of generated observations] per domain; missing = not yet observed. */
+  t4: Partial<Record<DomainKey, [Milestone, number]>>;
+  /** Draft/review content: write a narrative and (optionally) a reflection. */
+  narrative?: boolean;
+  reflection?: string;
+};
+
+const E: Milestone = 'emerging';
+const D: Milestone = 'developing';
+const C: Milestone = 'consistent';
+
+const PLANS: Record<string, Plan> = {
+  aria: { last: '', t3: [D, E, D, E], t4: {} },
+  ethan: { last: '2026-10-19', t3: [D, E, D, D], t4: { en: [D, 2], zh: [D, 1], ma: [C, 2], se: [D, 2] }, narrative: true, reflection: 'turn-taking games and longer conversations in 华语' },
+  meiling: { last: '2026-10-19', t3: [D, D, D, D], t4: { en: [C, 3], zh: [C, 2], ma: [D, 3], se: [C, 3] }, narrative: true, reflection: 'measuring and comparing activities' },
+  rayan: { last: '2026-10-03', t3: [E, E, D, E], t4: { en: [D, 2], zh: [E, 1], se: [D, 2] }, narrative: true, reflection: 'counting games and a second look at number matching' },
+  sofia: { last: '2026-10-18', t3: [D, E, E, D], t4: { en: [D, 2], zh: [D, 1], ma: [D, 2] }, narrative: true },
+  daniel: { last: '2026-10-17', t3: [E, D, D, E], t4: { en: [D, 2], zh: [C, 2], ma: [D, 3], se: [D, 2] }, narrative: true, reflection: 'story-telling in English' },
+  hana: { last: '2026-10-20', t3: [D, D, D, D], t4: { en: [C, 3], zh: [D, 3], ma: [C, 2], se: [C, 3] }, narrative: true, reflection: 'leading small-group games' },
+  arjun: { last: '2026-10-03', t3: [E, D, E, E], t4: { en: [E, 1], zh: [D, 1], ma: [D, 1], se: [E, 1] } },
+  zoe: { last: '2026-10-19', t3: [E, E, D, D], t4: { en: [D, 1], zh: [E, 2], ma: [D, 2], se: [D, 2] }, narrative: true, reflection: 'name-writing and labelling' },
+  lucas: { last: '2026-10-16', t3: [D, E, D, E], t4: { en: [D, 2], zh: [D, 1], ma: [C, 2], se: [D, 2] }, narrative: true, reflection: 'calm-corner routines and naming feelings' },
+  nuraisyah: { last: '2026-10-19', t3: [D, D, E, D], t4: { en: [C, 2], zh: [D, 3], ma: [D, 3], se: [C, 3] }, narrative: true, reflection: 'pattern and shape games' },
+  kai: { last: '2026-10-01', t3: [E, D, E, E], t4: { zh: [D, 1], ma: [E, 1] } },
+  priya: { last: '2026-10-19', t3: [D, E, D, D], t4: { en: [C, 3], zh: [D, 2], ma: [D, 2], se: [C, 2] }, narrative: true, reflection: 'listening games in 华语' },
+  aiden: { last: '2026-10-15', t3: [E, D, E, D], t4: { en: [D, 2], zh: [D, 2], se: [D, 1] }, narrative: true },
+  siti: { last: '2026-10-18', t3: [D, E, D, D], t4: { en: [D, 3], zh: [D, 2], ma: [C, 3], se: [C, 2] }, narrative: true, reflection: 'reading aloud with a partner' },
+  chloe: { last: '2026-10-21', t3: [D, D, D, E], t4: { en: [C, 2], zh: [C, 2], ma: [D, 1], se: [D, 2] }, narrative: true },
+  irfan: { last: '2026-10-12', t3: [E, E, D, E], t4: { en: [E, 1], ma: [D, 1], se: [D, 1] } },
+  weiming: { last: '2026-10-20', t3: [E, D, D, D], t4: { en: [D, 2], zh: [C, 3], ma: [D, 2], se: [D, 2] }, narrative: true, reflection: 'English rhymes and songs' },
+  isabelle: { last: '2026-10-17', t3: [D, D, D, D], t4: { en: [C, 3], zh: [D, 2], ma: [D, 2], se: [C, 3] }, narrative: true, reflection: 'counting on beyond 20' },
+  rohan: { last: '2026-10-14', t3: [D, E, E, D], t4: { en: [D, 1], zh: [E, 1], ma: [D, 2], se: [D, 1] }, narrative: true }
+};
+
+const KEYS: DomainKey[] = ['en', 'zh', 'ma', 'se'];
+
+function shiftDate(iso: string, days: number): string {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Deterministic fictional observations: Term 3 (one per domain, August) and Term 4 per plan. */
+function generateObservations(): Observation[] {
+  const t3: Omit<Observation, 'id'>[] = [];
+  const t4: Omit<Observation, 'id'>[] = [];
+  STUDENTS.forEach((st, si) => {
+    const plan = PLANS[st.id];
+    KEYS.forEach((k, ki) => {
+      if (st.id === 'aria' && k === 'en') return; // OBS-0101 is hand-written
+      const pool = POOL[k];
+      t3.push({ studentId: st.id, date: shiftDate('2026-08-03', si + ki * 5), domain: k, milestone: plan.t3[ki], text: pool[(si + ki + 3) % pool.length], hasPhoto: false, term: 3 });
+    });
+    // Term 4: walk back from `last`, three days apart, cycling through the planned domains.
+    const slots: { k: DomainKey; m: Milestone }[] = [];
+    const left = KEYS.map((k) => plan.t4[k]?.[1] ?? 0);
+    while (left.some((n) => n > 0)) KEYS.forEach((k, ki) => { if (left[ki] > 0) { left[ki]--; slots.push({ k, m: plan.t4[k]![0] }); } });
+    slots.forEach(({ k, m }, i) => {
+      const pool = POOL[k];
+      t4.push({ studentId: st.id, date: shiftDate(plan.last, -3 * i), domain: k, milestone: m, text: pool[(si * 2 + i) % pool.length], hasPhoto: i % 4 === 1, term: 4 });
+    });
+  });
+  // Term 3 ids sit below Aria's OBS-0101; Term 4 ids start after the hand-written range.
+  const byDate = (a: { date: string }, b: { date: string }) => a.date.localeCompare(b.date);
+  const ids3 = [...t3].sort(byDate).map((x, i) => ({ ...x, id: `OBS-${String(i + 1).padStart(4, '0')}` }));
+  const ids4 = [...t4].sort(byDate).map((x, i) => ({ ...x, id: `OBS-${String(i + 157).padStart(4, '0')}` }));
+  return [...ids3, ...ids4];
+}
+
+export const OBSERVATIONS: Observation[] = [...HAND_OBSERVATIONS, ...generateObservations()].sort((a, b) => b.date.localeCompare(a.date));
+
+/** First id for observations added in the demo (after every seeded id). */
+export const NEXT_OBS_NUMBER = Math.max(...OBSERVATIONS.map((x) => Number(x.id.slice(4)))) + 1;
+
+const lcFirst = (t: string) => t.charAt(0).toLowerCase() + t.slice(1);
+
+/**
+ * A draft built from observations: one cited sentence per observation, at most two per domain.
+ * Deterministic template text, not AI; used for seeded drafts and the Studio "Start draft" action.
+ */
+export function draftFromObservations(student: Student, observations: Observation[]): Paragraph[] {
+  const first = student.name.split(' ')[0];
+  return KEYS.flatMap((k) => {
+    const list = observations.filter((x) => x.domain === k && x.term === 4).sort((a, b) => a.date.localeCompare(b.date)).slice(-2);
+    if (list.length === 0) return [];
+    return [{ id: `p-${k}`, domain: k, sentences: list.map((x, i) => ({ id: `s-${student.id}-${k}-${i + 1}`, text: `${first} ${lcFirst(x.text)}`, sources: [x.id] })) }];
+  });
+}
+
+/** Seeded narratives and reflections for every student except Aria (hand-written below). */
+export function seededDrafts(): { paragraphs: Record<string, Paragraph[]>; reflections: Record<string, string> } {
+  const paragraphs: Record<string, Paragraph[]> = {};
+  const reflections: Record<string, string> = {};
+  for (const st of STUDENTS) {
+    const plan = PLANS[st.id];
+    if (st.id === 'aria' || !plan.narrative) continue;
+    paragraphs[st.id] = draftFromObservations(st, OBSERVATIONS.filter((x) => x.studentId === st.id));
+    if (plan.reflection) reflections[st.id] = `${st.name.split(' ')[0]} has settled well into K2 this term and joins group activities with more confidence. Next term I will offer more ${plan.reflection}.`;
+  }
+  return { paragraphs, reflections };
+}
 
 export const ARIA_PARAGRAPHS: Paragraph[] = [
   {

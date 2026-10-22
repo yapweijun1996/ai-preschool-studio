@@ -99,7 +99,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
           </>
         )}
         {module === 'students' && (
-          <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">12</span></Link>
+          <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">{STUDENTS.length}</span></Link>
         )}
         {module === 'observations' && (
           <>

@@ -19,6 +19,7 @@ export const common: Dict['common'] = {
     changes: 'Perubahan diminta',
     approved: 'Diluluskan'
   },
+  notObserved: 'Belum diperhatikan',
   needsVerification: 'Perlu pengesahan guru',
   mockProvider: 'Penyedia simulasi (Mock provider)',
   demoStudent: 'Murid demo',

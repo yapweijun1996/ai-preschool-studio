@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon';
 import { AiPanel, type AiState } from '../components/studio/AiPanel';
 import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
+import { ReadinessList } from '../components/ReportFlow';
 import { Avatar, MockProviderLabel, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME } from '../data/demo';
 import { useAutosave } from '../hooks/useAutosave';
@@ -12,8 +13,8 @@ import { useI18n } from '../i18n';
 import { useDirtyGuard } from '../pwa';
 import { ProviderUnavailableError, requestSuggestion, type AiAction } from '../services/mockProvider';
 import { usePortfolio } from '../store/PortfolioContext';
-import { observationsFor, unverifiedClaims } from '../store/reducer';
-import { studentSummary } from '../store/selectors';
+import { observationsFor, readiness, unverifiedClaims } from '../store/reducer';
+import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
@@ -27,12 +28,15 @@ export function PortfolioStudio() {
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
   const paragraphs = state.paragraphs[id] ?? [];
-  const [targetId, setTargetId] = useState('p-se');
+  const [chosenTarget, setTargetId] = useState('p-se');
+  // Social-Emotional by default; otherwise the last paragraph this draft has.
+  const targetId = paragraphs.some((p) => p.id === chosenTarget) ? chosenTarget : (paragraphs[paragraphs.length - 1]?.id ?? chosenTarget);
   const [ai, setAi] = useState<AiState>({ kind: 'idle' });
   const [variant, setVariant] = useState(0);
   const [selected, setSelected] = useState<string>();
   const [drawer, setDrawer] = useState<'evidence' | 'ai' | null>('ai');
   const [tab, setTab] = useState<MobileTab>('write');
+  const [whyBlocked, setWhyBlocked] = useState(false);
   // ?focus=claims (from the profile's report card) lands on the first claim needing verification.
   const [params] = useSearchParams();
   const focusClaims = params.get('focus') === 'claims';
@@ -51,7 +55,7 @@ export function PortfolioStudio() {
       const seq = ++requestSeq.current;
       setAi({ kind: 'loading', action });
       try {
-        const s = await requestSuggestion({ paragraph, action, variant: v, available: !state.sim.aiDown });
+        const s = await requestSuggestion({ studentId: id, paragraph, action, variant: v, available: !state.sim.aiDown });
         if (seq !== requestSeq.current) return;
         setAi(s ? { kind: 'ready', suggestion: s } : { kind: 'none', action });
       } catch (e) {
@@ -68,8 +72,8 @@ export function PortfolioStudio() {
   useEffect(() => {
     if (started.current || paragraphs.length === 0) return;
     started.current = true;
-    void run('clearer', 'p-se', 0);
-  }, [paragraphs.length, run]);
+    void run('clearer', targetId, 0);
+  }, [paragraphs.length, run, targetId]);
 
   useEffect(() => {
     if (!focusClaims) return;
@@ -121,10 +125,22 @@ export function PortfolioStudio() {
     dispatch({ type: 'restoreParagraph', studentId: id, paragraph: ai.previous });
     setAi({ kind: 'ready', suggestion: ai.suggestion });
   };
+  const ready = readiness(state, id);
+  const canSubmit = !locked && report.status !== 'review' && report.status !== 'notStarted' && ready.canSubmit;
   const submit = () => {
+    if (locked || report.status === 'review') return;
+    // Not ready: say exactly what is missing instead of submitting.
+    if (!ready.canSubmit) {
+      setWhyBlocked(true);
+      return;
+    }
     dispatch({ type: 'submitForReview', studentId: id });
     navigate(`/students/${id}/report`);
   };
+  const submitButton = (cls: string) =>
+    report.status === 'notStarted' ? null : (
+      <button className={cls} type="button" onClick={submit} aria-disabled={!canSubmit} aria-describedby={whyBlocked && !ready.canSubmit ? 'why-blocked' : undefined}>{submitLabel}</button>
+    );
 
   const evidence = (headerless?: boolean) => (
     <EvidencePanel studentId={id} observations={observations} linkedIds={linkedIds} selected={selected} onSelect={setSelected} headerless={headerless} />
@@ -132,18 +148,33 @@ export function PortfolioStudio() {
   const narrative = (headerless?: boolean) =>
     paragraphs.length === 0 ? (
       <div className="panel-body">
-        <div className="empty">
-          <div className="state-icon"><Icon name="fileText" size={24} /></div>
-          <p className="strong">{t('pages.studio.noNarrative')}</p>
-          <p className="sec muted">{t('pages.studio.noNarrativeBody')}</p>
-          <Link className="btn btn-secondary" to="/students/aria/studio">{t('pages.studio.openAriaDraft')}</Link>
-        </div>
+        {observations.length > 0 && report.status === 'notStarted' ? (
+          <div className="empty">
+            <div className="state-icon"><Icon name="fileText" size={24} /></div>
+            <p className="strong">{t('pages.studio.startTitle')}</p>
+            <p className="sec muted" style={{ maxWidth: '52ch' }}>{t('pages.studio.startBody', { count: observations.length })}</p>
+            <button className="btn btn-primary" type="button" onClick={() => dispatch({ type: 'startDraft', studentId: id })}>{t('pages.studio.startDraft')}</button>
+          </div>
+        ) : observations.length === 0 ? (
+          <div className="empty">
+            <div className="state-icon"><Icon name="clipboard" size={24} /></div>
+            <p className="strong">{t('pages.studio.noObsTitle')}</p>
+            <p className="sec muted">{t('pages.studio.noObsBody')}</p>
+            <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{t('pages.shared.addObservation')}</Link>
+          </div>
+        ) : (
+          <div className="empty">
+            <div className="state-icon"><Icon name="fileText" size={24} /></div>
+            <p className="strong">{t('pages.studio.noNarrative')}</p>
+            <p className="sec muted">{t('pages.studio.noNarrativeBody')}</p>
+          </div>
+        )}
       </div>
     ) : (
       <NarrativePanel
         headerless={headerless}
         paragraphs={paragraphs}
-        milestones={student.term4}
+        milestones={milestonesFor(state, id, 4)}
         observations={observations}
         pendingParagraphId={pendingId}
         appliedParagraphId={appliedId}
@@ -172,7 +203,13 @@ export function PortfolioStudio() {
   );
 
   const statusNotice =
-    report.status === 'approved' ? (
+    whyBlocked && !ready.canSubmit && !locked ? (
+      <Notice tone="warning" icon="lock" id="why-blocked" role="status">
+        <p className="semibold">{t('pages.report.notReady')}</p>
+        <p className="body-text">{t('pages.report.notReadyBody')}</p>
+        <ReadinessList r={ready} />
+      </Notice>
+    ) : report.status === 'approved' ? (
       <Notice tone="success" icon="lock"><p className="body-text">{t('pages.studio.approvedLocked')}</p></Notice>
     ) : report.status === 'changes' && report.comment ? (
       <Notice tone="warning" icon="alert"><p className="body-text"><span className="semibold">{t('pages.studio.changesBy', { name: report.comment.by })}</span> {report.comment.text}</p></Notice>
@@ -191,7 +228,7 @@ export function PortfolioStudio() {
       mobileActions={
         <>
           <Link className="btn btn-secondary" to={`/students/${id}/report`}>{t('pages.studio.preview')}</Link>
-          <button className="btn btn-primary grow" type="button" onClick={submit} aria-disabled={locked || report.status === 'review'}>{submitLabel}</button>
+          {submitButton('btn btn-primary grow')}
         </>
       }
     >
@@ -208,7 +245,7 @@ export function PortfolioStudio() {
               <div className="row">
                 <StatusLabel status={report.status} />
                 {claims.length > 0 && <VerifyLabel>{t('pages.shared.claims', { count: claims.length })}</VerifyLabel>}
-                <SaveIndicator status={saveStatus} onRetry={retry} />
+                {paragraphs.length > 0 && <SaveIndicator status={saveStatus} onRetry={retry} />}
                 {bp === 'tablet' && (
                   <>
                     <button className="chip" type="button" aria-pressed={drawer === 'evidence'} onClick={() => setDrawer(drawer === 'evidence' ? null : 'evidence')}><Icon name="clipboard" size={18} />{evidenceLabel}</button>
@@ -216,7 +253,7 @@ export function PortfolioStudio() {
                   </>
                 )}
                 {bp === 'desktop' && <Link className="btn btn-secondary" to={`/students/${id}/report`}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>}
-                <button className="btn btn-primary" type="button" onClick={submit} aria-disabled={locked || report.status === 'review'}>{submitLabel}</button>
+                {submitButton('btn btn-primary')}
               </div>
             </div>
           )}
@@ -265,7 +302,7 @@ export function PortfolioStudio() {
               </div>
               <div id="studio-tabpanel" role="tabpanel" className="stack" style={{ gap: 0 }}>
                 {statusNotice && <div style={{ padding: '16px 16px 0' }}>{statusNotice}</div>}
-                <div className="row" style={{ padding: '12px 16px 0' }}><SaveIndicator status={saveStatus} onRetry={retry} /></div>
+                {paragraphs.length > 0 && <div className="row" style={{ padding: '12px 16px 0' }}><SaveIndicator status={saveStatus} onRetry={retry} /></div>}
                 {tab === 'evidence' && evidence(true)}
                 {tab === 'write' && narrative(true)}
                 {tab === 'ai' && (

@@ -23,8 +23,8 @@ test.describe('desktop 1440 journey', () => {
     await page.getByRole('main').getByRole('link', { name: 'Add observation' }).click();
     await page.getByRole('button', { name: 'Save observation' }).click();
     await expect(page.getByText('Observation saved as')).toBeVisible();
-    await expect(page.getByRole('main').getByText('OBS-0158')).toBeVisible();
-    await expect(page.getByRole('complementary', { name: 'Observations sidebar' }).getByText('OBS-0158')).toBeVisible();
+    await expect(page.getByRole('main').getByText('OBS-0294')).toBeVisible();
+    await expect(page.getByRole('complementary', { name: 'Observations sidebar' }).getByText('OBS-0294')).toBeVisible();
     await page.screenshot(shot('04-observation-saved'));
 
     await page.getByRole('link', { name: 'View learning progress' }).click();

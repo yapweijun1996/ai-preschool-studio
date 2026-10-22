@@ -2,9 +2,13 @@
 import {
   ARIA_PARAGRAPHS,
   ARIA_REFLECTION,
+  DOMAINS,
+  NEXT_OBS_NUMBER,
   OBSERVATIONS,
   REVIEWER,
   STUDENTS,
+  draftFromObservations,
+  seededDrafts,
   type Observation,
   type Paragraph,
   type ReportStatus,
@@ -30,6 +34,7 @@ export interface State {
 
 export type Action =
   | { type: 'addObservation'; obs: Omit<Observation, 'id'> }
+  | { type: 'startDraft'; studentId: string }
   | { type: 'linkSource'; studentId: string; sentenceId: string; obsId: string }
   | { type: 'removeSentence'; studentId: string; sentenceId: string }
   | { type: 'applySuggestion'; studentId: string; suggestion: Suggestion }
@@ -45,13 +50,14 @@ export function initialState(): State {
   const reports: Record<string, ReportState> = {};
   for (const s of STUDENTS) reports[s.id] = { status: s.reportStatus, hadChanges: s.reportStatus === 'changes' };
   reports.rayan.comment = { by: REVIEWER, date: '2026-10-20', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
+  const seeded = seededDrafts();
   return {
     observations: OBSERVATIONS,
-    paragraphs: { aria: ARIA_PARAGRAPHS },
-    reflections: { aria: ARIA_REFLECTION },
+    paragraphs: { ...seeded.paragraphs, aria: ARIA_PARAGRAPHS },
+    reflections: { ...seeded.reflections, aria: ARIA_REFLECTION },
     reports,
     sim: { aiDown: false, saveFail: false },
-    nextObsNumber: 158
+    nextObsNumber: NEXT_OBS_NUMBER
   };
 }
 
@@ -75,6 +81,14 @@ export function reducer(state: State, action: Action): State {
       const id = `OBS-${String(state.nextObsNumber).padStart(4, '0')}`;
       return { ...state, observations: [{ ...action.obs, id }, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
     }
+    case 'startDraft': {
+      const student = STUDENTS.find((x) => x.id === action.studentId);
+      const report = state.reports[action.studentId];
+      if (!student || !report || report.status !== 'notStarted' || (state.paragraphs[action.studentId]?.length ?? 0) > 0) return state;
+      const paragraphs = draftFromObservations(student, observationsFor(state, action.studentId));
+      if (paragraphs.length === 0) return state;
+      return setReport({ ...state, paragraphs: { ...state.paragraphs, [action.studentId]: paragraphs } }, action.studentId, { status: 'draft' });
+    }
     case 'linkSource':
       return mapSentences(state, action.studentId, (s) =>
         s.id === action.sentenceId && !s.sources.includes(action.obsId) ? { ...s, sources: [...s.sources, action.obsId] } : s
@@ -95,7 +109,9 @@ export function reducer(state: State, action: Action): State {
       return { ...state, reflections: { ...state.reflections, [action.studentId]: action.text } };
     case 'submitForReview': {
       const r = state.reports[action.studentId];
-      if (!r || r.status === 'approved' || r.status === 'review') return state;
+      if (!r || r.status === 'approved' || r.status === 'review' || r.status === 'notStarted') return state;
+      // Only a structurally complete draft goes to review.
+      if (!readiness(state, action.studentId).canSubmit) return state;
       return setReport(state, action.studentId, { status: 'review' });
     }
     case 'requestChanges': {
@@ -128,13 +144,44 @@ export function unverifiedClaims(state: State, studentId: string): UnverifiedCla
   return paras.flatMap((p) => p.sentences.filter((s) => s.sources.length === 0).map((sentence) => ({ paragraphId: p.id, sentence })));
 }
 
-export type ApprovalBlock = { reason: 'status'; status: ReportStatus } | { reason: 'claims'; count: number } | null;
+/** What a report still needs before it can go to review or be approved. Computed from the real content. */
+export interface Readiness {
+  /** Domains with at least one sentence. */
+  domainsWritten: number;
+  domainsTotal: number;
+  /** Sentences in the whole narrative. */
+  sentences: number;
+  unverified: number;
+  hasReflection: boolean;
+  /** Structurally complete: every domain written and a reflection. Unverified claims may still go to review. */
+  canSubmit: boolean;
+  /** Complete and every claim has evidence. */
+  canApprove: boolean;
+}
+
+export function readiness(state: State, studentId: string): Readiness {
+  const paras = state.paragraphs[studentId] ?? [];
+  const written = new Set(paras.filter((p) => p.sentences.length > 0).map((p) => p.domain));
+  const sentences = paras.reduce((n, p) => n + p.sentences.length, 0);
+  const unverified = unverifiedClaims(state, studentId).length;
+  const hasReflection = (state.reflections[studentId] ?? '').trim().length > 0;
+  const domainsTotal = DOMAINS.length;
+  const canSubmit = written.size === domainsTotal && hasReflection;
+  return { domainsWritten: written.size, domainsTotal, sentences, unverified, hasReflection, canSubmit, canApprove: canSubmit && unverified === 0 };
+}
+
+export type ApprovalBlock =
+  | { reason: 'status'; status: ReportStatus }
+  | { reason: 'incomplete'; readiness: Readiness }
+  | { reason: 'claims'; count: number }
+  | null;
 
 export function approvalBlock(state: State, studentId: string): ApprovalBlock {
   const report = state.reports[studentId];
   if (!report || report.status !== 'review') return { reason: 'status', status: report?.status ?? 'notStarted' };
-  const count = unverifiedClaims(state, studentId).length;
-  return count > 0 ? { reason: 'claims', count } : null;
+  const r = readiness(state, studentId);
+  if (r.domainsWritten < r.domainsTotal || !r.hasReflection) return { reason: 'incomplete', readiness: r };
+  return r.unverified > 0 ? { reason: 'claims', count: r.unverified } : null;
 }
 
 export function canApprove(state: State, studentId: string): boolean {

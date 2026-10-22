@@ -19,6 +19,7 @@ export const common: Dict['common'] = {
     changes: '需修改',
     approved: '已批准'
   },
+  notObserved: '尚未观察',
   needsVerification: '需教师核实',
   mockProvider: '模拟服务（Mock provider）',
   demoStudent: '示范学生',

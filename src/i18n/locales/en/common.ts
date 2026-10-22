@@ -18,6 +18,7 @@ export const common = {
     changes: 'Changes requested',
     approved: 'Approved'
   },
+  notObserved: 'Not yet observed',
   needsVerification: 'Needs teacher verification',
   mockProvider: 'Mock provider',
   demoStudent: 'Demo student',

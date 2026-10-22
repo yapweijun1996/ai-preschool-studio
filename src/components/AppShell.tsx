@@ -476,7 +476,8 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
       <a className="skip-link" href="#main">{t('shell.skipToContent')}</a>
       <header className="topbar">
         <Link className="brand" to="/"><span className="monogram">AP</span><span>{t('shell.appName')}</span></Link>
-        <Crumbs items={trail} />
+        {/* A one-level page already names itself in the open panel's header. */}
+        {!(trail.length === 1 && panelVisible) && <Crumbs items={trail} />}
         <div className="grow" />
         <GlobalSearch />
         <div className="grow" />

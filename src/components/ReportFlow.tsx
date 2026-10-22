@@ -1,4 +1,5 @@
 import type { ReportStatus } from '../data/demo';
+import type { Readiness } from '../store/reducer';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { Icon } from './Icon';
@@ -25,5 +26,29 @@ export function ReportFlow({ status, hadChanges, compact }: { status: ReportStat
         );
       })}
     </ol>
+  );
+}
+
+/** The "Before approval" checks, computed from the report's real content. */
+export function ReadinessList({ r, id }: { r: Readiness; id?: string }) {
+  const { t } = useI18n();
+  const items: { ok: boolean; text: string }[] = [
+    { ok: r.domainsWritten === r.domainsTotal, text: r.domainsWritten === r.domainsTotal ? t('pages.report.checkDomains') : t('pages.report.domainsPartial', { count: r.domainsWritten, total: r.domainsTotal }) },
+    r.sentences === 0
+      ? { ok: false, text: t('pages.report.noSentences') }
+      : { ok: r.unverified === 0, text: r.unverified === 0 ? t('pages.report.checkClaims') : t('pages.shared.claims', { count: r.unverified }) },
+    { ok: r.hasReflection, text: r.hasReflection ? t('pages.report.checkReflection') : t('pages.report.reflectionMissing') },
+    { ok: true, text: t('pages.report.checkSample') }
+  ];
+  return (
+    <ul id={id} className="sec stack readiness" style={{ gap: 8 }}>
+      {items.map((it, i) => (
+        <li key={i} className={`row${it.ok ? '' : ' semibold'}`} style={{ flexWrap: 'nowrap', color: it.ok ? undefined : 'var(--color-warning)' }} data-ok={it.ok}>
+          <Icon name={it.ok ? 'check' : 'alert'} size={18} className={it.ok ? 'ic-primary' : undefined} />
+          <span className="sr-only">{it.ok ? t('pages.report.done') : t('pages.report.todo')}: </span>
+          {it.text}
+        </li>
+      ))}
+    </ul>
   );
 }

@@ -30,8 +30,9 @@ export class ProviderUnavailableError extends Error {
 const s = (id: string, text: string, ...sources: string[]): Sentence => ({ id, text, sources });
 
 // Every suggested sentence cites the observation it rests on; the provider
-// never invents a fact without a source.
-const LIBRARY: Record<string, Record<AiAction, Sentence[][]>> = {
+// never invents a fact without a source. Hand-written suggestions exist for
+// Aria only; other students get rewrites of their own sentences (same sources).
+const ARIA_LIBRARY: Record<string, Record<AiAction, Sentence[][]>> = {
   'p-en': {
     clearer: [
       [s('s-en-a', 'Aria retells familiar stories in order, linking events with “then” and “after that”.', 'OBS-0142'), s('s-en-b', 'She reads a simple sentence aloud while pointing to each word.', 'OBS-0149')],
@@ -62,21 +63,37 @@ const LIBRARY: Record<string, Record<AiAction, Sentence[][]>> = {
   }
 };
 
-export function variantCount(paragraphId: string, action: AiAction): number {
-  return LIBRARY[paragraphId]?.[action]?.length ?? 0;
+// Sentences start with the child's name, so the lead keeps the original casing.
+const LEADS = ['This term, ', 'In class, '];
+
+/** Canned rewrites of a paragraph's own sentences; sources are kept, nothing new is claimed. */
+function genericOptions(paragraph: Paragraph, action: AiAction): Sentence[][] {
+  const cited = paragraph.sentences.filter((x) => x.sources.length > 0);
+  if (cited.length === 0) return [];
+  if (action === 'shorten') return cited.length > 1 ? [[{ ...cited[0], id: `${cited[0].id}-short` }]] : [];
+  return LEADS.map((lead, v) => cited.map((x) => ({ id: `${x.id}-c${v}`, text: `${lead}${x.text}`, sources: x.sources })));
+}
+
+function optionsFor(studentId: string, paragraph: Paragraph, action: AiAction): Sentence[][] {
+  return studentId === 'aria' ? (ARIA_LIBRARY[paragraph.id]?.[action] ?? []) : genericOptions(paragraph, action);
+}
+
+export function variantCount(studentId: string, paragraph: Paragraph, action: AiAction): number {
+  return optionsFor(studentId, paragraph, action).length;
 }
 
 export async function requestSuggestion(opts: {
+  studentId: string;
   paragraph: Paragraph;
   action: AiAction;
   variant: number;
   available: boolean;
   delayMs?: number;
 }): Promise<Suggestion | null> {
-  const { paragraph, action, variant, available, delayMs = 900 } = opts;
+  const { studentId, paragraph, action, variant, available, delayMs = 900 } = opts;
   await new Promise((r) => setTimeout(r, delayMs));
   if (!available) throw new ProviderUnavailableError();
-  const options = LIBRARY[paragraph.id]?.[action];
+  const options = optionsFor(studentId, paragraph, action);
   if (!options || options.length === 0) return null;
   const index = variant % options.length;
   return {

@@ -7,7 +7,7 @@ import { MilestoneDots, SourceChip, VerifyLabel } from '../ui';
 
 export interface NarrativeProps {
   paragraphs: Paragraph[];
-  milestones: Record<DomainKey, Milestone>;
+  milestones: Record<DomainKey, Milestone | null>;
   observations: Observation[];
   pendingParagraphId?: string;
   appliedParagraphId?: string;

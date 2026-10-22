@@ -2,15 +2,15 @@ import { Fragment, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
-import { ReportFlow } from '../components/ReportFlow';
+import { ReadinessList, ReportFlow } from '../components/ReportFlow';
 import { MilestoneDots, Notice, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME, REVIEWER, TEACHER, TODAY } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDirtyGuard } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
-import { approvalBlock, observationsFor, unverifiedClaims } from '../store/reducer';
-import { studentSummary } from '../store/selectors';
+import { approvalBlock, observationsFor, readiness, unverifiedClaims } from '../store/reducer';
+import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
@@ -20,6 +20,7 @@ export function ReportPreview() {
   // Undefined until edited: the prefilled note follows the current language.
   const [editedNote, setEditedNote] = useState<string | undefined>(undefined);
   const [requesting, setRequesting] = useState(false);
+  const [showChecks, setShowChecks] = useState(false);
   const { t, fmtDate, fmtTime } = useI18n();
   const { domainFull, status: statusLabel } = useLabels();
   const changeNote = editedNote ?? t('pages.report.defaultChangeNote', { domain: domainFull('en') });
@@ -29,6 +30,9 @@ export function ReportPreview() {
   useDirtyGuard(requesting && sum?.report.status === 'review');
   if (!sum) return <NotFound />;
   const { student, report } = sum;
+  const term4 = milestonesFor(state, id, 4);
+  const ready = readiness(state, id);
+  const checksDone = [ready.domainsWritten === ready.domainsTotal, ready.sentences > 0 && ready.unverified === 0, ready.hasReflection, true].filter(Boolean).length;
   const paragraphs = state.paragraphs[id] ?? [];
   const claims = unverifiedClaims(state, id);
   const block = approvalBlock(state, id);
@@ -63,11 +67,22 @@ export function ReportPreview() {
         </>
       );
     }
-    if (status === 'changes' || status === 'draft' || status === 'notStarted') {
+    if (status === 'notStarted') {
+      return <Link className="btn btn-primary grow" to={`/students/${id}/studio`}>{openStudio}</Link>;
+    }
+    if (status === 'changes' || status === 'draft') {
       return (
         <>
           <Link className="btn btn-secondary" to={`/students/${id}/studio`}>{mobile ? t('pages.report.editDraft') : openStudio}</Link>
-          <button className="btn btn-primary grow" type="button" onClick={() => dispatch({ type: 'submitForReview', studentId: id })}>{t('pages.shared.submitForReview')}</button>
+          <button
+            className="btn btn-primary grow"
+            type="button"
+            onClick={() => ready.canSubmit && dispatch({ type: 'submitForReview', studentId: id })}
+            aria-disabled={!ready.canSubmit}
+            aria-describedby={ready.canSubmit ? undefined : 'not-ready'}
+          >
+            {t('pages.shared.submitForReview')}
+          </button>
         </>
       );
     }
@@ -83,25 +98,44 @@ export function ReportPreview() {
     <aside className="panel report-panel" aria-label={t('pages.report.reviewLabel')} style={{ overflow: 'visible' }}>
       <div className="panel-head"><h2 className="h2 grow">{t('pages.report.statusHeading')}</h2><StatusLabel status={status} /></div>
       <div className="stack" style={{ padding: 16, gap: 20 }}>
+        {status === 'changes' && report.comment && (
+          <Notice tone="warning" icon="alert" role="status">
+            <p className="cap num">{t('pages.report.reviewerLine', { name: report.comment.by, date: fmtDate(report.comment.date) })}</p>
+            <p className="body-text">{report.comment.text}</p>
+            <p className="sec">{t('pages.report.changesNotice', { teacher: TEACHER })}</p>
+            <Link className="btn btn-secondary" to={`/students/${id}/studio`} style={{ alignSelf: 'flex-start' }}>{openStudio}</Link>
+          </Notice>
+        )}
         {steps}
         <div className="stack" style={{ gap: 8 }}>
           <h3 className="sec semibold">{t('pages.report.beforeApproval')}</h3>
-          <ul className="sec stack" style={{ gap: 8 }}>
-            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkDomains')}</li>
-            {claims.length === 0 ? (
-              <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkClaims')}</li>
-            ) : (
-              <li className="row semibold" style={{ flexWrap: 'nowrap', color: 'var(--color-warning)' }}><Icon name="alert" size={18} />{t('pages.shared.claims', { count: claims.length })}</li>
-            )}
-            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkReflection')}</li>
-            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkSample')}</li>
-          </ul>
+          {mobile ? (
+            <>
+              <button className="btn btn-ghost checks-toggle" type="button" aria-expanded={showChecks} aria-controls="readiness-list" onClick={() => setShowChecks((v) => !v)}>
+                <Icon name={ready.canApprove ? 'check' : 'alert'} size={18} className={ready.canApprove ? 'ic-primary' : undefined} />
+                <span className="grow">{t('pages.report.checksSummary', { done: checksDone, total: 4 })}</span>
+                <Icon name="chevronRight" size={18} className={showChecks ? 'rot-90' : undefined} />
+              </button>
+              {showChecks && <ReadinessList r={ready} id="readiness-list" />}
+            </>
+          ) : (
+            <ReadinessList r={ready} />
+          )}
         </div>
-        {report.comment && (status === 'review' || status === 'changes') && (
+        {report.comment && status === 'review' && (
           <div className="card stack" style={{ padding: '12px 16px', gap: 6, background: 'var(--color-surface-muted)' }}>
             <p className="cap muted num">{t('pages.report.reviewerLine', { name: report.comment.by, date: fmtDate(report.comment.date) })}</p>
             <p className="sec">{report.comment.text}</p>
           </div>
+        )}
+        {status === 'review' && block?.reason === 'incomplete' && (
+          <Notice tone="warning" icon="lock" id="approve-blocked" role="status">
+            <p className="semibold">{t('pages.report.blocked')}</p>
+            <p className="body-text">{t('pages.report.notReadyBody')}</p>
+          </Notice>
+        )}
+        {(status === 'draft' || status === 'changes') && !ready.canSubmit && (
+          <p id="not-ready" className="sec semibold" style={{ color: 'var(--color-warning)' }}>{t('pages.report.notReady')} · {t('pages.report.notReadyBody')}</p>
         )}
         {status === 'review' && block?.reason === 'claims' && (
           <Notice tone="warning" icon="lock" id="approve-blocked" role="status">
@@ -124,7 +158,6 @@ export function ReportPreview() {
             <textarea id="change-note" className="input" rows={3} value={changeNote} onChange={(e) => setEditedNote(e.target.value)} />
           </div>
         )}
-        {status === 'changes' && <Notice tone="warning" icon="alert" role="status"><p className="body-text">{t('pages.report.changesNotice', { teacher: TEACHER })}</p></Notice>}
         {status === 'approved' && (
           <Notice tone="success" icon="check" role="status">
             <p className="semibold">{statusLabel('approved')}</p>
@@ -152,7 +185,7 @@ export function ReportPreview() {
         {paragraphs.length === 0 && <p className="sec muted">{t('pages.report.noNarrative')}</p>}
         {paragraphs.map((p) => (
           <section key={p.id}>
-            <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{domainFull(p.domain)}</h3><MilestoneDots milestone={student.term4[p.domain]} /></div>
+            <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{domainFull(p.domain)}</h3><MilestoneDots milestone={term4[p.domain]} /></div>
             <p className="narr">
               {p.sentences.map((s) => (
                 <Fragment key={s.id}>
@@ -189,7 +222,6 @@ export function ReportPreview() {
       mobileTitle={t('pages.report.title')}
       mobileSubtitle={`${student.name} · ${term}`}
       mobileBack={`/students/${id}/studio`}
-      mobileTrailing={<StatusLabel status={status} />}
       mobileActions={actions(true)}
     >
       {(bp) => (

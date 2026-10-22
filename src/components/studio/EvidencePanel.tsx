@@ -4,7 +4,7 @@ import { DOMAINS, type DomainKey, type Observation } from '../../data/demo';
 import { useI18n } from '../../i18n';
 import { useLabels } from '../../i18n/labels';
 import { Icon } from '../Icon';
-import { SourceChip } from '../ui';
+import { ScrollRow, SourceChip } from '../ui';
 
 export function EvidencePanel({
   studentId,
@@ -56,12 +56,12 @@ export function EvidencePanel({
               <Icon name="search" />
               <input id="ev-search" className="input" type="search" placeholder={t('pages.studio.ev.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
-            <div className="chip-row scroll" role="group" aria-label={t('pages.studio.ev.filterLabel')}>
+            <ScrollRow className="chip-row scroll" role="group" aria-label={t('pages.studio.ev.filterLabel')}>
               <button className="chip" type="button" aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>{t('pages.shared.all')}</button>
               {DOMAINS.map((d) => (
                 <button key={d.key} className="chip" type="button" aria-pressed={filter === d.key} onClick={() => setFilter(d.key)}>{domainShort(d.key)}</button>
               ))}
-            </div>
+            </ScrollRow>
             {list.length === 0 && <p className="sec muted" role="status">{t('pages.studio.ev.noMatch')}</p>}
             {list.map((o) => {
               const linked = linkedIds.has(o.id);

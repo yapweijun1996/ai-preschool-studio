@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { MILESTONES, type Milestone, type ReportStatus } from '../data/demo';
 import type { SaveStatus } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
@@ -49,9 +49,12 @@ export function SourceChip({ id }: { id: string }) {
   );
 }
 
-export function MilestoneDots({ milestone }: { milestone: Milestone }) {
-  const m = MILESTONES.find((x) => x.key === milestone)!;
+/** Milestone as dots + word; null means the domain has no observation yet (no dots, never a level). */
+export function MilestoneDots({ milestone }: { milestone: Milestone | null }) {
   const labels = useLabels();
+  const { t } = useI18n();
+  if (!milestone) return <span className="ms ms-none">{t('common.notObserved')}</span>;
+  const m = MILESTONES.find((x) => x.key === milestone)!;
   return (
     <span className="ms">
       <span className="dots" aria-hidden="true">
@@ -104,6 +107,32 @@ export function Notice({ tone, icon, children, id, role }: { tone: 'warning' | '
       <div className="grow stack" style={{ gap: 8 }}>
         {children}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A row that scrolls sideways. Fades its right edge while more content is hidden there,
+ * so a half-visible last item reads as "scroll for more", not as a clipping bug.
+ */
+export function ScrollRow({ children, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => el.setAttribute('data-more', String(el.scrollLeft + el.clientWidth < el.scrollWidth - 1));
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : undefined;
+    ro?.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro?.disconnect();
+    };
+  }, []);
+  return (
+    <div ref={ref} {...rest}>
+      {children}
     </div>
   );
 }
