@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { EmptyIllustration } from '../components/EmptyIllustration';
 import { Avatar, ScrollRow, StatusLabel } from '../components/ui';
 import { CLASS_NAME, STUDENTS, daysAgo, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
@@ -103,7 +104,7 @@ export function Students() {
             </section>
           ) : rows.length === 0 ? (
             <section className="card empty">
-              <div className="state-icon"><Icon name="users" size={24} /></div>
+              <EmptyIllustration name="no-results" />
               <h2 className="h2">{t('pages.students.noMatch')}</h2>
               <p className="sec muted" style={{ maxWidth: '44ch' }}>{t('pages.students.noMatchBody', { class: CLASS_NAME })}</p>
               <button className="btn btn-secondary" type="button" onClick={() => { setFilter('all'); setQuery(''); }}>{t('pages.students.clearFilters')}</button>

@@ -18,19 +18,13 @@ permissions:
 jobs:
   visual:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: mcr.microsoft.com/playwright:v1.56.0-noble
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-
       - name: Install
         run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
 
       - name: Run visual regression
         if: github.event_name == 'workflow_dispatch' && inputs.update

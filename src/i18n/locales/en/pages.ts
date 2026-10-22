@@ -27,7 +27,8 @@ export const pages = {
     today: 'Today',
     notObserved: 'Not observed this term',
     photoPlaceholder: 'Photo placeholder',
-    photoPlaceholderFor: 'Photo placeholder for {name}'
+    photoPlaceholderFor: 'Photo placeholder for {name}',
+    sampleIllustration: 'Sample illustration — not a real photo'
   },
   tabs: {
     label: 'Student sections',

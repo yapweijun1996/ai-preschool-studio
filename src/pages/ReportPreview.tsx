@@ -2,6 +2,8 @@ import { Fragment, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { BrandMark } from '../components/BrandMark';
+import { PhotoIllustration } from '../components/EmptyIllustration';
 import { ReadinessList, ReportFlow } from '../components/ReportFlow';
 import { MilestoneDots, Notice, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME, REVIEWER, TEACHER, TODAY } from '../data/demo';
@@ -194,11 +196,11 @@ export function ReportPreview() {
       <div className="a4-body">
         <div className="row" style={{ alignItems: 'flex-start', gap: 24, flexWrap: 'nowrap' }}>
           <div className="grow stack" style={{ gap: 6 }}>
-            <p className="cap muted row" style={{ gap: 8 }}><span className="monogram" style={{ width: 24, height: 24, fontSize: 10 }}>AP</span>{t('pages.report.portfolioLine', { term })}</p>
+            <p className="cap muted row" style={{ gap: 8 }}><BrandMark size={24} />{t('pages.report.portfolioLine', { term })}</p>
             <h2 className="h1">{student.name}</h2>
             <p className="sec muted">{t('pages.report.keyTeacherLine', { class: CLASS_NAME, teacher: TEACHER })}</p>
           </div>
-          <div className="ph" style={{ width: 88, height: 88, flex: 'none', padding: 8 }}>{t('pages.shared.photoPlaceholder')}</div>
+          <PhotoIllustration report />
         </div>
         {paragraphs.length === 0 && <p className="sec muted">{t('pages.report.noNarrative')}</p>}
         {paragraphs.map((p) => (

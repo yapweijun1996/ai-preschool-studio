@@ -28,7 +28,8 @@ export const pages: Dict['pages'] = {
     today: 'Hari ini',
     notObserved: 'Belum diperhatikan pada penggal ini',
     photoPlaceholder: 'Ruang foto',
-    photoPlaceholderFor: 'Ruang foto untuk {name}'
+    photoPlaceholderFor: 'Ruang foto untuk {name}',
+    sampleIllustration: 'Ilustrasi contoh — bukan foto sebenar'
   },
   tabs: {
     label: 'Bahagian murid',

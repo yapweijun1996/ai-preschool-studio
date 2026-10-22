@@ -5,6 +5,7 @@ import { useLabels } from '../../i18n/labels';
 import { AI_ACTION_LABEL, type AiAction, type Suggestion } from '../../services/mockProvider';
 import type { UnverifiedClaim } from '../../store/reducer';
 import { Icon } from '../Icon';
+import { EmptyIllustration } from '../EmptyIllustration';
 import { MockProviderLabel, Notice, SourceChip, VerifyLabel } from '../ui';
 
 export type AiState =
@@ -78,12 +79,12 @@ export function AiPanel({
       )}
       {paragraphs.length === 0 ? (
         <div className="panel-body" style={{ alignItems: 'flex-start' }}>
-          <div className="state-icon"><Icon name="sparkles" size={24} /></div>
+          <EmptyIllustration name="ai-ready" />
           <p className="sec">{t('pages.studio.aiEmpty')}</p>
         </div>
       ) : ai.kind === 'unavailable' ? (
         <div className="panel-body" style={{ alignItems: 'flex-start' }}>
-          <div className="state-icon"><Icon name="cloudOff" size={24} /></div>
+          <EmptyIllustration name="offline-ai" />
           <p className="strong" role="alert">{t('pages.studio.ai.unavailable')}</p>
           <p className="sec">{t('pages.studio.ai.unavailableBody')}</p>
           <button className="btn btn-secondary" type="button" onClick={() => onRequest(ai.action)}><Icon name="refresh" size={18} />{t('pages.studio.ai.tryAgain')}</button>

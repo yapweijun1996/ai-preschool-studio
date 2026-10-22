@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { EmptyIllustration } from '../components/EmptyIllustration';
 import { Avatar, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME, STUDENTS, TEACHER, TODAY, daysAgo, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
@@ -69,6 +70,7 @@ export function Dashboard() {
             <div className="page-title-row"><h1 className="h1">{t('shell.roles.plannedTitle', { role: t(activeRole.labelKey) })}</h1></div>
             <section className="card card-pad stack" aria-labelledby="planned-purpose">
               <h2 id="planned-purpose" className="h2">{t('shell.roles.planned')}</h2>
+              <EmptyIllustration name={role.role === 'parent' ? 'planned-family' : 'planned-school'} />
               <p className="sec">{t(role.role === 'parent' ? 'shell.roles.parentPurpose' : 'shell.roles.adminPurpose')}</p>
               <h3 className="sec semibold">{t('shell.roles.plannedModules')}</h3>
               <ul className="stack" style={{ paddingLeft: 24 }}>

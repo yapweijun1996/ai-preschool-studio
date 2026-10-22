@@ -8,6 +8,7 @@ import { usePwa } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
 import { GlobalSearch } from './GlobalSearch';
 import { Icon, type IconName } from './Icon';
+import { BrandMark } from './BrandMark';
 import { Menu } from './Menu';
 import { ModulePanel } from './ModulePanel';
 import { DEMO_ROLES } from '../roles';
@@ -452,7 +453,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
           {mobileBack ? (
             <Link className="icon-btn" to={mobileBack} aria-label={t('shell.back')} title={t('shell.back')}><Icon name="arrowLeft" /></Link>
           ) : (
-            <span className="monogram" aria-hidden="true">AP</span>
+            <BrandMark />
           )}
           <div className="grow" style={{ display: 'flex', flexDirection: 'column' }}>
             <h1 className="strong">{mobileTitle}</h1>
@@ -484,7 +485,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
       <div className={`app is-${bp} has-tabbar`}>
         <a className="skip-link" href="#main">{t('shell.skipToContent')}</a>
         <header className="topbar">
-          <Link className="brand" to="/"><span className="monogram">AP</span><span>{t('shell.appName')}</span></Link>
+          <Link className="brand" to="/"><BrandMark /><span>{t('shell.appName')}</span></Link>
           <Crumbs items={trail} />
           <div className="grow" />
           <GlobalSearch />
@@ -510,7 +511,7 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
     <div className={`app is-${bp}`}>
       <a className="skip-link" href="#main">{t('shell.skipToContent')}</a>
       <header className="topbar">
-        <Link className="brand" to="/"><span className="monogram">AP</span><span>{t('shell.appName')}</span></Link>
+        <Link className="brand" to="/"><BrandMark /><span>{t('shell.appName')}</span></Link>
         {/* A one-level page already names itself in the open panel's header. */}
         {!(trail.length === 1 && panelVisible) && <Crumbs items={trail} />}
         <div className="grow" />

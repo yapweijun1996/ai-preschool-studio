@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
+import { EmptyIllustration } from '../components/EmptyIllustration';
+import { PhotoIllustration } from '../components/EmptyIllustration';
+import { BrandMark } from '../components/BrandMark';
 import { Menu } from '../components/Menu';
 import { ReadinessList, ReportFlow } from '../components/ReportFlow';
 import designTokens from '../../design/tokens.json';
@@ -23,6 +26,8 @@ import { useI18n } from '../i18n';
 
 const sections = [
   'Tokens',
+  'Brand',
+  'Illustrations',
   'Buttons',
   'Status labels',
   'SourceChip',
@@ -154,6 +159,57 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
   switch (name) {
     case 'Tokens':
       return <Tokens theme={theme} />;
+    case 'Brand':
+      return (
+        <div className="catalog-brand-grid">
+          {[16, 32, 64].map((size) => (
+            <div className="catalog-asset-card" key={size}>
+              <div className="catalog-brand-light"><BrandMark size={size as 16 | 32 | 64} /></div>
+              <code>mark.svg · {size}px · light</code>
+              <div className="catalog-brand-dark"><BrandMark size={size as 16 | 32 | 64} /></div>
+              <code>mark.svg · {size}px · dark</code>
+            </div>
+          ))}
+        </div>
+      );
+    case 'Illustrations': {
+      const emptyItems = [
+        ['no-observations', 'no-observations.webp', 'Evidence panel and portfolio empty state'],
+        ['no-results', 'no-results.webp', 'Filtered observations and student search'],
+        ['not-found', 'not-found.webp', 'Not found page'],
+        ['offline-ai', 'offline-ai.webp', 'AI unavailable state'],
+        ['report-not-started', 'report-not-started.webp', 'Report draft not started'],
+        ['ai-ready', 'ai-ready.webp', 'AI assistant ready state'],
+        ['planned-family', 'planned-family.webp', 'Planned parent role'],
+        ['planned-school', 'planned-school.webp', 'Planned administrator role']
+      ] as const;
+      const photoItems = [
+        ['domain-en.webp', 'en learning domain'],
+        ['domain-zh.webp', 'zh learning domain'],
+        ['domain-ma.webp', 'ma learning domain'],
+        ['domain-se.webp', 'se learning domain'],
+        ['art.webp', 'art sample fallback and report sheet'],
+        ['outdoor.webp', 'outdoor sample fallback']
+      ] as const;
+      return (
+        <div className="catalog-asset-grid">
+          {emptyItems.map(([name, file, usage]) => (
+            <div className="catalog-asset-card" key={name}>
+              <EmptyIllustration name={name} />
+              <code>{file}</code>
+              <span className="muted">{usage}</span>
+            </div>
+          ))}
+          {photoItems.map(([file, usage], index) => (
+            <div className="catalog-asset-card" key={file}>
+              {index < 4 ? <PhotoIllustration domain={(['en', 'zh', 'ma', 'se'] as const)[index]} /> : <PhotoIllustration id={String(index)} />}
+              <code>{file}</code>
+              <span className="muted">{usage}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
     case 'Buttons':
       return (
         <MarkupExample title="Button variants and states">
@@ -378,7 +434,7 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
       return (
         <MarkupExample title="Empty state">
           <div className="empty">
-            <span className="state-icon"><Icon name="search" /></span>
+            <EmptyIllustration name="no-results" />
             <strong>No observations yet</strong>
             <p className="muted">Add an observation to see it here.</p>
           </div>

@@ -2,6 +2,8 @@
 
 Open `#/catalog` to inspect the shared interface in the app shell. Theme and language controls remain available, so examples show real translated component labels and the active light or dark token values. Use the table of contents to jump to a component family; expand **Markup** to view the rendered HTML and **Copy** to copy it. Inter Latin is self-hosted as `Inter Variable`; Chinese text uses the platform's native CJK font from the token stack.
 
+The **Brand** section previews the speech-bubble and leaf mark at 16, 32 and 64 pixels on light and dark surfaces. **Illustrations** lists every empty-state illustration and sample photo placeholder with its file name and use. Generation rules, the palette, all prompts and instructions for adding assets are in [Brand mark and illustrations](brand.md).
+
 ## Porting workflow
 
 ## How Studio Platform uses this page
@@ -15,4 +17,4 @@ Copy the markup and token names as the starting point for the equivalent Studio 
 
 ## Sections
 
-Tokens; Buttons; Status labels; SourceChip; MilestoneDots; Avatar; SaveIndicator; Notice; Chips; Tabs; Form fields; ReportFlow; ReadinessList; Menu; ScrollRow; Cards; Empty state; Skeleton.
+Tokens; Brand; Illustrations; Buttons; Status labels; SourceChip; MilestoneDots; Avatar; SaveIndicator; Notice; Chips; Tabs; Form fields; ReportFlow; ReadinessList; Menu; ScrollRow; Cards; Empty state; Skeleton.
