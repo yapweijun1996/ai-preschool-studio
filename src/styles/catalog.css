@@ -2,7 +2,7 @@
 .catalog-title { display: grid; gap: 8px; }
 .catalog-title h1, .catalog-title p { margin: 0; }
 .catalog-toc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
-.catalog-toc a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; color: var(--color-primary-hover); }
+.catalog-toc button { display: inline-flex; align-items: center; min-height: var(--touch-target); padding: 0 var(--space-2); border: 0; background: transparent; color: var(--color-primary-hover); font: inherit; cursor: pointer; }
 .catalog-section { display: grid; gap: 16px; scroll-margin-top: 80px; }
 .catalog-section h2 { margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--color-border); }
 .catalog-example { display: grid; gap: 12px; padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
