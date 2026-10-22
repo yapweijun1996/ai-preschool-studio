@@ -61,7 +61,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
 
   const path = location.pathname;
   const status = new URLSearchParams(location.search).get('status');
-  const matches = query.trim() ? STUDENTS.filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase())) : [];
+  const matches = role.can('students.view') && query.trim() ? STUDENTS.filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase())) : [];
   const recentShown = recent.filter((id) => !pinned.includes(id)).slice(0, 5);
   const counts = (st: ReportStatus) => Object.values(state.reports).filter((r) => r.status === st).length;
   const latestObs = [...state.observations].filter((o) => o.term === 4).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
@@ -71,15 +71,15 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
     <>
       <div className="ctx-head">
         <p className="strong grow">{moduleLabel}</p>
-        <button className="icon-btn has-tip tip-below" type="button" data-tip={t('shell.panel.search')} aria-label={t('shell.panel.search')} aria-expanded={searchOpen} onClick={() => { setSearchOpen(!searchOpen); setQuery(''); }}>
+        {role.can('students.view') && <button className="icon-btn has-tip tip-below" type="button" data-tip={t('shell.panel.search')} aria-label={t('shell.panel.search')} aria-expanded={searchOpen} onClick={() => { setSearchOpen(!searchOpen); setQuery(''); }}>
           <Icon name="search" />
-        </button>
+        </button>}
         <button className="icon-btn has-tip tip-below" type="button" data-tip={t('shell.panel.closeTip')} aria-label={t('shell.panel.close')} aria-keyshortcuts="Control+Shift+S Meta+Shift+S" onClick={onToggle}>
           <Icon name="panel" />
         </button>
       </div>
 
-      {searchOpen && (
+      {searchOpen && role.can('students.view') && (
         <div className="ctx-search">
           <div className="search-wrap">
             <label className="sr-only" htmlFor="ctx-search">{t('shell.panel.search')}</label>
@@ -141,7 +141,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
         {module === 'settings' && role.can('catalog.view') && <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
       </nav>
 
-      {(module === 'students' || module === 'dashboard') && (
+      {role.can('students.view') && (module === 'students' || module === 'dashboard') && (
         <>
           <p className="cap ctx-label">{t('shell.panel.pinned')}</p>
           {pinned.length === 0 ? (

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { STUDENTS } from '../src/data/demo';
 
 test('desktop account menu switches roles and role persists in this tab', async ({ page }) => {
   await page.goto('./#/');
@@ -35,6 +36,24 @@ test('parent has a planned landing page and no Students navigation', async ({ pa
   await expect(page.getByRole('heading', { name: 'Parent view planned' })).toBeVisible();
   await expect(page.getByText('Family Portal — Phase 3')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Students', exact: true })).toHaveCount(0);
+});
+
+test('parent sees no student names on desktop or mobile, including global search', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'parent'));
+  await page.goto('./#/');
+  for (const student of STUDENTS) await expect(page.getByText(student.name, { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Pinned', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Recent', { exact: true })).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Search/ }).click();
+  const palette = page.getByRole('dialog');
+  for (const student of STUDENTS) await expect(palette.getByText(student.name, { exact: true })).toHaveCount(0);
+  await expect(palette.getByRole('option')).toHaveCount(2);
+  await page.keyboard.press('Escape');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  for (const student of STUDENTS) await expect(page.getByText(student.name, { exact: true })).toHaveCount(0);
 });
 
 test('all roles can open personal settings while restricted demo settings explain access', async ({ page }) => {
