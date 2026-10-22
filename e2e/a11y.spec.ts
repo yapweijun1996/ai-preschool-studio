@@ -9,6 +9,8 @@ const routes = [
   { name: 'parent-planned', path: './#/', role: 'parent' },
   { name: 'catalog', path: './#/catalog' },
   { name: 'students', path: './#/students' },
+  { name: 'coverage', path: './#/coverage', role: 'reviewer' },
+  { name: 'reviews', path: './#/reviews', role: 'reviewer' },
   { name: 'aria-profile', path: './#/students/aria' },
   { name: 'aria-observe', path: './#/students/aria/observe' },
   { name: 'aria-progress', path: './#/students/aria/progress' },
