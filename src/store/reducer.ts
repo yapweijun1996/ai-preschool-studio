@@ -35,7 +35,7 @@ export interface AuditEvent {
   action: AuditAction;
   target: { type: 'student' | 'demo'; id: string };
   summaryKey: AuditSummaryKey;
-  summaryParams?: { version?: number; from?: Role; to?: Role };
+  summaryParams?: { version?: number };
   decision?: DecisionEvent;
 }
 export interface Actor { role: Role; name: string }
@@ -344,7 +344,7 @@ export function reducer(state: State, action: Action): State {
       return appendAudit(reopened, auditEventForDecision(decision, action.studentId, actor));
     }
     case 'roleSwitched':
-      return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summaryKey: 'pages.audit.summaryRoleSwitched', summaryParams: { from: action.from, to: action.to } });
+      return appendAudit(state, { at: asInstant(action.at), actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summaryKey: 'pages.audit.summaryRoleSwitched' });
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
     case 'reset': {

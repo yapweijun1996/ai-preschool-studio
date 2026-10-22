@@ -292,7 +292,7 @@ export const pages = {
     action: 'Action', child: 'Child',
     from: 'From date', to: 'To date',
     allActions: 'All actions', actor: 'Actor', target: 'Target', summary: 'Summary', timestamp: 'Timestamp', readFailed: 'Could not load the audit log.',
-    summaryObservationAdded: 'Observation recorded.', summarySubmitted: 'Submitted for review.', summaryChangesRequested: 'Changes requested.', summaryApproved: 'Approved as version {version}.', summaryReleased: 'Version {version} released to family.', summaryReopened: 'Reopened for amendment.', summaryRoleSwitched: 'Role switched from {from} to {to}.', summaryReset: 'Demo data reset.',
+    summaryObservationAdded: 'Observation recorded.', summarySubmitted: 'Submitted for review.', summaryChangesRequested: 'Changes requested.', summaryApproved: 'Approved as version {version}.', summaryReleased: 'Version {version} released to family.', summaryReopened: 'Reopened for amendment.', summaryRoleSwitched: 'Demo role changed.', summaryReset: 'Demo data reset.',
     observationAdded: 'Observation added', submitted: 'Report submitted', changesRequested: 'Changes requested', approved: 'Report approved', released: 'Report released', reopened: 'Report reopened', roleSwitched: 'Demo role switched', reset: 'Demo data reset'
   },
   coverage: {

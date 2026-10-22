@@ -62,11 +62,7 @@ export function AuditLog() {
   }
 
   const childName = (id: string) => STUDENTS.find((student) => student.id === id)?.name ?? id;
-  const summary = (event: AuditEvent) => t(event.summaryKey, {
-    ...event.summaryParams,
-    ...(event.summaryParams?.from ? { from: t(`shell.roles.${event.summaryParams.from}`) } : {}),
-    ...(event.summaryParams?.to ? { to: t(`shell.roles.${event.summaryParams.to}`) } : {})
-  });
+  const summary = (event: AuditEvent) => t(event.summaryKey, event.summaryParams);
   const clear = () => {
     setAction('');
     setStudentId('');

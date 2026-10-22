@@ -16,6 +16,9 @@ describe('portfolio reducer', () => {
     expect(event).toMatchObject({ summaryKey: 'pages.audit.summaryChangesRequested', decision: { comment: 'private narrative note' } });
     expect(event.summaryKey).not.toContain('private narrative note');
     expect('summary' in event).toBe(false);
+    const roleChange = reducer(s, { type: 'roleSwitched', from: 'teacher', to: 'admin', actor: { role: 'teacher', name: 'Ms. Lim' }, at: '2026-10-22T09:00:00.000Z' }).auditEvents.at(-1)!;
+    expect(roleChange).toMatchObject({ summaryKey: 'pages.audit.summaryRoleSwitched' });
+    expect(roleChange.summaryParams).toBeUndefined();
   });
   it('clears frozen report labels when reopening while retaining frozen versions', () => {
     const frozen = initialState().reports.meiling.versions[0];
