@@ -32,7 +32,12 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `submitForReview` | Portfolio studio, Report review | Every domain and nonblank reflection required. | [demoAdapter.ts](../src/data/demoAdapter.ts#L97) |
 | `getApprovalBlock` | Report review | Reports the existing approval guard. | [demoAdapter.ts](../src/data/demoAdapter.ts#L101) |
 | `requestChanges` | Report review | Only reports in review can receive changes; other statuses return `report-not-editable`. | [demoAdapter.ts](../src/data/demoAdapter.ts#L102) |
-| `approve` | Report review | Requires review status, readiness and evidence for every claim. | [demoAdapter.ts](../src/data/demoAdapter.ts#L106) |
+| `approve` | Report review / Release | Requires review status, readiness and evidence for every claim; stores ISO `approvedAt` and `approvedBy` and freezes a version. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
+| `getReportVersions` | Report release | Returns immutable approved versions in ascending version order. | Demo adapter reads report state. |
+| `getReportHistory` | Report release | Returns submitted, changes-requested, approved, released and reopened decisions. | Demo adapter reads report state. |
+| `releaseReport` | Report release | Releases only the latest approved version; repeated release is idempotent. | Demo adapter dispatches the release reducer action. |
+| `reopenReport` | Report release | Requires an approved report and nonblank reason; preserves old versions. | Demo adapter dispatches the reopen reducer action. |
+| `getAuditLog` | Audit log | Returns newest-first events filtered by action, child and inclusive date range. | Demo adapter uses `selectAuditLog`. |
 | `getCoverage` | Evidence coverage | Returns all children with per-area counts, dates and statuses plus class totals for a term. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
 | `getNeedsAttention` | Evidence coverage | Returns children with gaps ordered by gap count and oldest latest evidence. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
 | `getReviewQueue` | Evidence coverage, Report review | Returns oldest-first review items and changes-requested items awaiting teachers. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
@@ -50,16 +55,16 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `unverified-claims` | One or more narrative claims lack evidence. |
 | `invalid-target` | The requested transition is not valid for the target's current state, or the target sentence/paragraph is absent. |
 | `no-observations` | A draft cannot be started because no evidence exists. |
+| `not-approved` | A report has no approved latest version to release. |
+| `reason-required` | Reopening requires a nonblank reason. |
 
 ## Implementing an API adapter
 
 Keep the same async method names, parameter shapes and typed refusal reasons. Map each read to a
 REST/RPC request and each write to a server command; the server remains authoritative for the same
 domain rules and assigns observation IDs. Translate structured API errors into `PortRefusal`
-values rather than throwing strings. `approve` accepts an ISO timestamp and reviewer identity.
-The current demo reducer stores approval time as a localized display string and does not store
-reviewer identity: the demo adapter formats the ISO timestamp with the same locale and translated
-template as `ReportPreview`, then returns `approvedBy` in the typed result.
+values rather than throwing strings. `approve` accepts and stores an ISO timestamp and reviewer
+identity; views format the timestamp using the active locale.
 
 The adapter is framework-free. React consumers obtain the stable demo adapter through
 `useDataPort()` from `src/store/PortfolioContext.tsx`; replacing that binding with a platform
@@ -76,7 +81,3 @@ report is already in review, approved, or not started; and `approve` when the re
 review. The adapter handles missing observation ownership, missing suggestion citations, edit
 locks, readiness failures, and approval claims with their more specific refusal reasons first.
 
-## Known gaps for step 2
-
-The reducer should store ISO `approvedAt` and `approvedBy`, then format approval metadata when it
-renders. This change needs a stored-state `SCHEMA` bump so older saved state is discarded.

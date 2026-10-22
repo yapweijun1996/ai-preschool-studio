@@ -1,6 +1,6 @@
 import type { Observation, Paragraph } from './demo';
 import type { Framework, DomainKey, Milestone, ReportingPeriod } from '../framework';
-import type { ApprovalBlock, Readiness, UnverifiedClaim } from '../store/reducer';
+import type { ApprovalBlock, AuditEvent, AuditFilters, DecisionEvent, Readiness, ReportVersion, UnverifiedClaim } from '../store/reducer';
 import type { StudentSummary } from '../store/selectors';
 import type { Suggestion } from '../services/mockProvider';
 import type { ClassCoverage, CoverageStudent, ReviewQueue } from '../coverage';
@@ -14,7 +14,10 @@ export type PortRefusal =
   | 'not-ready'
   | 'unverified-claims'
   | 'invalid-target'
-  | 'no-observations';
+  | 'no-observations'
+  | 'not-approved'
+  | 'reason-required';
+
 
 export type PortResult<T> = { ok: true; value: T } | { ok: false; reason: PortRefusal };
 export type Draft = { paragraphs: Paragraph[]; reflection: string };
@@ -71,7 +74,12 @@ export interface DataPort {
   /** Requests changes only for reports currently in review. */
   requestChanges(studentId: string, text: string, date: string): Promise<PortResult<void>>;
   /** Approves only review reports with complete readiness and verified claims. */
-  approve(studentId: string, approvedBy: string, at: string): Promise<PortResult<{ approvedBy: string; at: string }>>;
+  approve(studentId: string, approvedBy: string, atIso: string): Promise<PortResult<{ approvedBy: string; at: string }>>;
+  releaseReport(studentId: string, releasedBy: string, atIso: string): Promise<PortResult<void>>;
+  reopenReport(studentId: string, reason: string, reopenedBy: string, atIso: string): Promise<PortResult<void>>;
+  getReportVersions(studentId: string): Promise<ReportVersion[]>;
+  getReportHistory(studentId: string): Promise<DecisionEvent[]>;
+  getAuditLog(filters?: AuditFilters): Promise<AuditEvent[]>;
 
   // Evidence coverage and review queue (derived reads)
   /** Returns coverage for every child and summary totals in the selected term. */
