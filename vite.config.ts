@@ -23,8 +23,7 @@ function pwaRelease(): Plugin {
     generateBundle(_options, bundle) {
       const skip = new Set(['sw.js', 'version.json']);
       // index.html is listed explicitly in case Vite's HTML asset is emitted after this hook.
-      // The install cache contains the app shell and public shell resources only.
-      // Bundled assets, including the Inter Latin font, are cached on first use.
+      // The install cache precaches the app shell, route chunks, locale chunks and public assets.
       const bundledRoutes = Object.values(bundle)
         .filter((output) => output.type === 'chunk' || (output.type === 'asset' && /\.css$/i.test(output.fileName)))
         .map((output) => output.fileName);

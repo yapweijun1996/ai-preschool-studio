@@ -72,41 +72,40 @@ above its 500 KB warning threshold and close to the Lighthouse script budget.
 ## Route splitting (2026-10-23)
 
 The build now loads page modules on their route, the active locale before the
-first render, and other locales when selected. Pointer hover, keyboard focus,
-and touch start preload the matching route. After the app becomes idle, the
-Students route is preloaded. The persistent AppShell surrounds both the route
-content and its skeleton fallback.
+first render, and other locales when selected. The initial hash route is
+preloaded in parallel with the initial locale before React mounts. Pointer
+hover, keyboard focus, and touch start preload the matching route. After the app
+becomes idle, the Students route is preloaded. One Suspense boundary retains
+the current app shell during in-app navigation; a cold-load fallback renders
+the target module's shell and skeleton.
 
 | Chunk | Before raw / gzip | After raw / gzip |
 |---|---:|---:|
-| Entry | 554,710 / 163,560 B | 19,954 / 5,529 B |
+| Entry (includes app shell and recovery UI) | 554,710 / 163,560 B | 116,391 / 34,972 B |
 | React and Router vendor | included in entry | 261,449 / 83,134 B |
-| Shared AppShell | included in entry | 92,781 / 28,911 B |
-| English locale | included in entry | 26,960 / 9,080 B |
-| Chinese locale | included in entry | 27,241 / 10,421 B |
-| Malay locale | included in entry | 29,636 / 9,555 B |
-| useStudentLabels | included in entry | 430 / 215 B |
-| AccessDenied | included in entry | 496 / 308 B |
-| NotFound | included in entry | 639 / 358 B |
-| StudentTabs | included in entry | 646 / 346 B |
-| Catalog page | included in entry | 1,536 / 749 B |
-| Modal | included in entry | 1,537 / 754 B |
-| ReportFlow | included in entry | 1,862 / 864 B |
-| EmptyIllustration | included in entry | 1,866 / 833 B |
-| FamilyReport page | included in entry | 3,723 / 1,320 B |
-| Reviews | included in entry | 3,768 / 1,286 B |
-| Classes | 4,210 / 1,380 B | 4,338 / 1,442 B |
-| LearningProgress | included in entry | 4,839 / 1,850 B |
-| Students | included in entry | 5,529 / 1,986 B |
-| AuditLog | included in entry | 5,648 / 1,609 B |
-| Coverage | included in entry | 6,946 / 2,110 B |
-| StudentProfile | included in entry | 7,716 / 2,541 B |
-| AddObservation | included in entry | 9,375 / 3,081 B |
-| Settings | included in entry | 11,445 / 3,142 B |
-| FamilyEnrolment | 14,330 / 3,460 B | 14,405 / 3,511 B |
-| ReportPreview | included in entry | 15,493 / 4,325 B |
-| CatalogContent | 20,120 / 6,630 B | 20,278 / 6,700 B |
-| PortfolioStudio | included in entry | 26,186 / 7,621 B |
+| English locale | included in entry | 27,138 / 9,136 B |
+| Chinese locale | included in entry | 27,405 / 10,480 B |
+| Malay locale | included in entry | 29,833 / 9,610 B |
+| AccessDenied | included in entry | 493 / 306 B |
+| NotFound | included in entry | 591 / 333 B |
+| StudentTabs | included in entry | 643 / 342 B |
+| Catalog page | included in entry | 1,519 / 734 B |
+| Modal | included in entry | 1,537 / 752 B |
+| ReportFlow | included in entry | 1,859 / 861 B |
+| FamilyReport page | included in entry | 3,675 / 1,299 B |
+| Reviews | included in entry | 3,765 / 1,284 B |
+| Classes | 4,210 / 1,380 B | 4,290 / 1,420 B |
+| LearningProgress | included in entry | 4,801 / 1,827 B |
+| Students | included in entry | 5,435 / 1,947 B |
+| AuditLog | included in entry | 5,600 / 1,579 B |
+| Coverage | included in entry | 6,943 / 2,109 B |
+| StudentProfile | included in entry | 7,646 / 2,514 B |
+| AddObservation | included in entry | 9,332 / 3,059 B |
+| Settings | included in entry | 11,396 / 3,113 B |
+| FamilyEnrolment | 14,330 / 3,460 B | 14,402 / 3,506 B |
+| ReportPreview | included in entry | 15,445 / 4,302 B |
+| CatalogContent | 20,120 / 6,630 B | 20,230 / 6,679 B |
+| PortfolioStudio | included in entry | 26,138 / 7,600 B |
 
 Each current JS chunk is at most 261,449 B raw, so Vite emits no large-chunk
 warning. The production preview requested scripts for each route; sizes below
@@ -115,17 +114,34 @@ script transfer budget):
 
 | Page | Before scripts | After scripts |
 |---|---:|---:|
-| `#/` | 149,635 B | 129,996 B |
-| `#/students` | 149,635 B | 129,996 B |
-| `#/students/aria/studio` | 149,635 B | 138,839 B |
-| `#/students/aria/report` | 149,635 B | 136,297 B |
-| `#/catalog` | 156,488 B | 139,063 B |
-| `#/coverage` | 149,635 B | 132,106 B |
+| `#/` | 149,635 B | 129,490 B |
+| `#/students` | 149,635 B | 129,490 B |
+| `#/students/aria/studio` | 149,635 B | 138,280 B |
+| `#/students/aria/report` | 149,635 B | 135,735 B |
+| `#/catalog` | 156,488 B | 138,513 B |
+| `#/coverage` | 149,635 B | 131,596 B |
 
 The dashboard total includes the idle Students preload. The largest configured
-Lighthouse route is now Catalog at 139,063 B; its script budget is 159,923 B,
-15% higher rounded up. The dashboard script transfer is 19,639 B lower than
-before, and the heaviest configured page is 17,425 B lower.
+Lighthouse route is now Catalog at 138,513 B; its script budget remains
+159,923 B, leaving 21,410 B of headroom. The dashboard script transfer is
+20,145 B lower than before, and the heaviest configured page is 17,975 B lower.
+No budget increase is needed.
+
+## Route and language load recovery (2026-10-23)
+
+If a route chunk fails to preload or import, the app retries once by reloading
+the page. A session-storage guard prevents a reload loop. If the route still
+cannot load, an accessible alert card inside the app shell explains that the
+page could not load and offers a Reload button. A successful route load clears
+the guard. Studio drafts and portfolio state are serialized by the store to
+`sessionStorage` after state changes, so the recovery reload retains them in
+the same tab.
+
+The initial language load retries with English if the saved locale fails. If
+English also fails, bootstrap renders a plain-DOM alert and Reload button so
+the root is never left blank. A language switch failure keeps the current
+language and announces a translated status message. Locale chunk failures do
+not trigger the route reload handler.
 
 ## Local route transfer measurement (2026-10-22)
 
@@ -144,8 +160,8 @@ report page's larger total. Pessimistic error assertions now cover this case.
 
 The stylesheet budget is 10,978 B, 15% above the catalog's 9,546 B. The total
 resource budget remains 274,597 B, 15% above the largest observed route total
-(244,309 B, rounded up). The script limit is now 159,923 B based on the
-heaviest measured page after route splitting.
+(244,309 B, rounded up). The 159,923 B script limit remains above the current
+largest measured page, Catalog at 138,513 B.
 
 The same local mobile Lighthouse run scored `#/` 0.92, `#/students` 0.97,
 `#/students/aria/report` 0.96, `#/catalog` 0.94, and `#/coverage` 0.87 for
