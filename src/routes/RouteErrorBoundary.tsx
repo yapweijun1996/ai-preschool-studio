@@ -1,7 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AppShell } from '../components/AppShell';
 import { useI18n } from '../i18n';
-import { reloadForChunkFailure } from './chunkRecovery';
+import { isChunkLoadError, reloadForChunkFailure } from './chunkRecovery';
 
 type Props = { children: ReactNode };
 type State = { failed: boolean };
@@ -11,8 +11,8 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(): State { return { failed: true }; }
 
-  componentDidCatch(_error: Error, _info: ErrorInfo): void {
-    reloadForChunkFailure();
+  componentDidCatch(error: Error, _info: ErrorInfo): void {
+    if (isChunkLoadError(error)) reloadForChunkFailure();
   }
 
   render() {
