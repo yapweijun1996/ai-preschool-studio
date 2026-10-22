@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 
 for (const route of [
   { path: '#/students/aria/report', ready: '.a4', name: 'report' },
-  { path: '#/catalog', ready: '.catalog-page h2', name: 'catalog' }
+  { path: '#/catalog', ready: '.catalog-page h2', name: 'catalog' },
+  { path: '#/classes', ready: '.class-roster .row-link', name: 'classes' }
 ]) {
   test(`${route.name} layout shift stays below 0.05 on a slow connection`, async ({ page }) => {
     await page.addInitScript(() => {
@@ -26,6 +27,10 @@ for (const route of [
     });
 
     await page.goto(`./${route.path}`);
+    if (route.name === 'classes') {
+      await expect(page.locator('h1.h1')).toBeVisible();
+      await page.getByRole('status', { name: 'Loading class roster…' }).waitFor({ state: 'hidden' });
+    }
     await expect(page.locator(route.ready).first()).toBeVisible();
     await page.waitForTimeout(1500);
     const total = await page.evaluate(() => (window as Window & { __layoutShiftTotal?: number }).__layoutShiftTotal ?? 0);

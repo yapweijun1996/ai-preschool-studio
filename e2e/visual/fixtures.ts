@@ -42,6 +42,38 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
   await page.locator('.update-overlay, .update-banner').waitFor({ state: 'hidden' });
   await page.getByRole('status', { name: 'Saving…' }).waitFor({ state: 'hidden' });
 
+  // `main` is part of AppShell and appears before lazy route chunks and async page data.
+  // Wait for the actual content represented by each visual target before capturing pixels.
+  if (path.includes('/classes')) {
+    await expect(page.getByRole('heading', { name: 'Classes', exact: true })).toBeVisible();
+    await expect(page.locator('.class-roster .row-link').first()).toBeVisible();
+  } else if (path.includes('/catalog')) {
+    await expect(page.locator('section.catalog-section h2').first()).toBeVisible();
+  } else if (path.includes('/students/aria') && !path.includes('/studio') && !path.includes('/report')) {
+    await expect(page.locator('.family-section h2#family-heading')).toBeVisible();
+  } else if (path.includes('/students/')) {
+    if (path.includes('/studio')) {
+      await expect(page.locator('.studio-head h1')).toBeVisible();
+    } else if (path.includes('/report')) {
+      await expect(page.locator('.a4')).toBeVisible();
+    } else {
+      await expect(page.locator('h1.h1').first()).toBeVisible();
+    }
+  } else if (path.includes('/coverage')) {
+    await expect(page.locator('.coverage-page h1, h1.h1').first()).toBeVisible();
+  } else if (path.includes('/reviews')) {
+    await expect(page.locator('h1.h1').first()).toBeVisible();
+  } else if (path.includes('/settings')) {
+    await expect(page.locator('h1.h1').first()).toBeVisible();
+  } else if (path.includes('/audit')) {
+    await expect(page.locator('h1.h1').first()).toBeVisible();
+  } else if (path.endsWith('#/') || path.endsWith('/#/') || path === './#/') {
+    await expect(page.locator('#rp-h')).toBeVisible();
+  } else if (path.includes('/students')) {
+    await expect(page.locator('h1.h1').first()).toBeVisible();
+    await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
+  }
+
   if (path.includes('/students/aria/studio')) {
     // Mobile captures show the Write tab. Visit AI, wait for its ready action, then restore
     // Write so the readiness check does not change the screenshot's intended contents.
