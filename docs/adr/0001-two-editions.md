@@ -1,6 +1,6 @@
 # ADR 0001: Two editions — Studio Demo and Studio Platform
 
-- Status: **Proposed** (owner sign-off pending)
+- Status: **Accepted with changes** — Studio Demo scope expanded by [ADR 0002](0002-production-design-reference.md) (2026-10-22)
 - Date: 2026-10-22
 - Deciders: product owner
 - Applies to: this repository (Studio Demo) and the separate production product (Studio Platform)

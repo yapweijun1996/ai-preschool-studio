@@ -6,7 +6,9 @@ radius and spacing value comes from `design/tokens.json` (mirrored in `src/style
 
 **Edition: Studio Demo** — the teacher portfolio loop with fictional data and a Mock provider.
 School operations, family portal and administration belong to the separate Studio Platform
-edition; see [ADR 0001](docs/adr/0001-two-editions.md).
+edition; see [ADR 0001](docs/adr/0001-two-editions.md). Studio Demo is the production design
+reference that Studio Platform can copy or port ([ADR 0002](docs/adr/0002-production-design-reference.md),
+[roadmap](docs/roadmap.md)).
 
 > **Demo mode.** All students, observations and reports are fictional sample data. The AI is a
 > local **Mock provider** that returns canned text — no live AI, no network calls, no child photos.
