@@ -5,6 +5,7 @@ import { EmptyIllustration } from '../components/EmptyIllustration';
 import { PhotoIllustration } from '../components/EmptyIllustration';
 import { BrandMark } from '../components/BrandMark';
 import { Menu } from '../components/Menu';
+import { Modal } from '../components/Modal';
 import { ReadinessList, ReportFlow } from '../components/ReportFlow';
 import designTokens from '../../design/tokens.json';
 import {
@@ -36,6 +37,7 @@ const sections = [
   'Avatar',
   'SaveIndicator',
   'Notice',
+  'Modal',
   'Chips',
   'Tabs',
   'Form fields',
@@ -157,6 +159,7 @@ function Tokens({ theme }: { theme: string }) {
 function SectionExamples({ name, theme }: { name: string; theme: string }) {
   const labels = useLabels();
   const { t } = useI18n();
+  const [modalOpen, setModalOpen] = useState(false);
   switch (name) {
     case 'Tokens':
       return <Tokens theme={theme} />;
@@ -287,6 +290,17 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
               </Notice>
             ))}
           </div>
+        </MarkupExample>
+      );
+    case 'Modal':
+      return (
+        <MarkupExample title="Accessible modal shell">
+          <button className="btn btn-secondary" type="button" onClick={() => setModalOpen(true)}>Open modal example</button>
+          {modalOpen && <Modal backdropClassName="dialog-backdrop" panelClassName="card stack family-dialog" labelledBy="catalog-modal-title" describedBy="catalog-modal-description" onClose={() => setModalOpen(false)}>
+            <h2 id="catalog-modal-title" className="h2">Modal title</h2>
+            <p id="catalog-modal-description" className="sec muted">Keyboard focus stays within this dialog. Press Escape to close it.</p>
+            <button className="btn btn-secondary" type="button" onClick={() => setModalOpen(false)}>Close</button>
+          </Modal>}
         </MarkupExample>
       );
     case 'Chips':

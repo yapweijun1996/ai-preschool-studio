@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { Modal } from '../components/Modal';
 import { BrandMark } from '../components/BrandMark';
 import { PhotoIllustration } from '../components/EmptyIllustration';
 import { ReadinessList, ReportFlow } from '../components/ReportFlow';
@@ -35,7 +36,6 @@ export function ReportPreview() {
   const [focusStatusAfterReopen, setFocusStatusAfterReopen] = useState(false);
   const [releaseAnnouncement, setReleaseAnnouncement] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const reopenTrigger = useRef<HTMLButtonElement>(null);
   const statusHeading = useRef<HTMLHeadingElement>(null);
   const { t, fmtDate, lang } = useI18n();
@@ -47,27 +47,10 @@ export function ReportPreview() {
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
   useEffect(() => {
-    if (reopenOpen) dialogRef.current?.querySelector<HTMLElement>('textarea')?.focus();
-  }, [reopenOpen]);
-  useEffect(() => {
     if (!focusStatusAfterReopen || state.reports[id]?.status !== 'draft') return;
     statusHeading.current?.focus();
     setFocusStatusAfterReopen(false);
   }, [focusStatusAfterReopen, id, state.reports]);
-  useEffect(() => {
-    if (!reopenOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setReopenOpen(false); reopenTrigger.current?.focus(); }
-      if (event.key === 'Tab' && dialogRef.current) {
-        const items = [...dialogRef.current.querySelectorAll<HTMLElement>('button, textarea')].filter((item) => !item.hasAttribute('disabled'));
-        if (items.length === 0) return;
-        if (event.shiftKey && document.activeElement === items[0]) { event.preventDefault(); items.at(-1)?.focus(); }
-        else if (!event.shiftKey && document.activeElement === items.at(-1)) { event.preventDefault(); items[0].focus(); }
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [reopenOpen]);
   // The request-changes note is unsaved work while its editor is open.
   useDirtyGuard(requesting && sum?.report.status === 'review');
   if (!sum) return <NotFound />;
@@ -393,18 +376,16 @@ export function ReportPreview() {
             )}
           </div>
           {reopenOpen && (
-            <div className="report-dialog-scrim" onMouseDown={(event) => { if (event.target === event.currentTarget) { setReopenOpen(false); reopenTrigger.current?.focus(); } }}>
-              <div ref={dialogRef} className="card stack report-dialog" role="dialog" aria-modal="true" aria-labelledby="reopen-title" aria-describedby="reopen-hint">
+            <Modal backdropClassName="report-dialog-scrim" panelClassName="card stack report-dialog" labelledBy="reopen-title" describedBy="reopen-hint" onClose={() => setReopenOpen(false)}>
                 <h2 id="reopen-title" className="h2">{t('pages.report.reopenTitle')}</h2>
                 <p id="reopen-hint" className="sec muted">{t('pages.report.reopenHint')}</p>
                 <label className="field"><span className="field-label">{t('pages.report.reopenReason')}</span><textarea className="input" rows={4} value={reopenReason} aria-invalid={reopenError} onChange={(event) => { setReopenReason(event.target.value); setReopenError(false); }} /></label>
                 {reopenError && <p className="sec" role="alert">{t('pages.report.reopenRequired')}</p>}
                 <div className="row" style={{ justifyContent: 'flex-end' }}>
-                  <button className="btn btn-secondary" type="button" onClick={() => { setReopenOpen(false); reopenTrigger.current?.focus(); }}>{t('pages.report.close')}</button>
+                  <button className="btn btn-secondary" type="button" onClick={() => setReopenOpen(false)}>{t('pages.report.close')}</button>
                   <button className="btn btn-primary" type="button" onClick={reopen}>{t('pages.report.reopenConfirm')}</button>
                 </div>
-              </div>
-            </div>
+            </Modal>
           )}
         </>
       )}

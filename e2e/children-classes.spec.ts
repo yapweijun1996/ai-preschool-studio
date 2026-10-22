@@ -88,6 +88,24 @@ test('an open collector editor cannot move Aria’s record to Chloe after route 
   await expect(page.locator('.audit-table-wrap')).not.toContainText('Chloe Ng');
 });
 
+test('confirmation dialogs manage initial focus, Escape, Tab, and focus return', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
+  await page.goto('./#/students/aria');
+  const trigger = page.locator('.family-section').getByRole('button', { name: 'Withdraw child' });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: 'Confirm withdrawal' });
+  await expect(dialog.getByRole('button', { name: 'Close' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: 'Confirm' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: 'Close' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+
 test('teacher sees guardian contacts and health notes but has no edit actions', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'teacher'));
   await page.goto('./#/students/aria');

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Icon } from './Icon';
 import { Notice } from './ui';
+import { Modal } from './Modal';
 import { useI18n } from '../i18n';
 import { useRole } from '../roles/RoleContext';
 import { demoRole } from '../roles';
@@ -77,24 +78,17 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const firstField = useRef<HTMLInputElement | null>(null);
-  const returnFocus = useRef<HTMLElement | null>(null);
+  const sectionHeading = useRef<HTMLHeadingElement>(null);
   const targetChildId = useRef(childId);
   const actor: Actor = { role: role.role, name: demoRole(role.role).name };
   const editable = role.can('children.edit');
 
-  useEffect(() => {
-    if (dialog) firstField.current?.focus();
-    else if (returnFocus.current) returnFocus.current.focus();
-  }, [dialog]);
-
   const openDialog = (
     kind: Exclude<Dialog, null>,
-    trigger: HTMLElement,
+    _trigger: HTMLElement,
     guardian?: Guardian,
     collector?: AuthorisedCollector
   ) => {
-    returnFocus.current = trigger;
     targetChildId.current = childId;
     setSelectedGuardian(guardian);
     setSelectedCollector(collector);
@@ -127,7 +121,6 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     <label className="field" key={key}>
       <span className="field-label">{label}</span>
       <input
-        ref={key === 'name' ? firstField : undefined}
         className="input"
         type={type}
         value={fields[key] ?? ''}
@@ -225,7 +218,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
   return (
     <section className="card family-section stack" aria-labelledby="family-heading">
       <div className="card-head row">
-        <h2 className="h2 grow" id="family-heading">{t('pages.children.familyTitle')}</h2>
+        <h2 ref={sectionHeading} tabIndex={-1} className="h2 grow" id="family-heading">{t('pages.children.familyTitle')}</h2>
         {editable && child.status === 'active' && (
           <button
             className="btn btn-secondary"
@@ -387,17 +380,13 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
       )}
       {saved && <Notice tone="success" icon="check" role="status">{t('pages.children.saved')}</Notice>}
       {activeDialog && (
-        <div
-          className="dialog-backdrop"
-          onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}
+        <Modal
+          backdropClassName="dialog-backdrop"
+          panelClassName="card stack family-dialog"
+          labelledBy="family-dialog-title"
+          onClose={close}
+          fallbackFocusRef={sectionHeading}
         >
-          <section
-            className="card stack family-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="family-dialog-title"
-            onKeyDown={(event) => { if (event.key === 'Escape') close(); }}
-          >
             <div className="row">
               <h2 id="family-dialog-title" className="h2 grow">{t(dialogTitle)}</h2>
               <button
@@ -503,8 +492,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
                 </button>
               </div>
             )}
-          </section>
-        </div>
+        </Modal>
       )}
     </section>
   );
