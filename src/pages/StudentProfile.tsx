@@ -4,14 +4,20 @@ import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { StudentTabs } from '../components/StudentTabs';
 import { Avatar, MilestoneDots, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, DOMAINS, TEACHER, TERM, domainShort, formatDate, lastObservedLabel } from '../data/demo';
+import { CLASS_NAME, DOMAINS, TEACHER } from '../data/demo';
+import { useI18n } from '../i18n';
+import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
 import { studentSummary } from '../store/selectors';
 import { NotFound } from './NotFound';
+import { useLastObservedLabel } from './Students';
 
 export function StudentProfile() {
   const { id = '' } = useParams();
+  const { t, fmtDate } = useI18n();
+  const { domainFull, domainShort, milestone } = useLabels();
+  const lastObservedLabel = useLastObservedLabel();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
   const { isPinned, togglePin } = useNavMemory();
@@ -21,74 +27,78 @@ export function StudentProfile() {
   const { student, report } = sum;
   const obs = observationsFor(state, id).sort((a, b) => b.date.localeCompare(a.date));
   const byDomain = (k: string) => obs.filter((o) => o.domain === k);
+  const demo = t('common.demoStudent');
+  const addLabel = t('pages.shared.addObservation');
+  const openStudio = t('pages.shared.openStudio');
+  const pinLabel = pinned ? t('pages.profile.unpin') : t('pages.profile.pin');
 
   return (
     <AppShell
       module="students"
       currentStudentId={id}
       mobileTitle={student.name}
-      mobileSubtitle={`${CLASS_NAME} · Demo student`}
+      mobileSubtitle={`${CLASS_NAME} · ${demo}`}
       mobileBack="/students"
       mobileActions={
         <>
-          <Link className="icon-btn icon-btn-outline" to={`/students/${id}/observe`} aria-label="Add observation" title="Add observation"><Icon name="plus" /></Link>
-          <Link className="btn btn-primary grow" to={`/students/${id}/studio`}>Open AI Portfolio Studio</Link>
+          <Link className="icon-btn icon-btn-outline" to={`/students/${id}/observe`} aria-label={addLabel} title={addLabel}><Icon name="plus" /></Link>
+          <Link className="btn btn-primary grow" to={`/students/${id}/studio`}>{openStudio}</Link>
         </>
       }
     >
       {(bp) => (
         <div className="page">
           <div className="row" style={{ gap: 16 }}>
-            {bp !== 'mobile' && <Link className="icon-btn" to="/students" aria-label="Back to My Students" title="Back"><Icon name="arrowLeft" /></Link>}
-            <Avatar initials={student.initials} size="lg" label={`Photo placeholder for ${student.name}`} />
+            {bp !== 'mobile' && <Link className="icon-btn" to="/students" aria-label={t('pages.profile.backToStudents')} title={t('pages.shared.back')}><Icon name="arrowLeft" /></Link>}
+            <Avatar initials={student.initials} size="lg" label={t('pages.shared.photoPlaceholderFor', { name: student.name })} />
             <div className="grow">
               <div className="row">
                 {bp !== 'mobile' && <h1 className="h1">{student.name}</h1>}
-                <span className="status st-draft">Demo student</span>
+                <span className="status st-draft">{demo}</span>
               </div>
-              <p className="sec muted">{CLASS_NAME} · Age {student.age} · {lastObservedLabel(sum.lastObserved)}</p>
+              <p className="sec muted">{CLASS_NAME} · {t('pages.profile.age', { age: student.age })} · {lastObservedLabel(sum.lastObserved)}</p>
             </div>
-            <button className="icon-btn icon-btn-outline has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinned ? 'Unpin from sidebar' : 'Pin to sidebar'} data-tip={pinned ? 'Unpin from sidebar' : 'Pin to sidebar'}>
+            <button className="icon-btn icon-btn-outline has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinLabel} data-tip={pinLabel}>
               <Icon name="pin" />
             </button>
             {bp !== 'mobile' && (
               <>
-                <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />Add observation</Link>
-                <Link className="btn btn-primary" to={`/students/${id}/studio`}>Open AI Portfolio Studio</Link>
+                <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>
+                <Link className="btn btn-primary" to={`/students/${id}/studio`}>{openStudio}</Link>
               </>
             )}
           </div>
           <StudentTabs id={id} active="overview" />
           <div className="grid-main-side">
             <section aria-labelledby="ld-h" className="stack" style={{ gap: 16 }}>
-              <div className="row"><h2 id="ld-h" className="h2 grow">Learning domains · Term 4</h2><Link className="btn btn-secondary" to={`/students/${id}/progress`}><Icon name="compare" size={18} />Compare Term 3 and Term 4</Link></div>
+              <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading')}</h2><Link className="btn btn-secondary" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare')}</Link></div>
               <div className="grid-2">
                 {DOMAINS.map((d) => {
                   const list = byDomain(d.key);
                   return (
                     <article key={d.key} className="card card-pad stack">
-                      <h3 className="strong">{d.full}</h3>
+                      <h3 className="strong">{domainFull(d.key)}</h3>
                       <MilestoneDots milestone={student.term4[d.key]} />
-                      <p className="sec muted num">{list.length ? `${list.length} ${list.length === 1 ? 'observation' : 'observations'} · Last observed ${formatDate(list[0].date)}` : 'Observation details not seeded in this demo'}</p>
+                      <p className="sec muted num">{list.length ? t('pages.profile.domainObs', { count: list.length, date: fmtDate(list[0].date) }) : t('pages.profile.notSeeded')}</p>
                     </article>
                   );
                 })}
               </div>
-              <p className="cap muted">Milestones describe what was observed: Emerging · Developing · Consistently demonstrated. They are not scores.</p>
+              <p className="cap muted">{t('pages.profile.milestoneNote', { emerging: milestone('emerging'), developing: milestone('developing'), consistent: milestone('consistent') })}</p>
               <section className="card" aria-labelledby="ro-h" style={{ overflow: 'hidden' }}>
-                <div className="card-head"><h2 id="ro-h" className="h2 grow">Recent observations</h2></div>
+                <div className="card-head"><h2 id="ro-h" className="h2 grow">{t('pages.profile.recentObservations')}</h2></div>
                 {obs.length === 0 ? (
                   <div className="empty">
                     <div className="state-icon"><Icon name="clipboard" size={24} /></div>
-                    <p className="strong">No observations for {student.name.split(' ')[0]} in Term 4 yet</p>
-                    <p className="sec muted">Observations you add become evidence the portfolio narrative can cite.</p>
-                    <Link className="btn btn-primary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />Add observation</Link>
+                    <p className="strong">{t('pages.profile.emptyTitle', { name: student.name.split(' ')[0] })}</p>
+                    <p className="sec muted">{t('pages.profile.emptyBody')}</p>
+                    <Link className="btn btn-primary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>
                   </div>
                 ) : (
                   obs.slice(0, 4).map((o) => (
                     <div key={o.id} className="row-link" style={{ alignItems: 'flex-start' }}>
                       <span className="grow stack" style={{ gap: 4 }}>
-                        <span className="row"><SourceChip id={o.id} /><span className="cap muted num">{formatDate(o.date)} · {domainShort(o.domain)}</span></span>
+                        <span className="row"><SourceChip id={o.id} /><span className="cap muted num">{fmtDate(o.date)} · {domainShort(o.domain)}</span></span>
                         <span className="sec">{o.text}</span>
                       </span>
                     </div>
@@ -98,21 +108,21 @@ export function StudentProfile() {
             </section>
             <aside className="stack" style={{ gap: 16 }}>
               <section className="card card-pad stack" aria-labelledby="pr-h">
-                <h2 id="pr-h" className="h2">Portfolio report</h2>
-                <p className="sec muted">{TERM}</p>
+                <h2 id="pr-h" className="h2">{t('pages.profile.portfolioReport')}</h2>
+                <p className="sec muted">{t('common.term4')}</p>
                 <div className="row">
                   <StatusLabel status={report.status} />
-                  {sum.unverified > 0 && <VerifyLabel>{sum.unverified} {sum.unverified === 1 ? 'claim needs' : 'claims need'} teacher verification</VerifyLabel>}
+                  {sum.unverified > 0 && <VerifyLabel>{t('pages.shared.claims', { count: sum.unverified })}</VerifyLabel>}
                 </div>
-                <Link className="btn btn-secondary" to={`/students/${id}/report`} style={{ alignSelf: 'flex-start' }}><Icon name="eye" size={18} />Preview PDF</Link>
+                <Link className="btn btn-secondary" to={`/students/${id}/report`} style={{ alignSelf: 'flex-start' }}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>
               </section>
               <section className="card card-pad stack" aria-labelledby="ab-h">
-                <h2 id="ab-h" className="h2">About</h2>
+                <h2 id="ab-h" className="h2">{t('pages.profile.about')}</h2>
                 <dl className="sec" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px' }}>
-                  <dt className="muted">Class</dt><dd>{CLASS_NAME}</dd>
-                  <dt className="muted">Home languages</dt><dd>{student.homeLanguages}</dd>
-                  <dt className="muted">Key teacher</dt><dd>{TEACHER}</dd>
-                  <dt className="muted">Photo</dt><dd>Placeholder only in demo mode</dd>
+                  <dt className="muted">{t('pages.profile.class')}</dt><dd>{CLASS_NAME}</dd>
+                  <dt className="muted">{t('pages.profile.homeLanguages')}</dt><dd>{student.homeLanguages}</dd>
+                  <dt className="muted">{t('pages.profile.keyTeacher')}</dt><dd>{TEACHER}</dd>
+                  <dt className="muted">{t('pages.profile.photo')}</dt><dd>{t('pages.profile.photoValue')}</dd>
                 </dl>
               </section>
             </aside>

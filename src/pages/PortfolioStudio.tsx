@@ -5,9 +5,11 @@ import { Icon } from '../components/Icon';
 import { AiPanel, type AiState } from '../components/studio/AiPanel';
 import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
-import { Avatar, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, TERM } from '../data/demo';
+import { Avatar, MockProviderLabel, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
+import { CLASS_NAME } from '../data/demo';
 import { useAutosave } from '../hooks/useAutosave';
+import { useI18n } from '../i18n';
+import { useDirtyGuard } from '../pwa';
 import { ProviderUnavailableError, requestSuggestion, type AiAction } from '../services/mockProvider';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor, unverifiedClaims } from '../store/reducer';
@@ -20,6 +22,7 @@ type MobileTab = 'evidence' | 'write' | 'ai';
 export function PortfolioStudio() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const { state, dispatch } = usePortfolio();
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
@@ -35,6 +38,8 @@ export function PortfolioStudio() {
   const [reflection, setReflection] = useState(state.reflections[id] ?? '');
   const persist = useCallback((text: string) => dispatch({ type: 'setReflection', studentId: id, text }), [dispatch, id]);
   const { status: saveStatus, retry } = useAutosave(reflection, persist, state.sim.saveFail);
+  // Reflection edits not yet saved (unsaved, saving or failed) block PWA reloads.
+  useDirtyGuard(saveStatus.kind !== 'saved');
 
   const run = useCallback(
     async (action: AiAction, paragraphId: string, v: number) => {
@@ -65,6 +70,11 @@ export function PortfolioStudio() {
 
   if (!sum) return <NotFound />;
   const { student, report } = sum;
+  const term = t('common.term4');
+  const demo = t('common.demoStudent');
+  const submitLabel = t('pages.shared.submitForReview');
+  const evidenceLabel = t('pages.studio.evidence');
+  const aiLabel = t('pages.studio.aiAssistant');
   const observations = observationsFor(state, id);
   const claims = unverifiedClaims(state, id);
   const linkedIds = new Set(paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.sources)));
@@ -107,9 +117,9 @@ export function PortfolioStudio() {
       <div className="panel-body">
         <div className="empty">
           <div className="state-icon"><Icon name="fileText" size={24} /></div>
-          <p className="strong">No narrative drafted yet</p>
-          <p className="sec muted">In this demo, Aria Tan has a full draft. Add observations first; the narrative cites them as evidence.</p>
-          <Link className="btn btn-secondary" to="/students/aria/studio">Open Aria Tan’s draft</Link>
+          <p className="strong">{t('pages.studio.noNarrative')}</p>
+          <p className="sec muted">{t('pages.studio.noNarrativeBody')}</p>
+          <Link className="btn btn-secondary" to="/students/aria/studio">{t('pages.studio.openAriaDraft')}</Link>
         </div>
       </div>
     ) : (
@@ -146,9 +156,9 @@ export function PortfolioStudio() {
 
   const statusNotice =
     report.status === 'approved' ? (
-      <Notice tone="success" icon="lock"><p className="body-text">This report is approved and locked. Editing is turned off.</p></Notice>
+      <Notice tone="success" icon="lock"><p className="body-text">{t('pages.studio.approvedLocked')}</p></Notice>
     ) : report.status === 'changes' && report.comment ? (
-      <Notice tone="warning" icon="alert"><p className="body-text"><span className="semibold">Changes requested by {report.comment.by}:</span> {report.comment.text}</p></Notice>
+      <Notice tone="warning" icon="alert"><p className="body-text"><span className="semibold">{t('pages.studio.changesBy', { name: report.comment.by })}</span> {report.comment.text}</p></Notice>
     ) : null;
 
   return (
@@ -156,13 +166,13 @@ export function PortfolioStudio() {
       module="students"
       currentStudentId={id}
       mobileTitle={student.name}
-      mobileSubtitle={`Portfolio · ${TERM}`}
+      mobileSubtitle={t('pages.studio.mobileSubtitle', { term })}
       mobileBack={`/students/${id}`}
       mobileTrailing={<StatusLabel status={report.status} />}
       mobileActions={
         <>
-          <Link className="btn btn-secondary" to={`/students/${id}/report`}>Preview</Link>
-          <button className="btn btn-primary grow" type="button" onClick={submit} aria-disabled={locked || report.status === 'review'}>Submit for review</button>
+          <Link className="btn btn-secondary" to={`/students/${id}/report`}>{t('pages.studio.preview')}</Link>
+          <button className="btn btn-primary grow" type="button" onClick={submit} aria-disabled={locked || report.status === 'review'}>{submitLabel}</button>
         </>
       }
     >
@@ -170,24 +180,24 @@ export function PortfolioStudio() {
         <>
           {bp !== 'mobile' && (
             <div className="page-head">
-              <Link className="icon-btn" to={`/students/${id}`} aria-label={`Back to ${student.name}'s profile`} title="Back to profile"><Icon name="arrowLeft" /></Link>
+              <Link className="icon-btn" to={`/students/${id}`} aria-label={t('pages.shared.backToProfileOf', { name: student.name })} title={t('pages.shared.backToProfile')}><Icon name="arrowLeft" /></Link>
               {bp === 'desktop' && <Avatar initials={student.initials} />}
               <div className="grow">
-                <h1 className="h1">AI Portfolio Studio</h1>
-                <p className="sec muted">{student.name} · Demo student · {CLASS_NAME} · {TERM}</p>
+                <h1 className="h1">{t('pages.studio.title')}</h1>
+                <p className="sec muted">{student.name} · {demo} · {CLASS_NAME} · {term}</p>
               </div>
               <div className="row">
                 <StatusLabel status={report.status} />
-                {claims.length > 0 && <VerifyLabel>{claims.length} {claims.length === 1 ? 'claim needs' : 'claims need'} teacher verification</VerifyLabel>}
+                {claims.length > 0 && <VerifyLabel>{t('pages.shared.claims', { count: claims.length })}</VerifyLabel>}
                 <SaveIndicator status={saveStatus} onRetry={retry} />
                 {bp === 'tablet' && (
                   <>
-                    <button className="chip" type="button" aria-pressed={drawer === 'evidence'} onClick={() => setDrawer(drawer === 'evidence' ? null : 'evidence')}><Icon name="clipboard" size={18} />Evidence</button>
-                    <button className="chip" type="button" aria-pressed={drawer === 'ai'} onClick={() => setDrawer(drawer === 'ai' ? null : 'ai')}><Icon name="sparkles" size={18} />AI Assistant</button>
+                    <button className="chip" type="button" aria-pressed={drawer === 'evidence'} onClick={() => setDrawer(drawer === 'evidence' ? null : 'evidence')}><Icon name="clipboard" size={18} />{evidenceLabel}</button>
+                    <button className="chip" type="button" aria-pressed={drawer === 'ai'} onClick={() => setDrawer(drawer === 'ai' ? null : 'ai')}><Icon name="sparkles" size={18} />{aiLabel}</button>
                   </>
                 )}
-                {bp === 'desktop' && <Link className="btn btn-secondary" to={`/students/${id}/report`}><Icon name="eye" size={18} />Preview PDF</Link>}
-                <button className="btn btn-primary" type="button" onClick={submit} aria-disabled={locked || report.status === 'review'}>Submit for review</button>
+                {bp === 'desktop' && <Link className="btn btn-secondary" to={`/students/${id}/report`}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>}
+                <button className="btn btn-primary" type="button" onClick={submit} aria-disabled={locked || report.status === 'review'}>{submitLabel}</button>
               </div>
             </div>
           )}
@@ -209,12 +219,12 @@ export function PortfolioStudio() {
             <div className="studio-tablet" style={{ flexDirection: drawer === 'evidence' ? 'row-reverse' : 'row' }}>
               <section className="panel" aria-labelledby="nar-h">{narrative()}</section>
               {drawer && (
-                <aside className="panel drawer" aria-label={drawer === 'ai' ? 'AI Assistant' : 'Evidence'}>
+                <aside className="panel drawer" aria-label={drawer === 'ai' ? aiLabel : evidenceLabel}>
                   <div className="panel-head">
                     <div className="grow">
-                      {drawer === 'ai' ? <div className="row"><h2 className="h2">AI Assistant</h2><span className="status st-draft">Mock provider</span></div> : <h2 className="h2">Evidence</h2>}
+                      {drawer === 'ai' ? <div className="row"><h2 className="h2">{aiLabel}</h2><MockProviderLabel /></div> : <h2 className="h2">{evidenceLabel}</h2>}
                     </div>
-                    <button className="icon-btn" type="button" onClick={() => setDrawer(null)} aria-label={`Close ${drawer === 'ai' ? 'AI Assistant' : 'Evidence'}`}><Icon name="x" /></button>
+                    <button className="icon-btn" type="button" onClick={() => setDrawer(null)} aria-label={t('pages.studio.close', { panel: drawer === 'ai' ? aiLabel : evidenceLabel })}><Icon name="x" /></button>
                   </div>
                   {drawer === 'ai' ? assistant(true) : evidence(true)}
                 </aside>
@@ -226,10 +236,10 @@ export function PortfolioStudio() {
           {bp === 'mobile' && (
             <div className="studio-mobile">
               <div style={{ padding: '8px 16px', background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-                <div className="seg" role="tablist" aria-label="Studio sections">
-                  {(['evidence', 'write', 'ai'] as MobileTab[]).map((t) => (
-                    <button key={t} className="seg-btn" type="button" role="tab" aria-selected={tab === t} aria-controls="studio-tabpanel" onClick={() => setTab(t)}>
-                      {t === 'evidence' ? 'Evidence' : t === 'write' ? 'Write' : 'AI'}
+                <div className="seg" role="tablist" aria-label={t('pages.studio.sectionsLabel')}>
+                  {(['evidence', 'write', 'ai'] as MobileTab[]).map((tb) => (
+                    <button key={tb} className="seg-btn" type="button" role="tab" aria-selected={tab === tb} aria-controls="studio-tabpanel" onClick={() => setTab(tb)}>
+                      {tb === 'evidence' ? t('pages.studio.tabEvidence') : tb === 'write' ? t('pages.studio.tabWrite') : t('pages.studio.tabAi')}
                     </button>
                   ))}
                 </div>
@@ -241,7 +251,7 @@ export function PortfolioStudio() {
                 {tab === 'write' && narrative(true)}
                 {tab === 'ai' && (
                   <>
-                    <div className="row" style={{ padding: '16px 16px 0' }}><h2 className="h2">AI Assistant</h2><span className="status st-draft">Mock provider</span></div>
+                    <div className="row" style={{ padding: '16px 16px 0' }}><h2 className="h2">{aiLabel}</h2><MockProviderLabel /></div>
                     {assistant(true)}
                   </>
                 )}
