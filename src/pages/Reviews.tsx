@@ -10,6 +10,12 @@ import { useDataPort, usePortfolio } from '../store/PortfolioContext';
 import type { QueuedReport } from '../coverage';
 
 export function Reviews() {
+  const role = useRole();
+  if (!role.can('reviews.view') && role.role !== 'teacher') return <Navigate to="/" replace />;
+  return <ReviewsContent />;
+}
+
+function ReviewsContent() {
   const { t, fmtDate } = useI18n();
   const labels = useLabels();
   const role = useRole();
@@ -23,7 +29,6 @@ export function Reviews() {
   };
   useEffect(load, [dataPort, state]);
 
-  if (!role.can('reviews.view') && role.role !== 'teacher') return <Navigate to="/" replace />;
   const teacher = role.role === 'teacher';
   const reason = (item: QueuedReport) => {
     const block = item.approvalBlock;

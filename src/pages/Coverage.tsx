@@ -14,6 +14,12 @@ import type { TKey } from '../i18n';
 type Filter = 'all' | 'attention' | 'missing' | 'stale';
 
 export function Coverage() {
+  const role = useRole();
+  if (!role.can('coverage.view')) return <Navigate to="/" replace />;
+  return <CoverageContent />;
+}
+
+function CoverageContent() {
   const { t, fmtDate } = useI18n();
   const labels = useLabels();
   const role = useRole();
@@ -29,8 +35,6 @@ export function Coverage() {
     void dataPort.getCoverage(term).then(setCoverage).catch(() => setFailed(true));
   };
   useEffect(load, [dataPort, state, term]);
-
-  if (!role.can('coverage.view')) return <Navigate to="/" replace />;
 
   const visible = useMemo(() => (coverage?.students ?? []).filter((student) => {
     if (filter === 'attention') return student.attentionAreas > 0;
