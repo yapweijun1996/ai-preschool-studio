@@ -53,7 +53,6 @@ export interface ReportState {
   versions: ReportVersion[];
   reopenedAt?: string;
   releasedVersion?: number;
-  decisions: DecisionEvent[];
 }
 
 export interface State {
@@ -91,18 +90,19 @@ export function initialState(): State {
     reports[s.id] = {
       status: s.reportStatus,
       hadChanges: s.reportStatus === 'changes',
-      versions: [], decisions: [],
+      versions: [],
       ...(s.reportStatus === 'review' ? { submittedAt: seededSubmissionDate(s.id) } : {}),
       ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(OBSERVATIONS, s.id, 4) } : {})
     };
   reports.rayan.comment = { by: REVIEWER, date: '2026-10-20T08:30:00.000Z', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
   const seeded = seededDrafts();
+  const seedDecisions: Record<string, DecisionEvent[]> = Object.fromEntries(STUDENTS.map((student) => [student.id, []]));
   for (const student of STUDENTS) {
     const report = reports[student.id];
-    if (report.status === 'review') report.decisions = [{ type: 'submitted', at: report.submittedAt ?? TODAY, by: TEACHER }];
-    if (report.status === 'changes') report.decisions = [
+    if (report.status === 'review') seedDecisions[student.id] = [{ type: 'submitted', at: report.submittedAt ?? `${TODAY}T09:00:00.000Z`, by: TEACHER }];
+    if (report.status === 'changes') seedDecisions[student.id] = [
       { type: 'submitted', at: '2026-10-19T09:00:00.000Z', by: TEACHER },
-      { type: 'changesRequested', at: report.comment?.date ?? TODAY, by: REVIEWER, comment: report.comment?.text ?? '' }
+      { type: 'changesRequested', at: report.comment?.date ?? `${TODAY}T09:00:00.000Z`, by: REVIEWER, comment: report.comment?.text ?? '' }
     ];
     if (report.status === 'approved') {
       const approvedAt = `2026-10-${student.id === 'meiling' ? '20' : '18'}T09:00:00.000Z`;
@@ -118,14 +118,14 @@ export function initialState(): State {
       report.approvedAt = approvedAt;
       report.approvedBy = approvedBy;
       report.versions = [version];
-      report.decisions = [{ type: 'approved', at: approvedAt, by: approvedBy, version: 1 }];
+      seedDecisions[student.id] = [{ type: 'approved', at: approvedAt, by: approvedBy, version: 1 }];
       if (version.releasedAt) {
         report.releasedVersion = 1;
-        report.decisions.push({ type: 'released', at: version.releasedAt, by: REVIEWER, version: 1 });
+        seedDecisions[student.id].push({ type: 'released', at: version.releasedAt, by: REVIEWER, version: 1 });
       }
     }
   }
-  const seededAudit = STUDENTS.flatMap((student) => reports[student.id].decisions.map((decision) => {
+  const seededAudit = STUDENTS.flatMap((student) => seedDecisions[student.id].map((decision) => {
     const action: AuditAction = decision.type === 'submitted' ? 'report.submitted' : decision.type === 'changesRequested' ? 'report.changesRequested' : decision.type === 'approved' ? 'report.approved' : decision.type === 'released' ? 'report.released' : 'report.reopened';
     const summaryKey: AuditSummaryKey = decision.type === 'submitted' ? 'pages.audit.summarySubmitted' : decision.type === 'changesRequested' ? 'pages.audit.summaryChangesRequested' : decision.type === 'approved' ? 'pages.audit.summaryApproved' : decision.type === 'released' ? 'pages.audit.summaryReleased' : 'pages.audit.summaryReopened';
     const summaryParams = 'version' in decision ? { version: decision.version } : undefined;
@@ -263,7 +263,7 @@ export function reducer(state: State, action: Action): State {
       const actor = action.actor ?? defaultActor;
       const at = asInstant(action.submittedAt);
       const decision: DecisionEvent = { type: 'submitted', at, by: actor.name };
-      const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: at, decisions: [...r.decisions, decision] });
+      const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: at });
       return appendAudit(submitted, { at, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summarySubmitted', decision });
     }
     case 'requestChanges': {
@@ -274,8 +274,7 @@ export function reducer(state: State, action: Action): State {
       const changed = setReport(state, action.studentId, {
         status: 'changes',
         hadChanges: true,
-        comment: { by: actor.name, date: at, text: action.text },
-        decisions: [...state.reports[action.studentId].decisions, decision]
+        comment: { by: actor.name, date: at, text: action.text }
       });
       return appendAudit(changed, { at, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryChangesRequested', decision });
     }
@@ -298,8 +297,7 @@ export function reducer(state: State, action: Action): State {
         approvedBy,
         frameworkVersion: CURRENT_FRAMEWORK.version,
         milestones: versionRecord.milestones,
-        versions: [...report.versions, versionRecord],
-        decisions: [...report.decisions, decision]
+        versions: [...report.versions, versionRecord]
       });
       return appendAudit(approved, { at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryApproved', summaryParams: { version }, decision });
     }
@@ -312,8 +310,7 @@ export function reducer(state: State, action: Action): State {
       const decision: DecisionEvent = { type: 'released', at, by: action.releasedBy, version: latest.version };
       const version = { ...latest, releasedAt: at, releasedBy: action.releasedBy };
       const released = setReport(state, action.studentId, {
-        versions: [...report.versions.slice(0, -1), version], releasedVersion: latest.version,
-        decisions: [...report.decisions, decision]
+        versions: [...report.versions.slice(0, -1), version], releasedVersion: latest.version
       });
       return appendAudit(released, { at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReleased', summaryParams: { version: latest.version }, decision });
     }
@@ -329,8 +326,7 @@ export function reducer(state: State, action: Action): State {
         approvedAt: undefined,
         approvedBy: undefined,
         frameworkVersion: undefined,
-        milestones: undefined,
-        decisions: [...report.decisions, decision]
+        milestones: undefined
       });
       return appendAudit(reopened, { at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summaryKey: 'pages.audit.summaryReopened', decision });
     }
@@ -339,8 +335,13 @@ export function reducer(state: State, action: Action): State {
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
     case 'reset': {
-      const fresh = { ...initialState(), auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
-      return appendAudit(fresh, { at: action.at ?? TODAY, actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summaryKey: 'pages.audit.summaryReset' });
+      const seeded = initialState();
+      let fresh = { ...seeded, auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
+      fresh = appendAudit(fresh, { at: asInstant(action.at ?? `${TODAY}T00:00:00.000Z`), actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summaryKey: 'pages.audit.summaryReset' });
+      for (const event of seeded.auditEvents) {
+        fresh = appendAudit(fresh, event);
+      }
+      return fresh;
     }
   }
 }
@@ -428,7 +429,9 @@ export function selectAuditLog(events: AuditEvent[], filters: AuditFilters = {})
 }
 
 export function selectReportHistory(events: AuditEvent[], studentId: string): DecisionEvent[] {
+  const lastReset = events.map((event) => event.action).lastIndexOf('demo.reset');
   return events
+    .slice(lastReset + 1)
     .filter((event) => event.target.type === 'student' && event.target.id === studentId && event.decision)
     .sort((a, b) => Date.parse(a.at) - Date.parse(b.at) || a.id.localeCompare(b.id))
     .flatMap((event) => event.decision ? [event.decision] : []);

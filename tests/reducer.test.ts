@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { approvalBlock, initialState, reducer, reportContentHash, selectAuditLog, unverifiedClaims } from '../src/store/reducer';
+import { approvalBlock, initialState, reducer, reportContentHash, selectAuditLog, selectReportHistory, unverifiedClaims } from '../src/store/reducer';
 import { requestSuggestion } from '../src/services/mockProvider';
 import { NEXT_OBS_NUMBER } from '../src/data/demo';
 import { now } from '../src/utils/clock';
@@ -25,6 +25,18 @@ describe('portfolio reducer', () => {
     expect(reopened.approvedBy).toBeUndefined();
     expect(reopened.frameworkVersion).toBeUndefined();
     expect(reopened.milestones).toBeUndefined();
+  });
+  it('derives report history from audit events and reset starts a new matching history segment', () => {
+    let s = initialState();
+    expect('decisions' in s.reports.meiling).toBe(false);
+    s = reducer(s, { type: 'reopen', studentId: 'meiling', reason: 'Amend', reopenedBy: 'Ms. Tan', at: '2026-10-22T10:00:00.000Z' });
+    s = reducer(s, { type: 'submitForReview', studentId: 'meiling', submittedAt: '2026-10-22T10:30:00.000Z' });
+    s = reducer(s, { type: 'approve', studentId: 'meiling', at: '2026-10-22T11:00:00.000Z' });
+    expect(selectReportHistory(s.auditEvents, 'meiling').some((decision) => decision.type === 'approved' && decision.version === 2)).toBe(true);
+    s = reducer(s, { type: 'reset', at: '2026-10-22T12:00:00.000Z' });
+    expect(s.reports.meiling.versions.map((version) => version.version)).toEqual([1]);
+    expect(selectReportHistory(s.auditEvents, 'meiling').map((decision) => decision.type)).toEqual(['approved', 'released']);
+    expect(s.auditEvents.map((event) => event.action).lastIndexOf('demo.reset')).toBeGreaterThan(0);
   });
   it('stores audit and decision timestamps as full instants and sorts same-time events by sequence', () => {
     const seeded = initialState();
@@ -119,7 +131,7 @@ describe('portfolio reducer', () => {
     const before = s.auditEvents;
     s = reducer(s, { type: 'reset' });
     expect(s.auditEvents.slice(0, before.length)).toEqual(before);
-    expect(s.auditEvents.at(-1)?.action).toBe('demo.reset');
+    expect(s.auditEvents.some((event) => event.action === 'demo.reset')).toBe(true);
     const filtered = selectAuditLog(s.auditEvents, { studentId: 'aria' });
     expect(filtered[0].at >= filtered.at(-1)!.at).toBe(true);
   });
