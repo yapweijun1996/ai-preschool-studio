@@ -43,10 +43,17 @@ function load(): State {
   }
 }
 
-const Ctx = createContext<{ state: State; dispatch: Dispatch<Action> } | null>(null);
+type PortfolioContextValue = { state: State; dispatch: Dispatch<Action>; dataPort: DataPort };
+const Ctx = createContext<PortfolioContextValue | null>(null);
 
 export function PortfolioProvider({ children, initial }: { children: ReactNode; initial?: State }) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => initial ?? load());
+  const [state, reactDispatch] = useReducer(reducer, undefined, () => initial ?? load());
+  const latest = useRef(state);
+  const dispatch = useMemo<Dispatch<Action>>(() => (action) => {
+    latest.current = reducer(latest.current, action);
+    reactDispatch(action);
+  }, [reactDispatch]);
+  const dataPort = useMemo(() => createDemoAdapter(() => latest.current, dispatch), [dispatch]);
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_KEY, serializeState(state));
@@ -54,7 +61,7 @@ export function PortfolioProvider({ children, initial }: { children: ReactNode; 
       /* ignore */
     }
   }, [state]);
-  return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ state, dispatch, dataPort }}>{children}</Ctx.Provider>;
 }
 
 export function usePortfolio() {
@@ -65,8 +72,5 @@ export function usePortfolio() {
 
 /** Returns a stable adapter whose reads always use the latest provider state. */
 export function useDataPort(): DataPort {
-  const { state, dispatch } = usePortfolio();
-  const stateRef = useRef(state);
-  stateRef.current = state;
-  return useMemo(() => createDemoAdapter(() => stateRef.current, dispatch), [dispatch]);
+  return usePortfolio().dataPort;
 }
