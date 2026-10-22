@@ -25,7 +25,7 @@ function RoutedPages() {
   const { t, languageLoadError } = useI18n();
   return <>
     <span className="sr-only" role="status" aria-live="polite">{languageLoadError ? t('shell.language.loadError') : ''}</span>
-    <RouteErrorBoundary key={pathname}>
+    <RouteErrorBoundary resetKey={pathname}>
     <Suspense fallback={kind ? <RouteFallback kind={kind} /> : null}>
       <Routes>
         <Route path="/" element={<RouteChunkSuccess><Dashboard /></RouteChunkSuccess>} />

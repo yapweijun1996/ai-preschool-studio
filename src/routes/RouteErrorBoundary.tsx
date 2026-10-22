@@ -3,13 +3,19 @@ import { AppShell } from '../components/AppShell';
 import { useI18n } from '../i18n';
 import { isChunkLoadError, reloadForChunkFailure } from './chunkRecovery';
 
-type Props = { children: ReactNode };
+type Props = { children: ReactNode; resetKey: string };
 type State = { failed: boolean };
 
 export class RouteErrorBoundary extends Component<Props, State> {
   state: State = { failed: false };
 
   static getDerivedStateFromError(): State { return { failed: true }; }
+
+  componentDidUpdate(previousProps: Props): void {
+    if (this.state.failed && previousProps.resetKey !== this.props.resetKey) {
+      this.setState({ failed: false });
+    }
+  }
 
   componentDidCatch(error: Error, _info: ErrorInfo): void {
     if (isChunkLoadError(error)) reloadForChunkFailure();
