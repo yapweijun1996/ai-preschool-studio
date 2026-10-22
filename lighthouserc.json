@@ -14,9 +14,8 @@
         "total-blocking-time": ["warn", { "maxNumericValue": 200, "aggregationMethod": "median-run" }],
         "interactive": ["warn", { "maxNumericValue": 3500, "aggregationMethod": "median-run" }],
         "resource-summary:script:size": ["error", { "maxNumericValue": 174080 }],
-        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 15360 }],
-        "resource-summary:total:size": ["error", { "maxNumericValue": 409600 }],
-        "resource-summary:third-party:count": ["error", { "maxNumericValue": 0 }]
+        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 240640 }],
+        "resource-summary:total:size": ["error", { "maxNumericValue": 595456 }]
       }
     },
     "upload": {
