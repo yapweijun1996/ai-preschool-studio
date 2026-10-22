@@ -60,6 +60,7 @@ describe('DataPort demo adapter', () => {
     expect(await h.adapter.addObservation({ studentId: 'missing', date: '2026-10-22', domain: 'en', text: 'A sufficiently detailed observation.', milestone: 'developing', hasPhoto: false })).toEqual({ ok: false, reason: 'unknown-student' });
     expect(await h.adapter.removeSentence('ethan', 's-ethan-en-1')).toEqual({ ok: false, reason: 'report-not-editable' });
     expect(await h.adapter.startDraft('aria')).toEqual({ ok: false, reason: 'invalid-target' });
+    expect(await h.adapter.requestChanges('aria', 'Please revise.', '2026-10-22')).toEqual({ ok: false, reason: 'report-not-editable' });
     const empty = initialState();
     empty.observations = empty.observations.filter((observation) => observation.studentId !== 'arjun');
     expect(await harness(empty).adapter.startDraft('arjun')).toEqual({ ok: false, reason: 'no-observations' });

@@ -82,8 +82,12 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       const state = getState();
       const lock = locked(state, studentId);
       if (lock) return refusal(lock);
-      if (!state.paragraphs[studentId]?.some((paragraph) => paragraph.id === suggestion.paragraphId)) return refusal('invalid-target');
-      if (!suggestion.after.flatMap((sentence) => sentence.sources).every((id) => state.observations.some((obs) => obs.id === id && obs.studentId === studentId))) return refusal('wrong-child-observation');
+      if (
+        !suggestion.after
+          .flatMap((sentence) => sentence.sources)
+          .every((id) => state.observations.some((obs) => obs.id === id && obs.studentId === studentId))
+      )
+        return refusal('wrong-child-observation');
       return run({ type: 'applySuggestion', studentId, suggestion }, undefined, 'invalid-target');
     },
     async restoreParagraph(studentId, paragraph: Paragraph) {
@@ -94,7 +98,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async setReflection(studentId, text) {
       const lock = locked(getState(), studentId);
       if (lock) return refusal(lock);
-      return run({ type: 'setReflection', studentId, text }, undefined, 'invalid-target');
+      dispatch({ type: 'setReflection', studentId, text });
+      return success(undefined);
     },
     async submitForReview(studentId) {
       if (!readiness(getState(), studentId).canSubmit) return refusal('not-ready');
@@ -102,8 +107,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     },
     async getApprovalBlock(studentId) { return approvalBlock(getState(), studentId); },
     async requestChanges(studentId, text, date) {
-      if (getState().reports[studentId]?.status !== 'review') return refusal('invalid-target');
-      return run({ type: 'requestChanges', studentId, text, date }, undefined, 'invalid-target');
+      if (getState().reports[studentId]?.status !== 'review') return refusal('report-not-editable');
+      dispatch({ type: 'requestChanges', studentId, text, date });
+      return success(undefined);
     },
     async approve(studentId, approvedBy, at) {
       const state = getState();
@@ -111,8 +117,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (block?.reason === 'claims') return refusal('unverified-claims');
       if (block?.reason === 'incomplete') return refusal('not-ready');
       if (block) return refusal('invalid-target');
-      const result = run({ type: 'approve', studentId, at: new Date(at).toLocaleString() }, { approvedBy, at }, 'invalid-target');
-      return result;
+      dispatch({ type: 'approve', studentId, at: new Date(at).toLocaleString() });
+      return success({ approvedBy, at });
     }
   };
 }

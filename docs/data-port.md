@@ -31,7 +31,7 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `setReflection` | Portfolio studio | Wording cannot change during review or after approval. | [demoAdapter.ts](../src/data/demoAdapter.ts#L92) |
 | `submitForReview` | Portfolio studio, Report review | Every domain and nonblank reflection required. | [demoAdapter.ts](../src/data/demoAdapter.ts#L97) |
 | `getApprovalBlock` | Report review | Reports the existing approval guard. | [demoAdapter.ts](../src/data/demoAdapter.ts#L101) |
-| `requestChanges` | Report review | Only reports in review can receive changes. | [demoAdapter.ts](../src/data/demoAdapter.ts#L102) |
+| `requestChanges` | Report review | Only reports in review can receive changes; other statuses return `report-not-editable`. | [demoAdapter.ts](../src/data/demoAdapter.ts#L102) |
 | `approve` | Report review | Requires review status, readiness and evidence for every claim. | [demoAdapter.ts](../src/data/demoAdapter.ts#L106) |
 
 ## Refusal reasons
@@ -45,7 +45,7 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `report-not-editable` | Wording is paused while the report is in review. |
 | `not-ready` | Required domains/reflection are missing, or approval is incomplete. |
 | `unverified-claims` | One or more narrative claims lack evidence. |
-| `invalid-target` | The reducer refused the transition or its target is absent. |
+| `invalid-target` | The requested transition is not valid for the target's current state, or the target sentence/paragraph is absent. |
 | `no-observations` | A draft cannot be started because no evidence exists. |
 
 ## Implementing an API adapter
@@ -61,3 +61,14 @@ the typed result; production should persist both fields as structured approval m
 The adapter is framework-free. React consumers obtain the stable demo adapter through
 `useDataPort()` from `src/store/PortfolioContext.tsx`; replacing that binding with a platform
 adapter is the planned page migration in Phase 0 step 2.
+
+### Reachable `invalid-target` cases
+
+The demo adapter returns `invalid-target` for these reducer no-ops: `startDraft` when a report is
+not in `notStarted` state or already has draft paragraphs; `fillMissingDomains` when the report
+cannot be filled or has no unwritten domains; `linkSource` when the sentence ID is absent;
+`removeSentence` when its sentence ID is absent; `applySuggestion` when its paragraph ID is absent;
+`restoreParagraph` when its paragraph ID is absent; `submitForReview` when a structurally ready
+report is already in review, approved, or not started; and `approve` when the report is not in
+review. The adapter handles missing observation ownership, missing suggestion citations, edit
+locks, readiness failures, and approval claims with their more specific refusal reasons first.
