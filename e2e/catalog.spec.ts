@@ -10,6 +10,7 @@ for (const viewport of [{ name: 'desktop 1440x900', width: 1440, height: 900 }, 
       page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
       await page.goto('./#/catalog');
       await expect(page.getByRole('heading', { name: 'Component catalog', level: 1 })).toBeVisible();
+      await expect(page.locator('main')).toHaveCount(1);
       for (const heading of sectionNames) await expect(page.getByRole('heading', { name: heading, level: 2 })).toBeVisible();
       await page.getByRole('navigation', { name: 'Catalog sections' }).getByRole('button', { name: 'Buttons' }).click();
       await expect(page).toHaveURL(/#\/catalog$/);

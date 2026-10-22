@@ -22,7 +22,7 @@ function Tokens({ theme }: { theme: string }) {
 }
 
 export function CatalogContent({ theme, showHeading }: { theme: string; showHeading: boolean }) {
-  return <main className="page catalog-page">{showHeading && <header className="catalog-title"><p className="cap muted">Design reference</p><h1>Component catalog</h1><p>Rendered shared UI examples and copyable markup. Theme and language follow the app.</p></header>}<nav className="catalog-toc" aria-label="Catalog sections"><strong>On this page</strong>{sections.map((x) => <button key={x} type="button" onClick={() => { const heading = document.getElementById(x.toLowerCase().replaceAll(' ', '-'))?.querySelector('h2'); heading?.scrollIntoView({ behavior: 'smooth', block: 'start' }); heading?.focus({ preventScroll: true }); }}>{x}</button>)}</nav>
+  return <div className="page catalog-page">{showHeading && <header className="catalog-title"><p className="cap muted">Design reference</p><h1>Component catalog</h1><p>Rendered shared UI examples and copyable markup. Theme and language follow the app.</p></header>}<nav className="catalog-toc" aria-label="Catalog sections"><strong>On this page</strong>{sections.map((x) => <button key={x} type="button" onClick={() => { const heading = document.getElementById(x.toLowerCase().replaceAll(' ', '-'))?.querySelector('h2'); heading?.scrollIntoView({ behavior: 'smooth', block: 'start' }); heading?.focus({ preventScroll: true }); }}>{x}</button>)}</nav>
     {sections.map((name) => <section id={name.toLowerCase().replaceAll(' ', '-')} className="catalog-section" key={name}><h2 tabIndex={-1}>{name}</h2>
       {name === 'Tokens' && <Tokens theme={theme} />}
       {name === 'Buttons' && <MarkupExample title="Button variants and states"><div className="row catalog-wrap"><button className="btn btn-primary">Primary</button><button className="btn btn-secondary">Secondary</button><button className="btn btn-ghost">Ghost</button><button className="icon-btn" aria-label="Search"><Icon name="search" /></button><button className="icon-btn icon-btn-outline" aria-label="Settings"><Icon name="settings" /></button><button className="btn btn-primary" aria-disabled="true">Unavailable</button><button className="btn btn-primary catalog-focus">Focus visible</button></div><p className="muted">Hover each enabled button; focus-visible example is keyboard reachable.</p></MarkupExample>}
@@ -43,5 +43,5 @@ export function CatalogContent({ theme, showHeading }: { theme: string; showHead
       {name === 'Empty state' && <MarkupExample title="Empty state"><div className="empty"><span className="state-icon"><Icon name="search" /></span><strong>No observations yet</strong><p className="muted">Add an observation to see it here.</p></div></MarkupExample>}
       {name === 'Skeleton' && <MarkupExample title="Skeleton placeholder"><div className="stack"><div className="skel" style={{height:20,width:'55%'}} /><div className="skel" style={{height:14,width:'90%'}} /><div className="skel" style={{height:14,width:'72%'}} /></div></MarkupExample>}
     </section>)}
-  </main>;
+  </div>;
 }
