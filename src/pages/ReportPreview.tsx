@@ -149,7 +149,7 @@ export function ReportPreview() {
         {(status === 'draft' || status === 'changes') && !ready.canSubmit && (
           <p id="not-ready" className="sec semibold" style={{ color: 'var(--color-warning)' }}>{t('pages.report.notReady')} · {t('pages.report.notReadyBody')}</p>
         )}
-        {status === 'review' && block?.reason === 'claims' && (
+        {status === 'review' && block?.reason === 'claims' && role.can('report.review') && (
           <Notice tone="warning" icon="lock" id="approve-blocked" role="status">
             <p className="semibold">{t('pages.report.blocked')}</p>
             <p className="body-text">{t('pages.report.blockedBody', { count: block.count })}</p>

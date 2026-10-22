@@ -6,7 +6,7 @@ export const shell: Dict['shell'] = {
   skipToContent: '跳到主要内容',
   demoStrip: '演示模式——所有学生和观察记录均为虚构的示例数据',
   demoStripCompact: '演示模式 · 虚构示例数据',
-  roles: { heading: '演示角色', teacher: '教师', reviewer: '审核人／园长', admin: '学校管理员', parent: '家长', viewingAs: '当前角色：{role}（演示角色，不是权限控制）', plannedTitle: '{role}界面计划中', planned: '角色界面计划中', plannedModules: '计划中的模块', parentPurpose: '家庭门户将让监护人查看已发布的报告、接收通知、管理同意事项并填写晨间申报。', adminPurpose: '学校管理员将管理学校和账户、隐私与保留流程、事件以及园长报告。', returnTeacher: '切换回教师', familyModules: '家庭门户 — 第3阶段', noticesModule: '通知 — 第3阶段', schoolsModule: '学校与账户 — 第4阶段', privacyModule: '隐私中心 — 第4阶段', retentionModule: '记录保留 — 第4阶段', incidentsModule: '事件与须申报事项 — 第4阶段', principalReportsModule: '园长报告 — 第4阶段' , studioReadOnly: '审核人只能查看。只有教师可以编辑此草稿。', onlyReviewer: '只有审核人可以批准报告或要求修改。', switchReviewer: '切换为审核人（演示）' },
+  roles: { heading: '演示角色', teacher: '教师', reviewer: '审核人／园长', admin: '学校管理员', parent: '家长', viewingAs: '当前角色：{role}（演示角色，不是权限控制）', plannedTitle: '{role}界面计划中', planned: '角色界面计划中', plannedModules: '计划中的模块', parentPurpose: '家庭门户将让监护人查看已发布的报告、接收通知、管理同意事项并填写晨间申报。', adminPurpose: '学校管理员将管理学校和账户、隐私与保留流程、事件以及园长报告。', returnTeacher: '切换回教师', familyModules: '家庭门户 — 第3阶段', noticesModule: '通知 — 第3阶段', schoolsModule: '学校与账户 — 第4阶段', privacyModule: '隐私中心 — 第4阶段', retentionModule: '记录保留 — 第4阶段', incidentsModule: '事件与须申报事项 — 第4阶段', principalReportsModule: '园长报告 — 第4阶段' , studioReadOnly: '审核人只能查看。只有教师可以编辑此草稿。', onlyReviewer: '只有审核人可以批准报告或要求修改。', switchReviewer: '切换为审核人（演示）' , observationBlocked: '在此演示中，只有教师可以添加观察记录。', switchTeacher: '切换为教师（演示）' },
   back: '返回',
   breadcrumb: '导航路径',
   search: {
