@@ -99,7 +99,7 @@ export function GlobalSearch() {
     <>
       <button ref={trigger} className="search-trigger has-tip tip-below" type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" data-tip={`${t('shell.search.label')} · ${shortcut}`} aria-keyshortcuts="Control+K Meta+K">
         <Icon name="search" size={18} />
-        <span className="search-trigger-text sr-only">{t('shell.search.trigger')}</span>
+        <span className="search-trigger-text">{t('shell.search.trigger')}</span>
         <kbd className="search-trigger-kbd" aria-hidden="true">{shortcut}</kbd>
       </button>
       {open && (

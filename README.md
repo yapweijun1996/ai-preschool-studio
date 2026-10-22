@@ -68,6 +68,8 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   (version, build, update status, Check for updates), Demo data (simulate AI outage or save
   failure, reset).
 
+Quality baseline: [2026-10-22](docs/quality/baseline-2026-10-22.md).
+
 ## Run
 
 ```bash
