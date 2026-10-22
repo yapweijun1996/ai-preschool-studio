@@ -14,7 +14,7 @@ Status values: **done**, **in progress**, **planned**.
 | Component catalog route with every component state, plus visual regression | planned |
 | Data port interface (demo adapter now; platform adapter later) | planned |
 | Demo role switcher (Teacher, Reviewer/Principal, School admin, Parent) | planned |
-| Module spec template and specs for existing modules | in progress |
+| Module spec template and specs for existing modules | done |
 | Lighthouse budget in CI | planned |
 
 ## Phase 1: Core portfolio loop (complete it)
