@@ -306,6 +306,8 @@ export const pages = {
     title: 'Review queue',
     submitted: 'Submitted {date}',
     waiting: '{count} days waiting',
+    waiting_one: '{count} day waiting',
+    changesRequestedOn: 'Changes requested {date}',
     readiness: '{written} of {total} areas written',
     claims: '{count} unverified claims',
     claims_one: '{count} unverified claim',

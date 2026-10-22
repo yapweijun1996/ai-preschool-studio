@@ -286,7 +286,7 @@ export const pages: Dict['pages'] = {
     loading: 'Memuatkan liputan bukti…', error: 'Liputan bukti tidak dapat dimuatkan.', retry: 'Cuba lagi'
   },
   reviews: {
-    title: 'Giliran semakan', submitted: 'Dihantar pada {date}', waiting: 'Menunggu selama {count} hari', readiness: '{written} daripada {total} bidang telah ditulis',
+    title: 'Giliran semakan', submitted: 'Dihantar pada {date}', waiting: 'Menunggu selama {count} hari', waiting_one: 'Menunggu selama {count} hari', changesRequestedOn: 'Perubahan diminta pada {date}', readiness: '{written} daripada {total} bidang telah ditulis',
     claims: '{count} dakwaan belum disahkan', claims_one: '{count} dakwaan belum disahkan', block: 'Kelulusan terhalang: {reason}', blockNone: 'Tiada halangan untuk kelulusan',
     blockClaims: '{count} dakwaan memerlukan bukti', blockIncomplete: 'Laporan belum lengkap', blockStatus: 'Status laporan ialah {status}', open: 'Buka laporan',
     empty: 'Tiada laporan yang menunggu semakan.', changesHeading: 'Menunggu tindakan anda', changesEmpty: 'Tiada laporan yang menunggu perubahan daripada anda.',

@@ -286,7 +286,7 @@ export const pages: Dict['pages'] = {
     loading: '正在加载证据覆盖情况……', error: '无法加载证据覆盖情况。', retry: '重试'
   },
   reviews: {
-    title: '审核队列', submitted: '提交日期：{date}', waiting: '已等待 {count} 天', readiness: '已撰写 {written}/{total} 个领域',
+    title: '审核队列', submitted: '提交日期：{date}', waiting: '已等待 {count} 天', waiting_one: '已等待 {count} 天', changesRequestedOn: '要求修改日期：{date}', readiness: '已撰写 {written}/{total} 个领域',
     claims: '{count} 项待核实陈述', claims_one: '{count} 项待核实陈述', block: '无法批准：{reason}', blockNone: '没有批准阻碍',
     blockClaims: '{count} 项陈述尚无证据', blockIncomplete: '报告尚未完成', blockStatus: '报告状态：{status}', open: '打开报告',
     empty: '目前没有等待审核的报告。', changesHeading: '等待你处理', changesEmpty: '目前没有等待修改的报告。',

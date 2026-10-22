@@ -61,7 +61,7 @@ function ReviewsContent() {
           {queue && teacher && <div className="stack">
             {queue.changesRequested.map(({ student, commentDate }) => <article className="card review-row" key={student.id}>
               <Avatar initials={student.initials} />
-              <div className="grow"><h2 className="h2">{student.name}</h2>{commentDate && <p className="sec muted">{t('pages.reviews.submitted', { date: fmtDate(commentDate) })}</p>}</div>
+              <div className="grow"><h2 className="h2">{student.name}</h2>{commentDate && <p className="sec muted">{t('pages.reviews.changesRequestedOn', { date: fmtDate(commentDate) })}</p>}</div>
               <Link className="btn btn-secondary" to={`/students/${student.id}/studio`}>{t('pages.reviews.open')}</Link>
             </article>)}
           </div>}
