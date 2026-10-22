@@ -113,7 +113,7 @@ function LanguageItems({ close }: { close: () => void }) {
 }
 
 function LanguageMenu() {
-  const { lang, t, loadingLang, languageLoadError } = useI18n();
+  const { lang, t, loadingLang } = useI18n();
   const meta = LANGS.find((l) => l.key === lang)!;
   return (
     <>
@@ -129,7 +129,6 @@ function LanguageMenu() {
     >
       {(close) => <LanguageItems close={close} />}
     </Menu>
-    <span className="sr-only" role="status" aria-live="polite">{languageLoadError ? t('shell.language.loadError') : ''}</span>
     </>
   );
 }

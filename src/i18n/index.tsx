@@ -79,12 +79,12 @@ export function makeT(_lang: Lang, dict: Dict) {
   };
 }
 
-export function I18nProvider({ children, initial, initialDict }: { children: ReactNode; initial: Lang; initialDict: Dict }) {
+export function I18nProvider({ children, initial, initialDict, initialLanguageLoadError = false }: { children: ReactNode; initial: Lang; initialDict: Dict; initialLanguageLoadError?: boolean }) {
   const [lang, setLangState] = useState<Lang>(() => initial);
   const [dict, setDict] = useState<Dict>(initialDict);
   const [loadingLang, setLoadingLang] = useState(false);
   const [requestedLang, setRequestedLang] = useState<Lang | null>(null);
-  const [languageLoadError, setLanguageLoadError] = useState(false);
+  const [languageLoadError, setLanguageLoadError] = useState(initialLanguageLoadError);
   const languageRequest = useRef(0);
   const pendingLang = useRef<Lang | null>(null);
   const languageIndicator = useRef<number | undefined>(undefined);

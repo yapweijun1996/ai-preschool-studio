@@ -3,7 +3,7 @@ import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'rea
 import { ThemeContext } from './components/AppShell';
 import { NavMemoryProvider } from './hooks/useNavMemory';
 import { useTheme } from './hooks/useTheme';
-import { I18nProvider, type Lang } from './i18n';
+import { I18nProvider, useI18n, type Lang } from './i18n';
 import type { Dict } from './i18n/locales/en';
 import { Dashboard } from './pages/Dashboard';
 import { AddObservation, AuditLog, Catalog, Classes, Coverage, FamilyReport, LearningProgress, NotFound, pageKindForPath, PortfolioStudio, ReportPreview, Reviews, RouteChunkSuccess, RouteFallback, RoutePreloadHints, Settings, StudentProfile, Students } from './routes/lazyPages';
@@ -22,7 +22,10 @@ function PerStudent({ children }: { children: ReactNode }) {
 function RoutedPages() {
   const { pathname } = useLocation();
   const kind = pageKindForPath(pathname);
-  return <RouteErrorBoundary key={pathname}>
+  const { t, languageLoadError } = useI18n();
+  return <>
+    <span className="sr-only" role="status" aria-live="polite">{languageLoadError ? t('shell.language.loadError') : ''}</span>
+    <RouteErrorBoundary key={pathname}>
     <Suspense fallback={kind ? <RouteFallback kind={kind} /> : null}>
       <Routes>
         <Route path="/" element={<RouteChunkSuccess><Dashboard /></RouteChunkSuccess>} />
@@ -43,15 +46,16 @@ function RoutedPages() {
         <Route path="*" element={<RouteChunkSuccess><NotFound /></RouteChunkSuccess>} />
       </Routes>
     </Suspense>
-  </RouteErrorBoundary>;
+    </RouteErrorBoundary>
+  </>;
 }
 
 // HashRouter defaults to React.startTransition for history updates in React Router v7.
-export function App({ initialLang, initialDict }: { initialLang: Lang; initialDict: Dict }) {
+export function App({ initialLang, initialDict, initialLanguageLoadError = false }: { initialLang: Lang; initialDict: Dict; initialLanguageLoadError?: boolean }) {
   const theme = useTheme();
   return (
     <ThemeContext.Provider value={theme}>
-      <I18nProvider initial={initialLang} initialDict={initialDict}>
+      <I18nProvider initial={initialLang} initialDict={initialDict} initialLanguageLoadError={initialLanguageLoadError}>
         <PwaProvider>
           <PortfolioProvider>
             <RoleProvider>

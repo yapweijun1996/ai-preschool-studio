@@ -25,6 +25,8 @@ test('a failed preferred language load retries in English', async ({ page }) => 
   await page.goto('./#/');
   await expect(page.getByRole('heading', { name: 'Good morning, Ms. Lim' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.getByRole('status').filter({ hasText: 'The language could not be loaded. Your current language is unchanged.' })).toHaveText('The language could not be loaded. Your current language is unchanged.');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('aps-lang'))).toBe('zh');
 });
 
 test('a failed preferred language and English load show static recovery', async ({ page }) => {

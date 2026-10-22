@@ -28,15 +28,18 @@ function showStaticRecovery() {
 async function startApp() {
   const initialHashPath = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '/';
   const initialKind = pageKindForPath(initialHashPath.split('?')[0] || '/');
-  const initialLanguage = loadInitialLanguage().catch(async () => ({ lang: 'en' as const, dict: await loadDict('en') }));
+  const initialLanguage = loadInitialLanguage().then(
+    ({ lang, dict }) => ({ lang, dict, languageLoadError: false }),
+    async () => ({ lang: 'en' as const, dict: await loadDict('en'), languageLoadError: true })
+  );
   try {
-    const [{ lang, dict }] = await Promise.all([
+    const [{ lang, dict, languageLoadError }] = await Promise.all([
       initialLanguage,
       initialKind ? pageLoaders[initialKind]().then(() => undefined, () => undefined) : Promise.resolve()
     ]);
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
-        <App initialLang={lang} initialDict={dict} />
+        <App initialLang={lang} initialDict={dict} initialLanguageLoadError={languageLoadError} />
       </StrictMode>
     );
   } catch {
