@@ -257,10 +257,6 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
           <strong>{t(`pages.children.${child.status}`)}</strong>
         </div>
         <div>
-          <span className="cap muted">{t('pages.children.levelYear', { level: classRecord?.level ?? '', year: classRecord?.year ?? '' })}</span>
-          <strong>{classRecord ? `${classRecord.level} · ${classRecord.year}` : '—'}</strong>
-        </div>
-        <div>
           <span className="cap muted">{t('pages.children.dateOfBirth')}</span>
           <strong>{fmtDate(child.dateOfBirth)}</strong>
         </div>

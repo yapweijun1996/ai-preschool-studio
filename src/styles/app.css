@@ -288,6 +288,7 @@ html:not(:lang(zh)) body { word-break: keep-all; overflow-wrap: break-word; }
 .action-bar { position: fixed; left: 0; right: 0; bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom)); z-index: 29; display: flex; gap: var(--space-2); padding: var(--space-3) calc(var(--space-4) + env(safe-area-inset-right)) var(--space-3) calc(var(--space-4) + env(safe-area-inset-left)); background: var(--color-surface); border-top: 1px solid var(--color-border); }
 /* Tablet ≤1024: tablet page layouts with the bottom tab bar instead of the rail. */
 .is-tablet.has-tabbar .main { padding-bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom)); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.is-tablet.has-tabbar .main > .page { min-height: 0; flex: 1 1 0; }
 .is-tablet .tabbar { justify-content: center; }
 .is-tablet .tabbar-item, .is-tablet .tabbar .menu-wrap { flex: 0 1 160px; }
 .is-tablet .tabbar-item[aria-current="page"], .is-tablet .tabbar-item[data-active="true"] { flex-grow: 0; }
