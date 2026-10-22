@@ -276,7 +276,7 @@ export const pages = {
   },
   coverage: {
     title: 'Evidence coverage',
-    summary: '{children} children with gaps · {missing} areas missing · {stale} stale areas',
+    summary: '{children} children with gaps · {missing} areas missing · {thin} thin areas · {stale} stale areas',
     term: 'Reporting term',
     filters: 'Filter coverage',
     all: 'All',
@@ -296,8 +296,9 @@ export const pages = {
     addFor: 'Add observation for {name}, {area}',
     emptyOk: 'Every child has enough recent evidence',
     noResults: 'No children match this filter.',
+    resultCount: 'Showing {count} children',
+    resultCount_one: 'Showing {count} child',
     tableCaption: 'Evidence coverage by child and learning area',
-    areaCount: '{count} observations · {status}',
     mobileAreas: 'Learning areas for {name}',
     loading: 'Loading evidence coverage…',
     error: 'Evidence coverage could not be loaded.',
@@ -324,8 +325,6 @@ export const pages = {
     loading: 'Loading review queue…',
     error: 'Review queue could not be loaded.',
     retry: 'Retry',
-    topHeading: 'Review queue',
-    viewQueue: 'View review queue',
-    submittedBy: 'Submitted {date}'
+    viewQueue: 'View review queue'
   }
 };

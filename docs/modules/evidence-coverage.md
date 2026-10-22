@@ -30,7 +30,7 @@ Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.
 
 ## Screens and states
 
-- `/coverage`: default class coverage for Term 4. Desktop/tablet uses a captioned, horizontally scrollable table with sticky child column; mobile (390px) uses child cards with four area rows. Each cell shows observation count, textual status and latest date; status is never communicated by colour alone. Summary bar shows children with gaps, missing areas and stale areas.
+- `/coverage`: default class coverage for Term 4. Desktop/tablet uses a captioned, horizontally scrollable table with a sticky child column; mobile (390px) uses child cards with four area rows. Each cell shows observation count, textual status and latest date; status is never communicated by colour alone. Summary bar shows children with gaps and counts of missing, thin and stale areas.
 - Coverage filters: All, Needs attention, Missing and Stale. A filter with no rows shows an empty-filter message. When all cells are ok, show “Every child has enough recent evidence”. Loading and data error states expose a status message and retry where applicable. Teacher sees Add observation actions; reviewer/admin do not. Unknown routes show NotFound.
 - `/reviews`: reviewer/admin default queue ordered by oldest submitted date, with child, submitted date, waiting days, readiness, unverified claim count, approval-block reason and Open report. Empty queue has an explanatory empty state. Teacher sees only the changes-requested list awaiting their action. Parent sees the planned-page access reason. Loading and data error states expose status and retry. The report itself retains the existing blocked, read-only and editable states.
 - Dashboard: reviewers see the first three review items and a link to the full queue; teachers see Action required linking to coverage when gaps exist. Empty cards are omitted or show a translated empty state.
@@ -39,7 +39,7 @@ Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.
 ## Rules
 
 - `coverageFor(state, studentId, term)` counts only that child's observations in the selected term and derives each area's latest date and milestone. `missing` takes precedence at zero observations; `thin` applies below the framework's `minPerArea`; otherwise `stale` applies when latest evidence is older than the framework's `staleAfterDays` measured from the fixed demo `TODAY`; otherwise status is `ok`. A date exactly `staleAfterDays` old is not stale.
-- `classCoverage(state, term)` returns all students and summary counts; `needsAttention(state, term)` sorts by descending count of non-ok areas then oldest latest evidence date.
+- `classCoverage(state, term)` returns all students and summary counts; `needsAttention(state, term)` sorts by descending count of non-ok areas, then oldest latest evidence date, then child name. A child with no evidence has no oldest latest date and sorts before dated children when earlier keys tie.
 - `reviewQueue(state)` returns reports in review by ascending `submittedAt`, with readiness, unverified claim count and approval-block reason, plus changes-requested reports waiting for the teacher. `submitForReview` records the ISO submitted date; resubmission refreshes it.
 - `loadState` accepts only the current stored-state schema and complete report records; an older schema resets to fresh demo state.
 
@@ -49,7 +49,7 @@ Derived coverage supports the licensee's obligations under ECDA by making eviden
 
 ## Data port
 
-Reads: `getCoverage(term): Promise<ClassCoverage>`, `getNeedsAttention(term): Promise<CoverageStudent[]>`, and `getReviewQueue(): Promise<ReviewQueue>`; all are derived from current state. No writes are owned by this module. Observation writes continue through `addObservation`; report lifecycle writes continue through `submitForReview`, `requestChanges` and `approve`.
+Reads: `getCoverage(term): Promise<ClassCoverage>`, `getNeedsAttention(term): Promise<CoverageStudent[]>`, and `getReviewQueue(): Promise<ReviewQueue>`; all are derived from current state. The coverage page uses `getNeedsAttention` ordering for its Needs attention filter, and the dashboard reads coverage and queue data through the port. No writes are owned by this module. Observation writes continue through `addObservation`; report lifecycle writes continue through `submitForReview`, `requestChanges` and `approve`.
 
 ## Acceptance criteria
 

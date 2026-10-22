@@ -3,10 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { useCoverageRead } from '../src/pages/useCoverageRead';
 import type { ClassCoverage } from '../src/coverage';
 import type { DataPort } from '../src/data/port';
-import type { State } from '../src/store/reducer';
 
 function result(childrenWithGaps: number): ClassCoverage {
-  return { students: [], summary: { childrenWithGaps, areasMissing: 0, areasStale: 0 } };
+  return { students: [], summary: { childrenWithGaps, areasMissing: 0, areasThin: 0, areasStale: 0 } };
 }
 
 function Probe({ port, term }: { port: DataPort; term: 3 | 4 }) {
@@ -22,7 +21,7 @@ describe('coverage request freshness', () => {
       if (term === 4) resolve4 = resolve;
       else resolve3 = resolve;
     }));
-    const port = { getCoverage } as unknown as DataPort;
+    const port = { getCoverage, getNeedsAttention: vi.fn(() => Promise.resolve([])) } as unknown as DataPort;
     const view = render(<Probe port={port} term={4} />);
     expect(screen.getByText('Loading')).toBeTruthy();
     view.rerender(<Probe port={port} term={3} />);

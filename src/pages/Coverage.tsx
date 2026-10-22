@@ -14,6 +14,9 @@ import { useCoverageRead } from './useCoverageRead';
 
 type Filter = 'all' | 'attention' | 'missing' | 'stale';
 
+const statusIcon = (status: CoverageStatus) =>
+  status === 'ok' ? 'check' : status === 'missing' ? 'info' : 'alertCircle';
+
 export function Coverage() {
   const role = useRole();
   if (!role.can('coverage.view')) return <AccessDenied />;
@@ -26,8 +29,11 @@ function AccessDenied() {
   return <AppShell module="students" mobileTitle={t('pages.coverage.title')}>
     {() => <div className="page"><Notice tone="info" icon="lock" role="status">
       <p className="body-text">{t('shell.roles.dataAccessBlocked')}</p>
-      <div className="row"><Link className="btn btn-secondary" to="/">{t('pages.report.backToDashboard')}</Link>
-        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('teacher')}>{t('shell.roles.switchTeacher')}</button></div>
+      <div className="row">
+        <Link className="btn btn-secondary" to="/">{t('pages.report.backToDashboard')}</Link>
+        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('teacher')}>
+          {t('shell.roles.switchTeacher')}
+        </button></div>
     </Notice></div>}
   </AppShell>;
 }
@@ -40,13 +46,15 @@ function CoverageContent() {
   const dataPort = useDataPort();
   const [term, setTerm] = useState<3 | 4>(4);
   const [filter, setFilter] = useState<Filter>('all');
-  const { coverage, failed, loading, load } = useCoverageRead(dataPort, state, term);
+  const { coverage, needsAttention, failed, loading, load } = useCoverageRead(dataPort, state, term);
 
-  const visible = useMemo(() => (coverage?.students ?? []).filter((student) => {
-    if (filter === 'attention') return student.attentionAreas > 0;
-    if (filter === 'missing' || filter === 'stale') return student.areas.some((area) => area.status === filter);
-    return true;
-  }), [coverage, filter]);
+  const visible = useMemo(() => {
+    if (filter === 'attention') return needsAttention ?? [];
+    return (coverage?.students ?? []).filter((student) => {
+      if (filter === 'missing' || filter === 'stale') return student.areas.some((area) => area.status === filter);
+      return true;
+    });
+  }, [coverage, filter, needsAttention]);
   const filters: { key: Filter; label: string }[] = [
     { key: 'all', label: t('pages.coverage.all') },
     { key: 'attention', label: t('pages.coverage.attention') },
@@ -54,13 +62,20 @@ function CoverageContent() {
     { key: 'stale', label: t('pages.coverage.staleFilter') }
   ];
   const statusKeys: Record<CoverageStatus, TKey> = {
-    missing: 'pages.coverage.statusMissing', thin: 'pages.coverage.statusThin', stale: 'pages.coverage.statusStale', ok: 'pages.coverage.statusOk'
+    missing: 'pages.coverage.statusMissing',
+    thin: 'pages.coverage.statusThin',
+    stale: 'pages.coverage.statusStale',
+    ok: 'pages.coverage.statusOk'
   };
   const statusLabel = (status: CoverageStatus) => t(statusKeys[status]);
   const domainLabel = labels.domainShort;
 
   return (
-    <AppShell module="students" crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: t('pages.coverage.title') }]} mobileTitle={t('pages.coverage.title')}>
+    <AppShell
+      module="students"
+      crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: t('pages.coverage.title') }]}
+      mobileTitle={t('pages.coverage.title')}
+    >
       {() => (
         <div className="page coverage-page">
           <div className="page-title-row">
@@ -72,35 +87,85 @@ function CoverageContent() {
               </select>
             </label>
           </div>
-          {coverage && <section className="card card-pad coverage-summary" aria-label={t('pages.coverage.summary', {
-            children: coverage.summary.childrenWithGaps, missing: coverage.summary.areasMissing, stale: coverage.summary.areasStale
-          })}>
-            <span className="coverage-summary-item"><Icon name="alertCircle" size={18} />{t('pages.coverage.summary', {
-              children: coverage.summary.childrenWithGaps, missing: coverage.summary.areasMissing, stale: coverage.summary.areasStale
-            })}</span>
+          {coverage && <section
+            className="card card-pad coverage-summary"
+            aria-label={t('pages.coverage.summary', {
+              children: coverage.summary.childrenWithGaps,
+              missing: coverage.summary.areasMissing,
+              thin: coverage.summary.areasThin,
+              stale: coverage.summary.areasStale
+            })}
+          >
+            <span className="coverage-summary-item">
+              <Icon name="alertCircle" size={18} />
+              {t('pages.coverage.summary', {
+                children: coverage.summary.childrenWithGaps,
+                missing: coverage.summary.areasMissing,
+                thin: coverage.summary.areasThin,
+                stale: coverage.summary.areasStale
+              })}
+            </span>
             {coverage.summary.childrenWithGaps === 0 && <p className="sec">{t('pages.coverage.emptyOk')}</p>}
           </section>}
           <div className="coverage-filters" role="group" aria-label={t('pages.coverage.filters')}>
-            {filters.map((item) => <button key={item.key} className={`chip${filter === item.key ? ' is-active' : ''}`} type="button" aria-pressed={filter === item.key} onClick={() => setFilter(item.key)}>{item.label}</button>)}
+            {filters.map((item) => <button
+              key={item.key}
+              className={`chip${filter === item.key ? ' is-active' : ''}`}
+              type="button"
+              aria-pressed={filter === item.key}
+              onClick={() => setFilter(item.key)}
+            >{item.label}</button>)}
           </div>
-          {failed && <div className="notice notice-error" role="alert"><span>{t('pages.coverage.error')}</span><button className="btn btn-secondary" type="button" onClick={load}>{t('pages.coverage.retry')}</button></div>}
+          {coverage && <p className="sec muted" role="status" aria-live="polite">
+            {t('pages.coverage.resultCount', { count: visible.length })}
+          </p>}
+          {failed && <div className="notice notice-error" role="alert">
+            <span>{t('pages.coverage.error')}</span>
+            <button className="btn btn-secondary" type="button" onClick={load}>
+              {t('pages.coverage.retry')}
+            </button>
+          </div>}
           {loading && <p role="status" className="sec muted">{t('pages.coverage.loading')}</p>}
-          {coverage && visible.length === 0 && filter !== 'all' && <p className="card card-pad sec" role="status">{t('pages.coverage.noResults')}</p>}
+          {coverage && visible.length === 0 && filter !== 'all' && <p className="card card-pad sec" role="status">
+            {t('pages.coverage.noResults')}
+          </p>}
           {coverage && visible.length > 0 && (
             <>
               <div className="card coverage-table-card">
                 <div className="coverage-scroll" role="region" aria-label={t('pages.coverage.tableCaption')}>
                   <table className="coverage-table">
                     <caption>{t('pages.coverage.tableCaption')} · {labels.termShort(term)}</caption>
-                    <thead><tr><th className="coverage-student-head" scope="col">{t('pages.coverage.student')}</th>{DOMAINS.map((area) => <th scope="col" key={area.key}>{domainLabel(area.key)}</th>)}</tr></thead>
+                    <thead><tr>
+                      <th className="coverage-student-head" scope="col">{t('pages.coverage.student')}</th>
+                      {DOMAINS.map((area) => <th scope="col" key={area.key}>{domainLabel(area.key)}</th>)}
+                    </tr></thead>
                     <tbody>{visible.map((row) => <tr key={row.student.id}>
-                      <th className="coverage-student-cell" scope="row"><Link to={`/students/${row.student.id}`} className="coverage-child"><Avatar initials={row.student.initials} size="sm" /><span>{row.student.name}</span></Link></th>
+                      <th className="coverage-student-cell" scope="row">
+                        <Link to={`/students/${row.student.id}`} className="coverage-child">
+                          <Avatar initials={row.student.initials} size="sm" />
+                          <span>{row.student.name}</span>
+                        </Link>
+                      </th>
                       {row.areas.map((area) => <td key={area.area}>
                         <div className={`coverage-cell status-${area.status}`}>
-                          <div className="coverage-state"><Icon name={area.status === 'ok' ? 'check' : area.status === 'missing' ? 'info' : 'alertCircle'} size={16} /><strong>{statusLabel(area.status)}</strong></div>
+                          <div className="coverage-state">
+                            <Icon name={statusIcon(area.status)} size={16} />
+                            <strong>{statusLabel(area.status)}</strong>
+                          </div>
                           <span className="sec num">{t('pages.coverage.count', { count: area.count })}</span>
-                          <span className="cap muted">{area.latestDate ? t('pages.coverage.latest', { date: fmtDate(area.latestDate) }) : t('pages.coverage.noLatest')}</span>
-                          {role.can('observation.add') && <Link className="coverage-add" aria-label={t('pages.coverage.addFor', { name: row.student.name, area: domainLabel(area.area) })} to={`/students/${row.student.id}/observe?area=${area.area}`}>{t('pages.coverage.add')}</Link>}
+                          <span className="cap muted">
+                            {area.latestDate
+                              ? t('pages.coverage.latest', { date: fmtDate(area.latestDate) })
+                              : t('pages.coverage.noLatest')}
+                          </span>
+                          {role.can('observation.add') && <Link
+                            className="coverage-add"
+                            aria-label={t('pages.coverage.addFor', {
+                              name: row.student.name,
+                              area: domainLabel(area.area)
+                            })}
+                            to={`/students/${row.student.id}/observe?area=${area.area}`}
+                          >{t('pages.coverage.add')}</Link>}
                         </div>
                       </td>)}
                     </tr>)}</tbody>
@@ -109,13 +174,35 @@ function CoverageContent() {
               </div>
               <div className="coverage-mobile-list">
                 {visible.map((row) => <article className="card card-pad coverage-mobile-card" key={row.student.id}>
-                  <h2 className="h2"><Link to={`/students/${row.student.id}`} className="coverage-child"><Avatar initials={row.student.initials} size="sm" />{row.student.name}</Link></h2>
-                  <div className="coverage-mobile-areas" role="group" aria-label={t('pages.coverage.mobileAreas', { name: row.student.name })}>
+                  <h2 className="h2">
+                    <Link to={`/students/${row.student.id}`} className="coverage-child">
+                      <Avatar initials={row.student.initials} size="sm" />{row.student.name}
+                    </Link>
+                  </h2>
+                  <div
+                    className="coverage-mobile-areas"
+                    role="group"
+                    aria-label={t('pages.coverage.mobileAreas', { name: row.student.name })}
+                  >
                     {row.areas.map((area) => <div className="coverage-mobile-area" key={area.area}>
                       <strong>{domainLabel(area.area)}</strong>
-                      <span className="coverage-state"><Icon name={area.status === 'ok' ? 'check' : area.status === 'missing' ? 'info' : 'alertCircle'} size={16} />{statusLabel(area.status)}</span>
-                      <span className="cap muted">{t('pages.coverage.count', { count: area.count })} · {area.latestDate ? fmtDate(area.latestDate) : t('pages.coverage.noLatest')}</span>
-                      {role.can('observation.add') && <Link className="coverage-add" aria-label={t('pages.coverage.addFor', { name: row.student.name, area: domainLabel(area.area) })} to={`/students/${row.student.id}/observe?area=${area.area}`}>{t('pages.coverage.add')}</Link>}
+                      <span className="coverage-state">
+                        <Icon name={statusIcon(area.status)} size={16} />
+                        {statusLabel(area.status)}
+                      </span>
+                      <span className="cap muted">
+                        {t('pages.coverage.count', { count: area.count })} · {area.latestDate
+                          ? fmtDate(area.latestDate)
+                          : t('pages.coverage.noLatest')}
+                      </span>
+                      {role.can('observation.add') && <Link
+                        className="coverage-add"
+                        aria-label={t('pages.coverage.addFor', {
+                          name: row.student.name,
+                          area: domainLabel(area.area)
+                        })}
+                        to={`/students/${row.student.id}/observe?area=${area.area}`}
+                      >{t('pages.coverage.add')}</Link>}
                     </div>)}
                   </div>
                 </article>)}

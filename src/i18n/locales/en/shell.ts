@@ -49,8 +49,6 @@ export const shell = {
     students: 'Students',
     observations: 'Observations',
     reports: 'Reports',
-    coverage: 'Evidence coverage',
-    reviews: 'Review queue',
     more: 'More'
   },
   // Top-bar context label and context-panel title per module.
@@ -59,8 +57,6 @@ export const shell = {
     students: 'Students',
     observations: 'Observations',
     reports: 'Reports',
-    coverage: 'Evidence coverage',
-    reviews: 'Review queue',
     settings: 'Settings'
   },
   panel: {

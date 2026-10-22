@@ -21,7 +21,7 @@ export interface CoverageStudent {
 
 export interface ClassCoverage {
   students: CoverageStudent[];
-  summary: { childrenWithGaps: number; areasMissing: number; areasStale: number };
+  summary: { childrenWithGaps: number; areasMissing: number; areasThin: number; areasStale: number };
 }
 
 export interface QueuedReport {
@@ -80,6 +80,7 @@ export function classCoverage(state: State, term: 3 | 4): ClassCoverage {
     summary: {
       childrenWithGaps: students.filter((student) => student.attentionAreas > 0).length,
       areasMissing: students.reduce((count, student) => count + student.areas.filter((area) => area.status === 'missing').length, 0),
+      areasThin: students.reduce((count, student) => count + student.areas.filter((area) => area.status === 'thin').length, 0),
       areasStale: students.reduce((count, student) => count + student.areas.filter((area) => area.status === 'stale').length, 0)
     }
   };

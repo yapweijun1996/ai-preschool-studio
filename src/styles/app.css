@@ -426,7 +426,7 @@ legend { padding: 0; margin-bottom: var(--space-2); }
 .coverage-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
 .coverage-table caption { padding: 14px 16px; text-align: left; color: var(--color-text-muted); font-size: 14px; }
 .coverage-table th, .coverage-table td { min-width: 220px; padding: 10px; border-top: 1px solid var(--color-border); border-right: 1px solid var(--color-border); text-align: left; vertical-align: top; }
-.coverage-table thead th { position: sticky; top: 0; z-index: 2; background: var(--color-surface-muted); }
+.coverage-table thead th { background: var(--color-surface-muted); }
 .coverage-table .coverage-student-head, .coverage-table .coverage-student-cell { position: sticky; left: 0; z-index: 3; min-width: 190px; width: 190px; background: var(--color-surface); }
 .coverage-table .coverage-student-head { z-index: 4; background: var(--color-surface-muted); }
 .coverage-child { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }

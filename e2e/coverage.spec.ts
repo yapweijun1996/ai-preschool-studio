@@ -5,7 +5,7 @@ test('missing coverage opens observation with that area selected and updates aft
   await page.goto('./#/coverage');
   await expect(page.getByRole('heading', { name: 'Evidence coverage' })).toBeVisible();
   const cell = page.locator('.coverage-cell').filter({ has: page.getByText('Missing', { exact: true }) }).first();
-  const add = cell.getByRole('link', { name: 'Add observation' });
+  const add = cell.getByRole('link', { name: /^Add observation for/ });
   const href = await add.getAttribute('href');
   expect(href).toMatch(/\?area=(en|zh|ma|se)$/);
   const area = href!.split('area=')[1] as 'en' | 'zh' | 'ma' | 'se';
@@ -74,8 +74,8 @@ test('parent cannot open coverage or review data', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'parent'));
   for (const path of ['./#/coverage', './#/reviews']) {
     await page.goto(path);
-    await expect(page.getByRole('heading', { name: 'Parent view planned' })).toBeVisible();
-    await expect(page.getByText('The family experience will let guardians view released reports, receive notices, manage consents and complete a morning declaration.')).toBeVisible();
+    await expect(page.locator('.notice[role="status"]')).toContainText('Class evidence and review details are available to staff roles.');
+    await expect(page.getByRole('button', { name: 'Switch to teacher (demo)' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Evidence coverage' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Review queue' })).toHaveCount(0);
   }

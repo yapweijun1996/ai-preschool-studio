@@ -14,7 +14,7 @@ import { DEMO_ROLES } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { Capability } from '../roles';
 
-export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'coverage' | 'reviews' | 'settings';
+export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'settings';
 
 export const ThemeContext = createContext<{ pref: ThemePref; theme: Theme; setPref: (p: ThemePref) => void }>({
   pref: 'light',
@@ -37,7 +37,11 @@ const NAV: { key: NavModule; to: string; icon: IconName; capability: Capability 
   { key: 'reports', to: '/students?status=review', icon: 'fileText', capability: 'report.view' }
 ];
 
-const visibleNav = (hasCapability: (capability: Capability) => boolean) => NAV.filter((item) => hasCapability(item.capability));
+const visibleNav = (hasCapability: (capability: Capability) => boolean) => NAV.filter((item) =>
+  item.key === 'reports'
+    ? hasCapability('report.view') || hasCapability('reviews.view') || hasCapability('reviews.changes')
+    : hasCapability(item.capability)
+);
 
 export const PANEL_KEY = 'aps-panel-open';
 

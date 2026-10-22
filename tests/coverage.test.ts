@@ -50,6 +50,7 @@ describe('evidence coverage rules', () => {
     const state = withObservations([
       observation('one', 'aria', TODAY, 'en'),
       observation('two', 'aria', TODAY, 'en'),
+      observation('one', 'kai', TODAY, 'ma'),
       observation('one', 'ethan', '2026-09-20', 'en'),
       observation('two', 'ethan', '2026-09-20', 'en')
     ]);
@@ -57,6 +58,7 @@ describe('evidence coverage rules', () => {
     expect(result.students).toHaveLength(20);
     expect(result.summary.childrenWithGaps).toBe(20);
     expect(result.summary.areasMissing).toBeGreaterThan(0);
+    expect(result.summary.areasThin).toBeGreaterThan(0);
     expect(result.summary.areasStale).toBeGreaterThan(0);
     const ordered = needsAttention(state, 4);
     expect(ordered.findIndex((student) => student.student.id === 'ethan'))

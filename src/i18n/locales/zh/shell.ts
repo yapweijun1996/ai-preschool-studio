@@ -51,8 +51,6 @@ export const shell: Dict['shell'] = {
     students: '学生',
     observations: '观察记录',
     reports: '报告',
-    coverage: '学习证据覆盖情况',
-    reviews: '审核队列',
     more: '更多'
   },
   module: {
@@ -60,8 +58,6 @@ export const shell: Dict['shell'] = {
     students: '学生',
     observations: '观察记录',
     reports: '报告',
-    coverage: '学习证据覆盖情况',
-    reviews: '审核队列',
     settings: '设置'
   },
   panel: {

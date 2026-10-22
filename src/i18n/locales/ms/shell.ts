@@ -51,8 +51,6 @@ export const shell: Dict['shell'] = {
     students: 'Murid',
     observations: 'Pemerhatian',
     reports: 'Laporan',
-    coverage: 'Liputan bukti pembelajaran',
-    reviews: 'Giliran semakan',
     more: 'Lagi'
   },
   module: {
@@ -60,8 +58,6 @@ export const shell: Dict['shell'] = {
     students: 'Murid',
     observations: 'Pemerhatian',
     reports: 'Laporan',
-    coverage: 'Liputan bukti pembelajaran',
-    reviews: 'Giliran semakan',
     settings: 'Tetapan'
   },
   panel: {
