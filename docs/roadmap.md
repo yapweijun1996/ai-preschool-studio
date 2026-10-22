@@ -12,7 +12,7 @@ Status values: **done**, **in progress**, **planned**.
 | Learning Framework (single owner of areas, scale, periods; versioned) | done (v0.4.0) |
 | Quality gates: axe WCAG 2.2 AA scan on every route, Firefox and WebKit runs | in progress |
 | Component catalog route with every component state, plus visual regression | planned |
-| Data port interface (demo adapter now; platform adapter later) | planned |
+| Data port interface (demo adapter now; platform adapter later) | in progress (contract + demo adapter) |
 | Demo role switcher (Teacher, Reviewer/Principal, School admin, Parent) | planned |
 | Module spec template and specs for existing modules | done |
 | Lighthouse budget in CI | planned |

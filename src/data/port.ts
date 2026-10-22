@@ -21,21 +21,31 @@ export type ObservationInput = Omit<Observation, 'id' | 'term'>;
 
 export interface DataPort {
   // Observations
+  /** Returns the existing summary, or undefined when the child is unknown. */
   getStudentSummary(studentId: string): Promise<StudentSummary | undefined>;
+  /** Returns the currently published framework. */
   getCurrentFramework(): Promise<Framework>;
+  /** Finds the configured reporting period containing the date. */
   getPeriod(date: string): Promise<ReportingPeriod | undefined>;
   /** Rejects dates outside all configured reporting periods. */
   addObservation(input: ObservationInput): Promise<PortResult<Observation>>;
 
   // Learning progress
+  /** Returns summaries for all available students. */
   getAllSummaries(): Promise<StudentSummary[]>;
+  /** Derives each domain milestone from its latest observation in the selected term. */
   getMilestones(studentId: string, term?: 3 | 4): Promise<Record<DomainKey, Milestone | null>>;
+  /** Filters observations by child and selected term. */
   getObservations(studentId: string, term?: 3 | 4): Promise<Observation[]>;
 
   // Portfolio studio
+  /** Computes report readiness from narrative, reflection and claims. */
   getReadiness(studentId: string): Promise<Readiness>;
+  /** Returns narrative claims with no evidence sources. */
   getUnverifiedClaims(studentId: string): Promise<UnverifiedClaim[]>;
+  /** Returns the child's saved narrative and reflection, or empty defaults. */
   getDraft(studentId: string): Promise<Draft>;
+  /** Returns the requested framework version or the current version fallback. */
   getFramework(version?: string): Promise<Framework>;
   /** Starts a draft only for a not-started child with observations. */
   startDraft(studentId: string): Promise<PortResult<void>>;
@@ -55,6 +65,7 @@ export interface DataPort {
   submitForReview(studentId: string): Promise<PortResult<void>>;
 
   // Report review
+  /** Explains why the report cannot currently be approved. */
   getApprovalBlock(studentId: string): Promise<ApprovalBlock>;
   /** Requests changes only for reports currently in review. */
   requestChanges(studentId: string, text: string, date: string): Promise<PortResult<void>>;
