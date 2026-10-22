@@ -3,7 +3,7 @@
 - Tier: Core | Operations | Family | Administration | Platform
 - Owns: <entities this module is the single owner of>
 - Reads: <entities owned elsewhere, and their owner>
-- Status: planned | in progress | done (version)
+- Status: planned | partial | in progress | done (version)
 
 ## Purpose
 
