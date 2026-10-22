@@ -64,7 +64,7 @@ export function GlobalSearch() {
       if (p.key === 'dashboard') return role.can('dashboard.view');
       if (p.key === 'students') return role.can('students.view');
       if (p.key === 'coverage') return role.can('coverage.view');
-      if (p.key === 'reviews') return role.can('reviews.view') || role.role === 'teacher';
+      if (p.key === 'reviews') return role.can('reviews.view') || role.can('reviews.changes');
       return role.can('settings.view');
     })
       .filter((p) => !q || t(p.label).toLowerCase().includes(q))

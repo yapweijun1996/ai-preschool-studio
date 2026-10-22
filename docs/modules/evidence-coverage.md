@@ -15,7 +15,7 @@ Helps teachers find learning areas that need recent evidence and helps reviewers
 |---|---|---|
 | Teacher | Coverage for the class; reports they submitted for which changes were requested. | Filter coverage and add an observation in a selected area. The changes-requested list links to the report. |
 | Reviewer / Principal | Class coverage and the review queue, including readiness, unverified claims and approval blocks. | Open a report for review. |
-| School admin | Class coverage as a read-only view and review queue. | No data changes from these views. |
+| School admin | Class coverage as a read-only view and review queue metadata (child, submitted date, days waiting, readiness and claim count). | No report narrative access or Open report action; no data changes from these views. |
 | Parent | Neither page nor child-specific data. | No actions. |
 
 Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.ts). The role switcher is a display feature, not an access-control boundary; Studio Platform enforces real access.
@@ -24,9 +24,9 @@ Demo UI permissions are defined by [`src/roles/index.ts`](../../src/roles/index.
 
 1. Teacher opens Students › Evidence coverage, chooses a term and filter, then uses Add observation on a cell to open the selected child and area in Observations.
 2. Teacher saves an observation and returns to coverage; the derived count and status update from current state without a reload.
-3. Reviewer opens Reports › Review queue, processes reports oldest submission first, and opens a report to inspect its narrative and evidence.
+3. Reviewer opens Reports › Review queue, processes reports oldest submission first, and opens a report to inspect its narrative and evidence. School admins can see queue metadata but cannot open reports.
 4. Teacher opens a changes-requested report from the waiting-for-teacher list, edits it and submits it again.
-5. Reviewer, teacher and admin may inspect the applicable read-only views; parent access is denied with the planned-page reason.
+5. Reviewer, teacher and admin may inspect the applicable read-only views; parent access is denied with the access reason and a way back.
 
 ## Screens and states
 

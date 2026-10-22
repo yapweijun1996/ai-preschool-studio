@@ -119,17 +119,19 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             ))}
           </>
         )}
-        {module === 'reports' && role.can('report.view') && (
+        {module === 'reports' && (
           <>
-            {(role.can('reviews.view') || role.role === 'teacher') && <Link className="nav-link" to="/reviews" aria-current={path === '/reviews' ? 'page' : undefined}><Icon name="fileText" size={18} />{t('pages.reviews.title')}</Link>}
-            <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue', { term: labels.termShort(4) })}</p>
-            {(['review', 'changes', 'draft', 'notStarted', 'approved'] as ReportStatus[]).map((st) => (
-              <Link key={st} className="nav-link" to={`/students?status=${st}`} aria-current={status === st ? 'page' : undefined}>
-                <span className="grow">{labels.status(st)}</span>
-                <span className="cap muted nav-meta num">{counts(st)}</span>
-              </Link>
-            ))}
-            {currentStudentId && (
+            {(role.can('reviews.view') || role.can('reviews.changes')) && <Link className="nav-link" to="/reviews" aria-current={path === '/reviews' ? 'page' : undefined}><Icon name="fileText" size={18} />{t('pages.reviews.title')}</Link>}
+            {role.can('report.view') && <>
+              <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue', { term: labels.termShort(4) })}</p>
+              {(['review', 'changes', 'draft', 'notStarted', 'approved'] as ReportStatus[]).map((st) => (
+                <Link key={st} className="nav-link" to={`/students?status=${st}`} aria-current={status === st ? 'page' : undefined}>
+                  <span className="grow">{labels.status(st)}</span>
+                  <span className="cap muted nav-meta num">{counts(st)}</span>
+                </Link>
+              ))}
+            </>}
+            {role.can('report.view') && currentStudentId && (
               <Link className="nav-link" to={`/students/${currentStudentId}/report`} aria-current={path.endsWith('/report') ? 'page' : undefined}><Icon name="fileText" size={18} />{t('shell.panel.studentReport', { name: byId(currentStudentId)?.name ?? '' })}</Link>
             )}
           </>

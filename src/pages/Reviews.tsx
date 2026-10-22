@@ -11,7 +11,7 @@ import type { QueuedReport } from '../coverage';
 
 export function Reviews() {
   const role = useRole();
-  if (!role.can('reviews.view') && role.role !== 'teacher') return <AccessDenied />;
+  if (!role.can('reviews.view') && !role.can('reviews.changes')) return <AccessDenied />;
   return <ReviewsContent />;
 }
 
@@ -41,7 +41,7 @@ function ReviewsContent() {
   };
   useEffect(load, [dataPort, state]);
 
-  const teacher = role.role === 'teacher';
+  const teacher = role.can('reviews.changes');
   const reason = (item: QueuedReport) => {
     const block = item.approvalBlock;
     if (!block) return t('pages.reviews.blockNone');
@@ -75,7 +75,7 @@ function ReviewsContent() {
                 <p className="sec">{t('pages.reviews.readiness', { written: item.readiness.domainsWritten, total: item.readiness.domainsTotal })} · {t('pages.reviews.claims', { count: item.unverifiedClaimCount })}</p>
                 <p className="sec review-block"><Icon name={item.approvalBlock ? 'alertCircle' : 'check'} size={16} />{t('pages.reviews.block', { reason: reason(item) })}</p>
               </div>
-              <Link className="btn btn-secondary" to={`/students/${item.student.id}/report`}>{t('pages.reviews.open')}</Link>
+              {role.can('report.review') && <Link className="btn btn-secondary" to={`/students/${item.student.id}/report`}>{t('pages.reviews.open')}</Link>}
             </article>)}
           </div>}
         </div>
