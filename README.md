@@ -72,6 +72,8 @@ Quality baseline: [2026-10-22](docs/quality/baseline-2026-10-22.md).
 
 Visual regression: [how it works and how to update baselines](docs/quality/visual-regression.md).
 
+Performance budgets: [Lighthouse CI budgets and reports](docs/quality/performance.md).
+
 ## Run
 
 ```bash
@@ -102,6 +104,8 @@ The site is served at `https://yapweijun1996.github.io/ai-preschool-studio/`. Pa
 private repository needs a paid GitHub plan; on the free plan, make the repo public first.
 
 ## Structure
+
+Font credits: Inter by Rasmus Andersson and Noto Sans SC by Google, both distributed under the SIL Open Font License 1.1.
 
 ```
 design/tokens.json        design system tokens (source of truth)

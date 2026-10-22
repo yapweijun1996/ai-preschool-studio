@@ -11,8 +11,8 @@ Asia/Singapore with locale `en-SG`, matching the demo market so date and time fo
 across host timezones. It clears browser storage in each fresh context and sets English plus the
 requested theme, blocks service workers so update banners
 cannot arrive during capture, and waits for `document.fonts.ready`. The demo's relative dates
-already use a fixed `TODAY` value. The interface uses system font stacks rather than self-hosted
-fonts. Screenshots mask the context-panel build/version footer because the commit SHA changes
+already use a fixed `TODAY` value. Latin text uses self-hosted Inter; Chinese text uses native
+operating-system CJK fonts from the token stack. Screenshots mask the context-panel build/version footer because the commit SHA changes
 between builds.
 
 ## Updating baselines
@@ -25,6 +25,6 @@ to `main` compare against those committed files. If the folder is absent, CI rep
 comparison was skipped so the first baseline capture can happen without failing the pipeline.
 
 Baselines are CI-only: capture and comparison use the same Ubuntu and Chromium versions, avoiding
-font and rendering differences across developer operating systems. Do not auto-commit or push
+native CJK font and rendering differences across developer operating systems. Do not auto-commit or push
 baselines from CI. To capture locally for investigation, use `npm run test:visual:update`; remove
 the generated PNGs before committing source changes.

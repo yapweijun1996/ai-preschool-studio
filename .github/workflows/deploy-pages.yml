@@ -100,11 +100,47 @@ jobs:
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         # Same normalisation, so relative page.goto('./…') resolves under the repo sub-path.
-        run: BASE_URL="${PAGE_URL%/}/" npx playwright test e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts e2e/polish.spec.ts e2e/students-data.spec.ts e2e/framework.spec.ts e2e/catalog.spec.ts --reporter=line
+        run: BASE_URL="${PAGE_URL%/}/" npx playwright test e2e/journey.spec.ts e2e/sidebar.spec.ts e2e/profile.spec.ts e2e/navigation.spec.ts e2e/polish.spec.ts e2e/students-data.spec.ts e2e/framework.spec.ts e2e/catalog.spec.ts e2e/no-third-party.spec.ts --reporter=line
 
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: live-smoke-results
           path: test-results
+          retention-days: 7
+
+  lighthouse:
+    needs: [deploy, smoke]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: normalize
+        name: Normalize deployed base URL
+        run: echo "base_url=${PAGE_URL%/}/" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare report directory
+        run: mkdir -p .lighthouseci
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: false
+          urls: |
+            ${{ steps.normalize.outputs.base_url }}#/
+            ${{ steps.normalize.outputs.base_url }}#/students
+            ${{ steps.normalize.outputs.base_url }}#/students/aria/report
+            ${{ steps.normalize.outputs.base_url }}#/catalog
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci
+          if-no-files-found: warn
           retention-days: 7
