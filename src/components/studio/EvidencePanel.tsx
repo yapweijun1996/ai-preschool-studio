@@ -23,7 +23,7 @@ export function EvidencePanel({
   headerless?: boolean;
 }) {
   const { t, fmtDate } = useI18n();
-  const { domainShort } = useLabels();
+  const { domainShort, termShort } = useLabels();
   const [filter, setFilter] = useState<DomainKey | 'all'>('all');
   const [query, setQuery] = useState('');
   const list = observations
@@ -37,7 +37,7 @@ export function EvidencePanel({
         <div className="panel-head">
           <div className="grow">
             <h2 id="ev-h" className="h2">{t('pages.studio.evidence')}</h2>
-            <p className="cap muted">{t('pages.studio.ev.count', { count: observations.length })}</p>
+            <p className="cap muted">{t('pages.studio.ev.count', { count: observations.length, term: termShort(4) })}</p>
           </div>
           <Link className="btn btn-primary" to={`/students/${studentId}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>
         </div>
@@ -46,7 +46,7 @@ export function EvidencePanel({
         {observations.length === 0 ? (
           <div className="empty">
             <div className="state-icon"><Icon name="clipboard" size={24} /></div>
-            <p className="strong">{t('pages.studio.ev.empty')}</p>
+            <p className="strong">{t('pages.studio.ev.empty', { term: termShort(4) })}</p>
             <p className="sec muted">{t('pages.studio.ev.emptyBody')}</p>
             {headerless && <Link className="btn btn-primary" to={`/students/${studentId}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>}
           </div>

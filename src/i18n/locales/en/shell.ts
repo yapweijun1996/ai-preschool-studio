@@ -43,7 +43,7 @@ export const shell = {
     overview: 'Overview',
     addObservation: 'Add observation',
     latest: 'Latest',
-    reportQueue: 'Report queue · Term 4',
+    reportQueue: 'Report queue · {term}',
     studentReport: '{name} · report',
     pinned: 'Pinned',
     pinnedEmpty: 'Pin a student from their profile to keep them here.',
@@ -168,7 +168,7 @@ export const shell = {
       basis: 'Learning areas, the milestone scale and reporting periods used by every page. Areas are mapped to the Nurturing Early Learners (NEL) Framework 2022.',
       readOnly: 'Read-only in this demo. In Studio Platform a school admin maintains it; an approved report keeps the framework version it was approved with.',
       areas: 'Learning areas',
-      mappingNote: 'The NEL mapping is a demo assumption to confirm against the NEL documents.',
+      mappingNote: 'The NEL mapping is a demo assumption to confirm against the NEL documents. Chinese is shown under Language and Literacy here, but Mother Tongue Languages may follow their own framework; Social-Emotional maps to a core competency, not a learning area.',
       scale: 'Milestone scale',
       scaleNote: 'Descriptions of observed learning, shown as words and dots. Never scores, percentages or rankings.',
       periods: 'Reporting periods'

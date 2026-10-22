@@ -44,7 +44,7 @@ export const shell: Dict['shell'] = {
     overview: 'Gambaran keseluruhan',
     addObservation: 'Tambah pemerhatian',
     latest: 'Terkini',
-    reportQueue: 'Baris gilir laporan · Penggal 4',
+    reportQueue: 'Baris gilir laporan · {term}',
     studentReport: '{name} · laporan',
     pinned: 'Disemat',
     pinnedEmpty: 'Semat murid dari profilnya untuk menyimpannya di sini.',
@@ -169,7 +169,7 @@ export const shell: Dict['shell'] = {
       basis: 'Bidang pembelajaran, skala pencapaian dan tempoh laporan yang digunakan oleh setiap halaman. Bidang dipetakan kepada Rangka Kerja Nurturing Early Learners (NEL) 2022.',
       readOnly: 'Baca sahaja dalam demo ini. Dalam Studio Platform, pentadbir sekolah menyelenggarakannya; laporan yang diluluskan mengekalkan versi rangka kerja semasa ia diluluskan.',
       areas: 'Bidang pembelajaran',
-      mappingNote: 'Pemetaan NEL ialah andaian demo yang perlu disahkan dengan dokumen NEL.',
+      mappingNote: 'Pemetaan NEL ialah andaian demo yang perlu disahkan dengan dokumen NEL. Bahasa Cina diletakkan di bawah Bahasa dan Literasi di sini, tetapi Bahasa Ibunda mungkin mengikut rangka kerja sendiri; Sosio-Emosi dipetakan kepada kecekapan teras, bukan bidang pembelajaran.',
       scale: 'Skala pencapaian',
       scaleNote: 'Huraian pembelajaran yang diperhatikan, dipaparkan sebagai perkataan dan titik. Bukan markah, peratusan atau kedudukan.',
       periods: 'Tempoh laporan'

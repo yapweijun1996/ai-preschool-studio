@@ -90,6 +90,9 @@ export const DOMAINS: { key: DomainKey }[] = CURRENT_FRAMEWORK.areas.map((a) => 
 export const MILESTONES: { key: Milestone; filled: number }[] = CURRENT_FRAMEWORK.scale.map((m) => ({ key: m.key, filled: m.filled }));
 
 const period = (term: 3 | 4) => CURRENT_FRAMEWORK.periods.find((p) => p.term === term)!;
-/** First day of Term 4; earlier observations belong to Term 3. */
+/** First and last day of Term 4 (the current reporting period). */
 export const TERM4_START = period(4).start;
-export const termOf = (date: string): 3 | 4 => (date >= TERM4_START ? 4 : 3);
+export const TERM4_END = period(4).end;
+/** The reporting period a date falls in; undefined between terms or outside every period. */
+export const periodOf = (date: string): ReportingPeriod | undefined => CURRENT_FRAMEWORK.periods.find((p) => date >= p.start && date <= p.end);
+export const termOf = (date: string): 3 | 4 | undefined => periodOf(date)?.term;

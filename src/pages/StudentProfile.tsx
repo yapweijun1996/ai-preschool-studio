@@ -18,7 +18,8 @@ import { useLastObservedLabel } from './Students';
 export function StudentProfile() {
   const { id = '' } = useParams();
   const { t, fmtDate } = useI18n();
-  const { domainFull, domainShort, milestone, term: periodLabel } = useLabels();
+  const { domainFull, domainShort, milestone, term: periodLabel, termShort } = useLabels();
+  const terms = { term3: termShort(3), term4: termShort(4) };
   const lastObservedLabel = useLastObservedLabel();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
@@ -74,7 +75,7 @@ export function StudentProfile() {
           <StudentTabs id={id} active="overview" />
           <div className="grid-main-side profile-grid">
             <section aria-labelledby="ld-h" className="stack profile-main" style={{ gap: 16 }}>
-              <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading')}</h2><Link className="btn btn-ghost" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare')}</Link></div>
+              <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading', { term: termShort(4) })}</h2><Link className="btn btn-ghost" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare', terms)}</Link></div>
               <p className="sec muted note-line"><Icon name="info" size={16} />{t('pages.profile.milestoneNote', { emerging: milestone('emerging'), developing: milestone('developing'), consistent: milestone('consistent') })}</p>
               <div className="grid-2 domain-grid">
                 {DOMAINS.map((d) => {
@@ -84,7 +85,7 @@ export function StudentProfile() {
                       <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}>
                         <h3 className="strong grow">
                           <Link className="stretched" to={`/students/${id}/progress?domain=${d.key}`}>
-                            {domainFull(d.key)}<span className="sr-only"> · {t('pages.profile.domainLinkHint')}</span>
+                            {domainFull(d.key)}<span className="sr-only"> · {t('pages.profile.domainLinkHint', terms)}</span>
                           </Link>
                         </h3>
                         <Icon name="chevronRight" size={18} className="card-link-chevron" />
@@ -100,7 +101,7 @@ export function StudentProfile() {
                 {obs.length === 0 ? (
                   <div className="empty">
                     <div className="state-icon"><Icon name="clipboard" size={24} /></div>
-                    <p className="strong">{t('pages.profile.emptyTitle', { name: student.name.split(' ')[0] })}</p>
+                    <p className="strong">{t('pages.profile.emptyTitle', { name: student.name.split(' ')[0], term: termShort(4) })}</p>
                     <p className="sec muted">{t('pages.profile.emptyBody')}</p>
                     <Link className="btn btn-primary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>
                   </div>

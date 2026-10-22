@@ -24,7 +24,8 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   blocked, with the reason shown, while any claim lacks evidence. The "Before approval" checks
   are computed from the report's real content.
 - **Learning framework** — `src/framework` is the single owner of learning areas (stable keys,
-  bilingual labels in en/中文/BM, each mapped to an NEL 2022 learning area), the milestone scale
+  bilingual labels in en/中文/BM, each mapped to an NEL 2022 learning area or core competency —
+  a demo mapping still to be confirmed), the milestone scale
   and reporting periods. Every page reads it; Settings › Learning framework shows it read-only.
   It is versioned: an approved report records the version and keeps its labels.
 - **Demo data** — 20 fictional students in K2 Sunflower. Observation counts, last-observed dates

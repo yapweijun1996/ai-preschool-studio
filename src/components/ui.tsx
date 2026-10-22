@@ -1,6 +1,6 @@
 import { useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { type ReportStatus } from '../data/demo';
-import { MILESTONES, type Milestone } from '../framework';
+import { frameworkFor, type Milestone } from '../framework';
 import type { SaveStatus } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
@@ -50,16 +50,20 @@ export function SourceChip({ id }: { id: string }) {
   );
 }
 
-/** Milestone as dots + word; null means the domain has no observation yet (no dots, never a level). */
-export function MilestoneDots({ milestone }: { milestone: Milestone | null }) {
-  const labels = useLabels();
+/**
+ * Milestone as dots + word; null means the domain has no observation yet (no dots, never a level).
+ * Pass a report's framework version so an approved report keeps its own scale and words.
+ */
+export function MilestoneDots({ milestone, version }: { milestone: Milestone | null; version?: string }) {
+  const labels = useLabels(version);
   const { t } = useI18n();
   if (!milestone) return <span className="ms ms-none">{t('common.notObserved')}</span>;
-  const m = MILESTONES.find((x) => x.key === milestone)!;
+  const scale = frameworkFor(version).scale;
+  const m = scale.find((x) => x.key === milestone)!;
   return (
     <span className="ms">
       <span className="dots" aria-hidden="true">
-        {[1, 2, 3].map((i) => (
+        {scale.map((_, idx) => idx + 1).map((i) => (
           <span key={i} className={`dot${i <= m.filled ? ' on' : ''}`} />
         ))}
       </span>

@@ -1,6 +1,6 @@
 // Pure portfolio state + transitions. Kept free of React so it can be unit tested.
 import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, STUDENTS, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
-import { CURRENT_FRAMEWORK, DOMAINS, termOf } from '../framework';
+import { CURRENT_FRAMEWORK, DOMAINS, termOf, type DomainKey, type Milestone } from '../framework';
 import type { Suggestion } from '../services/mockProvider';
 
 export interface ReportState {
@@ -10,6 +10,8 @@ export interface ReportState {
   approvedAt?: string;
   /** Learning Framework version the report was approved under; its labels stay with the report. */
   frameworkVersion?: string;
+  /** Term 4 milestones as approved; later observations do not change an approved report. */
+  milestones?: Record<DomainKey, Milestone | null>;
 }
 
 export interface State {
@@ -39,7 +41,11 @@ export type Action =
 export function initialState(): State {
   const reports: Record<string, ReportState> = {};
   for (const s of STUDENTS)
-    reports[s.id] = { status: s.reportStatus, hadChanges: s.reportStatus === 'changes', ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version } : {}) };
+    reports[s.id] = {
+      status: s.reportStatus,
+      hadChanges: s.reportStatus === 'changes',
+      ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(OBSERVATIONS, s.id, 4) } : {})
+    };
   reports.rayan.comment = { by: REVIEWER, date: '2026-10-20', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
   const seeded = seededDrafts();
   return {
@@ -76,8 +82,11 @@ export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'addObservation': {
       const id = `OBS-${String(state.nextObsNumber).padStart(4, '0')}`;
-      // The term follows the date, so a back-dated note never counts toward the current term.
-      const obs = { ...action.obs, id, term: termOf(action.obs.date) };
+      // The term follows the date, so a back-dated note never counts toward the current term;
+      // a date outside every reporting period is refused.
+      const term = termOf(action.obs.date);
+      if (!term) return state;
+      const obs = { ...action.obs, id, term };
       return { ...state, observations: [obs, ...state.observations], nextObsNumber: state.nextObsNumber + 1 };
     }
     case 'fillMissingDomains': {
@@ -149,7 +158,12 @@ export function reducer(state: State, action: Action): State {
     case 'approve': {
       // Approval is blocked while any claim lacks evidence.
       if (!canApprove(state, action.studentId)) return state;
-      return setReport(state, action.studentId, { status: 'approved', approvedAt: action.at, frameworkVersion: CURRENT_FRAMEWORK.version });
+      return setReport(state, action.studentId, {
+        status: 'approved',
+        approvedAt: action.at,
+        frameworkVersion: CURRENT_FRAMEWORK.version,
+        milestones: milestonesFrom(state.observations, action.studentId, 4)
+      });
     }
     case 'setSim':
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
@@ -210,6 +224,20 @@ export function approvalBlock(state: State, studentId: string): ApprovalBlock {
 
 export function canApprove(state: State, studentId: string): boolean {
   return approvalBlock(state, studentId) === null;
+}
+
+/**
+ * A domain's milestone is the one recorded on its most recent observation in that term;
+ * null when the domain has no observation yet. Milestones are never set without evidence.
+ */
+export function milestonesFrom(observations: Observation[], studentId: string, term: 3 | 4): Record<DomainKey, Milestone | null> {
+  const obs = observations.filter((o) => o.studentId === studentId && o.term === term);
+  const out = {} as Record<DomainKey, Milestone | null>;
+  for (const d of DOMAINS) {
+    const latest = obs.filter((o) => o.domain === d.key).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))[0];
+    out[d.key] = latest ? latest.milestone : null;
+  }
+  return out;
 }
 
 export function observationsFor(state: State, studentId: string, term: 3 | 4 = 4): Observation[] {

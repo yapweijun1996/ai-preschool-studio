@@ -31,7 +31,7 @@ export interface NarrativeProps {
 
 export function NarrativePanel(p: NarrativeProps) {
   const { t } = useI18n();
-  const { domainFull } = useLabels();
+  const { domainFull, termShort } = useLabels();
   return (
     <>
       {!p.headerless && (
@@ -103,7 +103,7 @@ export function NarrativePanel(p: NarrativeProps) {
               !p.locked && <button className="btn btn-secondary" type="button" onClick={p.onFill} style={{ alignSelf: 'flex-start' }}>{t('pages.studio.nar.fillMissing')}</button>
             ) : (
               <>
-                <p className="body-text">{t('pages.studio.nar.missingNoObs')}</p>
+                <p className="body-text">{t('pages.studio.nar.missingNoObs', { term: termShort(4) })}</p>
                 {!p.locked && <Link className="btn btn-secondary" to={p.observeHref} style={{ alignSelf: 'flex-start' }}><Icon name="plus" size={18} />{t('pages.shared.addObservation')}</Link>}
               </>
             )}

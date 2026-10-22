@@ -116,7 +116,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
         )}
         {module === 'reports' && (
           <>
-            <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue')}</p>
+            <p className="cap ctx-label" style={{ paddingTop: 4 }}>{t('shell.panel.reportQueue', { term: labels.termShort(4) })}</p>
             {(['review', 'changes', 'draft', 'notStarted', 'approved'] as ReportStatus[]).map((st) => (
               <Link key={st} className="nav-link" to={`/students?status=${st}`} aria-current={status === st ? 'page' : undefined}>
                 <span className="grow">{labels.status(st)}</span>

@@ -53,3 +53,15 @@ describe('learning framework (single owner of areas, scale and periods)', () => 
     for (const [id, r] of Object.entries(initialState().reports)) if (r.status === 'approved') expect(r.frameworkVersion, id).toBe(CURRENT_FRAMEWORK.version);
   });
 });
+
+describe('period names have one owner', () => {
+  it('no UI string hard-codes a term name (the framework supplies it)', async () => {
+    const locales = await Promise.all(['en', 'zh', 'ms'].map((l) => import(`../src/i18n/locales/${l}/index.ts`)));
+    const flat = (o: unknown): string[] => (typeof o === 'string' ? [o] : Object.values(o as object).flatMap(flat));
+    for (const mod of locales) {
+      const strings = flat(Object.values(mod)[0]);
+      const hard = strings.filter((s) => /Term [34]|第 ?[34] ?学期|Penggal [34]/.test(s));
+      expect(hard).toEqual([]);
+    }
+  });
+});

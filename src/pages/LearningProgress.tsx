@@ -59,7 +59,7 @@ export function LearningProgress() {
       currentStudentId={id}
       crumbs={[{ label: t('shell.module.students'), to: '/students' }, { label: student.name, to: `/students/${id}` }, { label: t('pages.progress.title') }]}
       mobileTitle={t('pages.progress.title')}
-      mobileSubtitle={t('pages.progress.mobileSubtitle', { name: student.name })}
+      mobileSubtitle={t('pages.progress.mobileSubtitle', { name: student.name, term3: termShort(3), term4: termShort(4) })}
       mobileBack={`/students/${id}`}
       mobileActions={<Link className="btn btn-primary btn-block" to={`/students/${id}/studio`}>{openStudio}</Link>}
     >
@@ -79,7 +79,7 @@ export function LearningProgress() {
             {MILESTONES.map((m) => <MilestoneDots key={m.key} milestone={m.key} />)}
             <span className="cap muted">{t('pages.progress.keyNote')}</span>
           </div>
-          <section className="card" aria-label={t('pages.progress.tableLabel')} style={{ overflow: 'hidden' }}>
+          <section className="card" aria-label={t('pages.progress.tableLabel', { term3: termShort(3), term4: termShort(4) })} style={{ overflow: 'hidden' }}>
             {bp !== 'mobile' && (
               <div className="table-head" aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1.6fr', gap: 16 }}>
                 <span>{t('pages.progress.colDomain')}</span><span>{term3}</span><span>{term4}</span><span>{t('pages.progress.colChanged')}</span>
@@ -125,7 +125,7 @@ export function LearningProgress() {
             })}
           </section>
           <Notice tone="info" icon="info">
-            <p className="body-text">{t('pages.progress.notice', { label: t('common.needsVerification') })}</p>
+            <p className="body-text">{t('pages.progress.notice', { label: t('common.needsVerification'), term: termShort(4) })}</p>
           </Notice>
         </div>
       )}

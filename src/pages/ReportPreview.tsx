@@ -32,7 +32,8 @@ export function ReportPreview() {
   useDirtyGuard(requesting && sum?.report.status === 'review');
   if (!sum) return <NotFound />;
   const { student, report } = sum;
-  const term4 = milestonesFor(state, id, 4);
+  // An approved report shows the milestones it was approved with; later observations do not change it.
+  const term4 = report.milestones ?? milestonesFor(state, id, 4);
   const ready = readiness(state, id);
   const checksDone = [ready.domainsWritten === ready.domainsTotal, ready.sentences > 0 && ready.unverified === 0, ready.hasReflection, true].filter(Boolean).length;
   const paragraphs = state.paragraphs[id] ?? [];
@@ -188,7 +189,7 @@ export function ReportPreview() {
         {paragraphs.length === 0 && <p className="sec muted">{t('pages.report.noNarrative')}</p>}
         {paragraphs.map((p) => (
           <section key={p.id}>
-            <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{domainFull(p.domain)}</h3><MilestoneDots milestone={term4[p.domain]} /></div>
+            <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{domainFull(p.domain)}</h3><MilestoneDots milestone={term4[p.domain]} version={report.frameworkVersion} /></div>
             <p className="narr">
               {p.sentences.map((s) => (
                 <Fragment key={s.id}>
@@ -211,7 +212,7 @@ export function ReportPreview() {
         <div className="grow" />
         <div className="row" style={{ justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
           <p className="cap muted">{t('pages.report.preparedBy', { teacher: TEACHER })} · {status === 'approved' ? t('pages.report.approvedByLine', { name: REVIEWER }) : t('pages.report.notApproved')}</p>
-          <p className="cap muted num">{t('pages.report.frameworkLine', { name: fw.name[lang], version: fw.version })} · {t('pages.report.pageOf', { page: 1, total: 1 })}</p>
+          <p className="cap muted num">{t('pages.report.frameworkLine', { name: fw.name[lang], version: report.status === 'approved' ? (report.frameworkVersion ?? '—') : fw.version })} · {t('pages.report.pageOf', { page: 1, total: 1 })}</p>
         </div>
       </div>
     </article>

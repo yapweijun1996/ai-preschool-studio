@@ -44,7 +44,7 @@ export const shell: Dict['shell'] = {
     overview: '概览',
     addObservation: '添加观察记录',
     latest: '最新',
-    reportQueue: '报告队列 · 第 4 学期',
+    reportQueue: '报告队列 · {term}',
     studentReport: '{name} · 报告',
     pinned: '已置顶',
     pinnedEmpty: '在学生档案中置顶学生，即可固定显示在这里。',
@@ -169,7 +169,7 @@ export const shell: Dict['shell'] = {
       basis: '所有页面使用的学习领域、里程碑等级和报告周期。各领域对应新加坡《培育幼儿》（NEL）框架 2022。',
       readOnly: '本演示中只读。在 Studio Platform 中由学校管理员维护；已批准的报告会保留批准时的框架版本。',
       areas: '学习领域',
-      mappingNote: 'NEL 对应关系是演示假设，需对照 NEL 官方文件确认。',
+      mappingNote: 'NEL 对应关系是演示假设，需对照 NEL 官方文件确认。此处把华语归在“语言与读写”下，但母语课程可能有自己的框架；社交与情绪对应的是核心能力，而不是学习领域。',
       scale: '里程碑等级',
       scaleNote: '描述观察到的学习表现，以文字和圆点显示。不是分数、百分比或排名。',
       periods: '报告周期'

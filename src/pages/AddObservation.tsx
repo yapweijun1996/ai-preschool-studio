@@ -4,7 +4,7 @@ import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { Avatar, Notice, SourceChip } from '../components/ui';
 import { CLASS_NAME, TODAY } from '../data/demo';
-import { DOMAINS, MILESTONES, TERM4_START, type DomainKey, type Milestone } from '../framework';
+import { DOMAINS, MILESTONES, TERM4_END, TERM4_START, type DomainKey, type Milestone } from '../framework';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { useDirtyGuard } from '../pwa';
@@ -34,7 +34,7 @@ const formKey = (f: Form) => JSON.stringify([f.date, f.domain, f.milestone, f.te
 export function AddObservation() {
   const { id = '' } = useParams();
   const { t, fmtDate } = useI18n();
-  const { domainShort, milestone: milestoneLabel, term: periodLabel } = useLabels();
+  const { domainShort, milestone: milestoneLabel, term: periodLabel, termShort } = useLabels();
   const { state, dispatch } = usePortfolio();
   const [date, setDate] = useState(TODAY);
   const [domain, setDomain] = useState<DomainKey>('ma');
@@ -57,11 +57,13 @@ export function AddObservation() {
   const term = periodLabel(4);
   const firstName = student.name.split(' ')[0];
 
+  // Observations can be dated up to today, and never past the end of Term 4.
+  const lastDay = TODAY < TERM4_END ? TODAY : TERM4_END;
   const save = () => {
     if (phase.kind === 'saving' || phase.kind === 'saved') return;
     // The picker limits the range, but a typed or cleared date must not slip through.
     // Show every problem at once; focus the first one.
-    const badDate = !date || date < TERM4_START || date > TODAY;
+    const badDate = !date || date < TERM4_START || date > lastDay;
     const shortText = text.trim().length < 10;
     setDateError(badDate);
     setError(shortText);
@@ -156,7 +158,7 @@ export function AddObservation() {
                           type="date"
                           value={date}
                           min={TERM4_START}
-                          max={TODAY}
+                          max={lastDay}
                           onChange={(e) => { setDate(e.target.value); setDateError(false); }}
                           aria-invalid={dateError}
                           aria-describedby={dateError ? 'obs-date-error' : undefined}
@@ -164,7 +166,7 @@ export function AddObservation() {
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(e.currentTarget); } }}
                         />
                       </div>
-                      {dateError && <p id="obs-date-error" className="sec" style={{ color: 'var(--color-danger)' }}><Icon name="alertCircle" size={14} /> {t('pages.observation.dateRange', { from: fmtDate(TERM4_START), to: fmtDate(TODAY) })}</p>}
+                      {dateError && <p id="obs-date-error" className="sec" style={{ color: 'var(--color-danger)' }}><Icon name="alertCircle" size={14} /> {t('pages.observation.dateRange', { term: termShort(4), from: fmtDate(TERM4_START), to: fmtDate(lastDay) })}</p>}
                     </div>
                   </div>
                   <fieldset>
