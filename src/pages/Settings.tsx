@@ -12,6 +12,7 @@ import { LANGS, useI18n, type TKey } from '../i18n';
 import { APP_VERSION, BUILD_ID, usePwa, type PwaApi, type UnsupportedReason, type UpdateStatus } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
 import { useRole } from '../roles/RoleContext';
+import { DEMO_ROLES } from '../roles';
 import { NotFound } from './NotFound';
 
 const isSection = (s: string | undefined): s is SettingsSection => SETTINGS_SECTIONS.some((x) => x.key === s);
@@ -259,6 +260,8 @@ function FrameworkSection() {
 function DemoData() {
   const { t } = useI18n();
   const { state, dispatch } = usePortfolio();
+  const { role } = useRole();
+  const account = DEMO_ROLES.find((item) => item.role === role)!;
   const [done, setDone] = useState(false);
   return (
     <>
@@ -272,7 +275,7 @@ function DemoData() {
       <Section title={t('shell.settings.demo.resetHeading')}>
         <p className="sec muted">{t('shell.settings.demo.resetHint')}</p>
         <div className="row">
-          <button className="btn btn-secondary" type="button" onClick={() => { dispatch({ type: 'reset' }); setDone(true); }}>
+          <button className="btn btn-secondary" type="button" onClick={() => { dispatch({ type: 'reset', actor: { role, name: account.name }, at: new Date().toISOString() }); setDone(true); }}>
             <Icon name="undo" size={18} />
             {t('shell.settings.demo.reset')}
           </button>

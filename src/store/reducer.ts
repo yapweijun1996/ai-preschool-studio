@@ -32,6 +32,7 @@ export interface AuditEvent {
   action: AuditAction;
   target: { type: 'student' | 'demo'; id: string };
   summary: string;
+  decision?: DecisionEvent;
 }
 export interface Actor { role: Role; name: string }
 
@@ -79,7 +80,7 @@ export type Action =
   | { type: 'reopen'; studentId: string; reason: string; at: string; reopenedBy: string; actor?: Actor }
   | { type: 'roleSwitched'; from: Role; to: Role; actor: Actor; at: string }
   | { type: 'setSim'; key: keyof State['sim']; value: boolean }
-  | { type: 'reset' };
+  | { type: 'reset'; actor?: Actor; at?: string };
 
 export function initialState(): State {
   const reports: Record<string, ReportState> = {};
@@ -108,7 +109,7 @@ export function initialState(): State {
       const version: ReportVersion = {
         version: 1, approvedAt, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version,
         milestones: report.milestones ?? milestonesFrom(OBSERVATIONS, student.id, 4), paragraphs,
-        reflection, contentHash: reportContentHash(paragraphs, reflection),
+        reflection, contentHash: reportContentHash(paragraphs, reflection, CURRENT_FRAMEWORK.version, report.milestones ?? milestonesFrom(OBSERVATIONS, student.id, 4)),
         ...(student.id === 'meiling' ? { releasedAt: '2026-10-21T02:00:00.000Z', releasedBy: REVIEWER } : {})
       };
       report.approvedAt = approvedAt;
@@ -121,12 +122,11 @@ export function initialState(): State {
       }
     }
   }
-  const auditEvents: AuditEvent[] = [
-    { id: 'AUD-0001', at: '2026-10-20T09:00:00.000Z', actor: { role: 'reviewer', name: REVIEWER }, action: 'report.approved', target: { type: 'student', id: 'meiling' }, summary: 'Report approved v1' },
-    { id: 'AUD-0002', at: '2026-10-21T02:00:00.000Z', actor: { role: 'reviewer', name: REVIEWER }, action: 'report.released', target: { type: 'student', id: 'meiling' }, summary: 'Report v1 released to family' },
-    { id: 'AUD-0003', at: '2026-10-21T00:00:00.000Z', actor: { role: 'teacher', name: TEACHER }, action: 'report.submitted', target: { type: 'student', id: 'ethan' }, summary: 'Report submitted for review' },
-    { id: 'AUD-0004', at: '2026-10-20T00:00:00.000Z', actor: { role: 'reviewer', name: REVIEWER }, action: 'report.changesRequested', target: { type: 'student', id: 'rayan' }, summary: 'Changes requested: add evidence' }
-  ];
+  const seededAudit = STUDENTS.flatMap((student) => reports[student.id].decisions.map((decision) => {
+    const action: AuditAction = decision.type === 'submitted' ? 'report.submitted' : decision.type === 'changesRequested' ? 'report.changesRequested' : decision.type === 'approved' ? 'report.approved' : decision.type === 'released' ? 'report.released' : 'report.reopened';
+    const summary = decision.type === 'submitted' ? 'Report submitted for review' : decision.type === 'changesRequested' ? `Changes requested: ${decision.comment}` : decision.type === 'approved' ? `Report approved v${decision.version}` : decision.type === 'released' ? `Report v${decision.version} released to family` : `Report reopened: ${decision.reason}`;
+    return { at: decision.at, actor: { role: decision.type === 'submitted' ? 'teacher' as const : 'reviewer' as const, name: decision.by }, action, target: { type: 'student' as const, id: student.id }, summary, decision };
+  })).sort((a, b) => a.at.localeCompare(b.at)).map((event, index) => ({ ...event, id: `AUD-${String(index + 1).padStart(4, '0')}` }));
   return {
     observations: OBSERVATIONS,
     paragraphs: { ...seeded.paragraphs, aria: ARIA_PARAGRAPHS },
@@ -134,7 +134,7 @@ export function initialState(): State {
     reports,
     sim: { aiDown: false, saveFail: false },
     nextObsNumber: NEXT_OBS_NUMBER,
-    auditEvents, nextAuditNumber: auditEvents.length + 1
+    auditEvents: seededAudit, nextAuditNumber: seededAudit.length + 1
   };
 }
 
@@ -142,8 +142,8 @@ function cloneParagraphs(paragraphs: Paragraph[]): Paragraph[] {
   return paragraphs.map((paragraph) => ({ ...paragraph, sentences: paragraph.sentences.map((sentence) => ({ ...sentence, sources: [...sentence.sources] })) }));
 }
 
-export function reportContentHash(paragraphs: Paragraph[], reflection: string): string {
-  const canonical = JSON.stringify({ paragraphs, reflection });
+export function reportContentHash(paragraphs: Paragraph[], reflection: string, frameworkVersion = CURRENT_FRAMEWORK.version, milestones?: Record<DomainKey, Milestone | null>): string {
+  const canonical = JSON.stringify({ frameworkVersion, milestones: milestones ?? null, paragraphs, reflection });
   let hash = 2166136261;
   for (let i = 0; i < canonical.length; i += 1) {
     hash ^= canonical.charCodeAt(i);
@@ -257,19 +257,21 @@ export function reducer(state: State, action: Action): State {
       // Only a structurally complete draft goes to review.
       if (!readiness(state, action.studentId).canSubmit) return state;
       const actor = action.actor ?? defaultActor;
-      const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: action.submittedAt, decisions: [...r.decisions, { type: 'submitted', at: action.submittedAt, by: actor.name }] });
-      return appendAudit(submitted, { at: action.submittedAt, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summary: 'Report submitted for review' });
+      const decision: DecisionEvent = { type: 'submitted', at: action.submittedAt, by: actor.name };
+      const submitted = setReport(state, action.studentId, { status: 'review', submittedAt: action.submittedAt, decisions: [...r.decisions, decision] });
+      return appendAudit(submitted, { at: action.submittedAt, actor, action: 'report.submitted', target: { type: 'student', id: action.studentId }, summary: 'Report submitted for review', decision });
     }
     case 'requestChanges': {
       if (state.reports[action.studentId]?.status !== 'review') return state;
       const actor = action.actor ?? { role: 'reviewer' as const, name: REVIEWER };
+      const decision: DecisionEvent = { type: 'changesRequested', at: action.date, by: actor.name, comment: action.text };
       const changed = setReport(state, action.studentId, {
         status: 'changes',
         hadChanges: true,
         comment: { by: actor.name, date: action.date, text: action.text },
-        decisions: [...state.reports[action.studentId].decisions, { type: 'changesRequested', at: action.date, by: actor.name, comment: action.text }]
+        decisions: [...state.reports[action.studentId].decisions, decision]
       });
-      return appendAudit(changed, { at: action.date, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summary: `Changes requested: ${action.text}` });
+      return appendAudit(changed, { at: action.date, actor, action: 'report.changesRequested', target: { type: 'student', id: action.studentId }, summary: `Changes requested: ${action.text}`, decision });
     }
     case 'approve': {
       // Approval is blocked while any claim lacks evidence.
@@ -279,8 +281,10 @@ export function reducer(state: State, action: Action): State {
       const version = (report.versions.at(-1)?.version ?? 0) + 1;
       const paragraphs = cloneParagraphs(state.paragraphs[action.studentId] ?? []);
       const reflection = state.reflections[action.studentId] ?? '';
-      const versionRecord: ReportVersion = { version, approvedAt: action.at, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(state.observations, action.studentId, 4), paragraphs, reflection, contentHash: reportContentHash(paragraphs, reflection) };
+      const milestones = milestonesFrom(state.observations, action.studentId, 4);
+      const versionRecord: ReportVersion = { version, approvedAt: action.at, approvedBy, frameworkVersion: CURRENT_FRAMEWORK.version, milestones, paragraphs, reflection, contentHash: reportContentHash(paragraphs, reflection, CURRENT_FRAMEWORK.version, milestones) };
       const actor = action.actor ?? { role: 'reviewer' as const, name: approvedBy };
+      const decision: DecisionEvent = { type: 'approved', at: action.at, by: approvedBy, version };
       const approved = setReport(state, action.studentId, {
         status: 'approved',
         approvedAt: action.at,
@@ -288,32 +292,34 @@ export function reducer(state: State, action: Action): State {
         frameworkVersion: CURRENT_FRAMEWORK.version,
         milestones: versionRecord.milestones,
         versions: [...report.versions, versionRecord],
-        decisions: [...report.decisions, { type: 'approved', at: action.at, by: approvedBy, version }]
+        decisions: [...report.decisions, decision]
       });
-      return appendAudit(approved, { at: action.at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summary: `Report approved v${version}` });
+      return appendAudit(approved, { at: action.at, actor, action: 'report.approved', target: { type: 'student', id: action.studentId }, summary: `Report approved v${version}`, decision });
     }
     case 'release': {
       const report = state.reports[action.studentId];
       const latest = report?.versions.at(-1);
       if (!report || report.status !== 'approved' || !latest || report.releasedVersion === latest.version) return state;
       const actor = action.actor ?? { role: 'reviewer' as const, name: action.releasedBy };
+      const decision: DecisionEvent = { type: 'released', at: action.at, by: action.releasedBy, version: latest.version };
       const version = { ...latest, releasedAt: action.at, releasedBy: action.releasedBy };
       const released = setReport(state, action.studentId, {
         versions: [...report.versions.slice(0, -1), version], releasedVersion: latest.version,
-        decisions: [...report.decisions, { type: 'released', at: action.at, by: action.releasedBy, version: latest.version }]
+        decisions: [...report.decisions, decision]
       });
-      return appendAudit(released, { at: action.at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summary: `Report v${latest.version} released to family` });
+      return appendAudit(released, { at: action.at, actor, action: 'report.released', target: { type: 'student', id: action.studentId }, summary: `Report v${latest.version} released to family`, decision });
     }
     case 'reopen': {
       const report = state.reports[action.studentId];
       const reason = action.reason.trim();
       if (!report || report.status !== 'approved' || !reason) return state;
       const actor = action.actor ?? { role: 'reviewer' as const, name: action.reopenedBy };
+      const decision: DecisionEvent = { type: 'reopened', at: action.at, by: action.reopenedBy, reason, version: (report.versions.at(-1)?.version ?? 0) + 1 };
       const reopened = setReport(state, action.studentId, {
         status: 'draft', reopenedAt: action.at,
-        decisions: [...report.decisions, { type: 'reopened', at: action.at, by: action.reopenedBy, reason, version: (report.versions.at(-1)?.version ?? 0) + 1 }]
+        decisions: [...report.decisions, decision]
       });
-      return appendAudit(reopened, { at: action.at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summary: `Report reopened: ${reason}` });
+      return appendAudit(reopened, { at: action.at, actor, action: 'report.reopened', target: { type: 'student', id: action.studentId }, summary: `Report reopened: ${reason}`, decision });
     }
     case 'roleSwitched':
       return appendAudit(state, { at: action.at, actor: action.actor, action: 'role.switched', target: { type: 'demo', id: 'role' }, summary: `Role switched from ${action.from} to ${action.to}` });
@@ -321,7 +327,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, sim: { ...state.sim, [action.key]: action.value } };
     case 'reset': {
       const fresh = { ...initialState(), auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
-      return appendAudit(fresh, { at: TODAY, actor: defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summary: 'Demo data reset' });
+      return appendAudit(fresh, { at: action.at ?? TODAY, actor: action.actor ?? defaultActor, action: 'demo.reset', target: { type: 'demo', id: 'portfolio' }, summary: 'Demo data reset' });
     }
   }
 }
@@ -406,4 +412,11 @@ export function selectAuditLog(events: AuditEvent[], filters: AuditFilters = {})
     (!filters.from || event.at.slice(0, 10) >= filters.from) &&
     (!filters.to || event.at.slice(0, 10) <= filters.to)
   ).sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id));
+}
+
+export function selectReportHistory(events: AuditEvent[], studentId: string): DecisionEvent[] {
+  return events
+    .filter((event) => event.target.type === 'student' && event.target.id === studentId && event.decision)
+    .sort((a, b) => a.at.localeCompare(b.at) || a.id.localeCompare(b.id))
+    .flatMap((event) => event.decision ? [event.decision] : []);
 }

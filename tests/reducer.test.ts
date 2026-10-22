@@ -64,7 +64,7 @@ describe('portfolio reducer', () => {
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-se-1', obsId: 'OBS-0151' });
     const frozen = JSON.stringify({ paragraphs: s.paragraphs.aria, reflection: s.reflections.aria });
     s = reducer(s, { type: 'approve', studentId: 'aria', at: '2026-10-22T09:00:00.000Z', approvedBy: 'Ms. Tan' });
-    expect(s.reports.aria.versions[0]).toMatchObject({ version: 1, approvedAt: '2026-10-22T09:00:00.000Z', approvedBy: 'Ms. Tan', contentHash: reportContentHash(s.paragraphs.aria, s.reflections.aria) });
+    expect(s.reports.aria.versions[0]).toMatchObject({ version: 1, approvedAt: '2026-10-22T09:00:00.000Z', approvedBy: 'Ms. Tan', contentHash: reportContentHash(s.paragraphs.aria, s.reflections.aria, s.reports.aria.versions[0].frameworkVersion, s.reports.aria.versions[0].milestones) });
     expect(JSON.stringify({ paragraphs: s.reports.aria.versions[0].paragraphs, reflection: s.reports.aria.versions[0].reflection })).toBe(frozen);
     const version = s.reports.aria.versions[0];
     s = reducer(s, { type: 'reopen', studentId: 'aria', reason: 'Correction', reopenedBy: 'Ms. Tan', at: '2026-10-22T10:00:00.000Z' });

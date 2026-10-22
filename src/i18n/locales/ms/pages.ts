@@ -274,7 +274,16 @@ export const pages: Dict['pages'] = {
     notApproved: 'Belum diluluskan',
     pageOf: 'Halaman {page} daripada {total}',
     frameworkLine: '{name} v{version}',
-    phoneNote: 'Paparan telefon menyusun semula halaman A4. Eksport PDF menunjukkan susun atur cetakan yang tepat.'
+    phoneNote: 'Paparan telefon menyusun semula halaman A4. Eksport PDF menunjukkan susun atur cetakan yang tepat.',
+    releaseAction: 'Lepaskan kepada keluarga', releasedBadge: 'Dilepaskan kepada keluarga', versionBadge: 'v{version} · Diluluskan pada {date} oleh {name}',
+    reopenAction: 'Buka semula untuk pindaan', reopenTitle: 'Buka semula laporan untuk pindaan', reopenReason: 'Sebab membuka semula',
+    reopenHint: 'Versi yang diluluskan sebelum ini kekal tanpa perubahan. Jika telah dilepaskan, keluarga masih melihatnya sehingga versi baharu dilepaskan.', reopenConfirm: 'Buka semula laporan',
+    history: 'Sejarah keputusan', versions: 'Versi laporan', version: 'Versi {version}', releasedVersion: 'Versi dilepaskan', familyCopy: 'Salinan keluarga',
+    familyEmpty: 'Belum ada laporan dilepaskan untuk kanak-kanak ini.', familyTitle: 'Laporan keluarga', close: 'Tutup', releaseSuccess: 'Versi dilepaskan kepada keluarga.', reopenRequired: 'Masukkan sebab untuk meneruskan.'
+  },
+  audit: {
+    title: 'Log audit', empty: 'Tiada peristiwa sepadan dengan penapis ini.', clear: 'Kosongkan penapis', action: 'Tindakan', child: 'Kanak-kanak', from: 'Dari tarikh', to: 'Hingga tarikh', allActions: 'Semua tindakan', actor: 'Pelaku', target: 'Sasaran', summary: 'Ringkasan',
+    observationAdded: 'Pemerhatian ditambah', submitted: 'Laporan dihantar', changesRequested: 'Perubahan diminta', approved: 'Laporan diluluskan', released: 'Laporan dilepaskan', reopened: 'Laporan dibuka semula', roleSwitched: 'Peranan demo ditukar', reset: 'Data demo ditetapkan semula'
   },
   coverage: {
     title: 'Liputan bukti pembelajaran',

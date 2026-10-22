@@ -13,6 +13,7 @@ const PAGES: { key: string; label: TKey; to: string; icon: IconName }[] = [
   { key: 'students', label: 'shell.nav.students', to: '/students', icon: 'users' },
   { key: 'coverage', label: 'pages.coverage.title', to: '/coverage', icon: 'layers' },
   { key: 'reviews', label: 'pages.reviews.title', to: '/reviews', icon: 'fileText' },
+  { key: 'audit', label: 'pages.audit.title', to: '/audit', icon: 'fileText' },
   { key: 'settings', label: 'shell.more.settings', to: '/settings', icon: 'settings' }
 ];
 
@@ -65,6 +66,7 @@ export function GlobalSearch() {
       if (p.key === 'students') return role.can('students.view');
       if (p.key === 'coverage') return role.can('coverage.view');
       if (p.key === 'reviews') return role.can('reviews.view') || role.can('reviews.changes');
+      if (p.key === 'audit') return role.can('audit.view');
       return role.can('settings.view');
     })
       .filter((p) => !q || t(p.label).toLowerCase().includes(q))

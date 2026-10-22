@@ -15,6 +15,7 @@ export const shell: Dict['shell'] = {
     viewingAs: 'Melihat sebagai: {role} (peranan demo — bukan kawalan akses)',
     plannedTitle: 'Paparan {role} dirancang',
     planned: 'Paparan peranan dirancang',
+    accessDenied: 'Peranan ini tidak boleh mengakses halaman ini.',
     plannedModules: 'Modul yang dirancang',
     parentPurpose: 'Pengalaman keluarga akan membolehkan penjaga melihat laporan yang diterbitkan, menerima notis, mengurus persetujuan dan melengkapkan pengisytiharan pagi.',
     adminPurpose: 'Pentadbir sekolah akan mengurus sekolah dan akaun, aliran kerja privasi dan penyimpanan, insiden serta laporan pengetua.',

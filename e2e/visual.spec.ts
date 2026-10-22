@@ -42,6 +42,9 @@ const screens = [
   { name: 'aria-profile', path: './#/students/aria' },
   { name: 'aria-studio', path: './#/students/aria/studio' },
   { name: 'aria-report', path: './#/students/aria/report' },
+  { name: 'report-history', path: './#/students/meiling/report', role: 'reviewer' },
+  { name: 'family-copy', path: './#/students/meiling/report/family', role: 'reviewer' },
+  { name: 'audit', path: './#/audit', role: 'reviewer' },
   { name: 'coverage', path: './#/coverage' },
   { name: 'reviews', path: './#/reviews', role: 'reviewer' },
   { name: 'settings-framework', path: './#/settings/framework' }

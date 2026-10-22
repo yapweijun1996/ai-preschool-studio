@@ -15,6 +15,7 @@ export const shell: Dict['shell'] = {
     viewingAs: '当前角色：{role}（演示角色，不是权限控制）',
     plannedTitle: '{role}界面计划中',
     planned: '角色界面计划中',
+    accessDenied: '此角色无权访问此页面。',
     plannedModules: '计划中的模块',
     parentPurpose: '家庭门户将让监护人查看已发布的报告、接收通知、管理同意事项并填写晨间申报。',
     adminPurpose: '学校管理员将管理学校和账户、隐私与保留流程、事件以及园长报告。',

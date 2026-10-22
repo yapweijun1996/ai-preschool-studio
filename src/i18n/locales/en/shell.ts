@@ -13,6 +13,7 @@ export const shell = {
     viewingAs: 'Viewing as: {role} (demo role — not access control)',
     plannedTitle: '{role} view planned',
     planned: 'Planned role view',
+    accessDenied: 'This role cannot access this page.',
     plannedModules: 'Planned modules',
     parentPurpose: 'The family experience will let guardians view released reports, receive notices, manage consents and complete a morning declaration.',
     adminPurpose: 'School administrators will manage schools and accounts, privacy and retention workflows, incidents and principal reporting.',

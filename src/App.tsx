@@ -5,12 +5,14 @@ import { NavMemoryProvider } from './hooks/useNavMemory';
 import { useTheme } from './hooks/useTheme';
 import { I18nProvider } from './i18n';
 import { AddObservation } from './pages/AddObservation';
+import { AuditLog } from './pages/AuditLog';
 import { Coverage } from './pages/Coverage';
 import { Dashboard } from './pages/Dashboard';
 import { LearningProgress } from './pages/LearningProgress';
 import { NotFound } from './pages/NotFound';
 import { PortfolioStudio } from './pages/PortfolioStudio';
 import { ReportPreview } from './pages/ReportPreview';
+import { FamilyReport } from './pages/FamilyReport';
 import { Reviews } from './pages/Reviews';
 import { Settings } from './pages/Settings';
 import { StudentProfile } from './pages/StudentProfile';
@@ -51,6 +53,8 @@ export function App() {
             <Route path="/students/:id/progress" element={<LearningProgress />} />
             <Route path="/students/:id/studio" element={<PerStudent><PortfolioStudio /></PerStudent>} />
             <Route path="/students/:id/report" element={<PerStudent><ReportPreview /></PerStudent>} />
+            <Route path="/students/:id/report/family" element={<PerStudent><FamilyReport /></PerStudent>} />
+            <Route path="/audit" element={<AuditLog />} />
             <Route path="/settings" element={<Navigate to="/settings/appearance" replace />} />
             <Route path="/settings/:section" element={<Settings />} />
             <Route

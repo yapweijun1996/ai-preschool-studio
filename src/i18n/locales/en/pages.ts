@@ -273,7 +273,19 @@ export const pages = {
     notApproved: 'Not yet approved',
     pageOf: 'Page {page} of {total}',
     frameworkLine: '{name} v{version}',
-    phoneNote: 'The phone view reflows the A4 page. Export PDF shows the exact printed layout.'
+    phoneNote: 'The phone view reflows the A4 page. Export PDF shows the exact printed layout.',
+    releaseAction: 'Release to family', releasedBadge: 'Released to family',
+    versionBadge: 'v{version} · Approved {date} by {name}', reopenAction: 'Reopen for amendment',
+    reopenTitle: 'Reopen report for amendment', reopenReason: 'Reason for reopening',
+    reopenHint: 'The previous approved version stays unchanged. If already released, it remains visible to families until a new version is released.',
+    reopenConfirm: 'Reopen report', history: 'Decision history', versions: 'Report versions',
+    version: 'Version {version}', releasedVersion: 'Released version', familyCopy: 'Family copy',
+    familyEmpty: 'No report has been released for this child yet.', familyTitle: 'Family report',
+    close: 'Close', releaseSuccess: 'Version released to family.', reopenRequired: 'Enter a reason to continue.'
+  },
+  audit: {
+    title: 'Audit log', empty: 'No events match these filters.', clear: 'Clear filters', action: 'Action', child: 'Child', from: 'From date', to: 'To date', allActions: 'All actions', actor: 'Actor', target: 'Target', summary: 'Summary',
+    observationAdded: 'Observation added', submitted: 'Report submitted', changesRequested: 'Changes requested', approved: 'Report approved', released: 'Report released', reopened: 'Report reopened', roleSwitched: 'Demo role switched', reset: 'Demo data reset'
   },
   coverage: {
     title: 'Evidence coverage',

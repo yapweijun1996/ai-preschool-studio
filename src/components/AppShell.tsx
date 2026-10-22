@@ -191,6 +191,8 @@ function RoleItems({ role, setRole, close }: { role: string; setRole: (role: 'te
 /** Demo-only controls so failure states can be reached without a backend. */
 function DemoMenuItems({ close }: { close: () => void }) {
   const { state, dispatch } = usePortfolio();
+  const { role } = useRole();
+  const account = DEMO_ROLES.find((item) => item.role === role)!;
   const { t } = useI18n();
   return (
     <>
@@ -201,7 +203,7 @@ function DemoMenuItems({ close }: { close: () => void }) {
       <button className="menu-item" type="button" role="menuitemcheckbox" aria-checked={state.sim.saveFail} onClick={() => dispatch({ type: 'setSim', key: 'saveFail', value: !state.sim.saveFail })}>
         <Icon name="alertCircle" size={18} /><span className="grow">{t('shell.demo.saveFail')}</span>{state.sim.saveFail && <Icon name="check" size={18} className="ic-primary" />}
       </button>
-      <button className="menu-item" type="button" role="menuitem" onClick={() => { dispatch({ type: 'reset' }); close(); }}>
+      <button className="menu-item" type="button" role="menuitem" onClick={() => { dispatch({ type: 'reset', actor: { role, name: account.name }, at: new Date().toISOString() }); close(); }}>
         <Icon name="undo" size={18} />{t('shell.demo.reset')}
       </button>
     </>

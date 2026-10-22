@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
@@ -12,7 +12,7 @@ import { useLabels } from '../i18n/labels';
 import { frameworkFor } from '../framework';
 import { useDirtyGuard } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
-import { approvalBlock, observationsFor, readiness, unverifiedClaims } from '../store/reducer';
+import { approvalBlock, observationsFor, readiness, selectReportHistory, unverifiedClaims } from '../store/reducer';
 import { milestonesFor, studentSummary } from '../store/selectors';
 import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
@@ -26,32 +26,68 @@ export function ReportPreview() {
   const [editedNote, setEditedNote] = useState<string | undefined>(undefined);
   const [requesting, setRequesting] = useState(false);
   const [showChecks, setShowChecks] = useState(false);
-  const { t, fmtDate, fmtTime, lang } = useI18n();
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
+  const [reopenError, setReopenError] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const reopenTrigger = useRef<HTMLButtonElement>(null);
+  const { t, fmtDate, lang } = useI18n();
   // An approved report keeps the framework labels it was approved with.
   const { domainFull, status: statusLabel, term: periodLabel } = useLabels(state.reports[id]?.frameworkVersion);
   const changeNote = editedNote ?? t('pages.report.defaultChangeNote', { domain: domainFull('en') });
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
+  useEffect(() => {
+    if (reopenOpen) dialogRef.current?.querySelector<HTMLElement>('textarea')?.focus();
+  }, [reopenOpen]);
+  useEffect(() => {
+    if (!reopenOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setReopenOpen(false); reopenTrigger.current?.focus(); }
+      if (event.key === 'Tab' && dialogRef.current) {
+        const items = [...dialogRef.current.querySelectorAll<HTMLElement>('button, textarea')].filter((item) => !item.hasAttribute('disabled'));
+        if (items.length === 0) return;
+        if (event.shiftKey && document.activeElement === items[0]) { event.preventDefault(); items.at(-1)?.focus(); }
+        else if (!event.shiftKey && document.activeElement === items.at(-1)) { event.preventDefault(); items[0].focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [reopenOpen]);
   // The request-changes note is unsaved work while its editor is open.
   useDirtyGuard(requesting && sum?.report.status === 'review');
   if (!sum) return <NotFound />;
+  if (!role.can('report.view')) return <AppShell module="reports" mobileTitle={t('pages.report.title')}>{() => <div className="card card-pad stack"><h1 className="h1">{t('shell.roles.accessDenied')}</h1><Link className="btn btn-secondary" to="/">{t('pages.report.dashboard')}</Link></div>}</AppShell>;
   const { student, report } = sum;
   // An approved report shows the milestones it was approved with; later observations do not change it.
-  const term4 = report.milestones ?? milestonesFor(state, id, 4);
+  const versions = report.versions;
+  const latestVersion = versions.at(-1);
+  const viewingVersion = report.status === 'approved' ? versions.find((version) => version.version === (selectedVersion ?? latestVersion?.version)) : undefined;
+  const term4 = viewingVersion?.milestones ?? report.milestones ?? milestonesFor(state, id, 4);
   const ready = readiness(state, id);
   const checksDone = [ready.domainsWritten === ready.domainsTotal, ready.sentences > 0 && ready.unverified === 0, ready.hasReflection, true].filter(Boolean).length;
-  const paragraphs = state.paragraphs[id] ?? [];
+  const paragraphs = viewingVersion?.paragraphs ?? state.paragraphs[id] ?? [];
+  const reflection = viewingVersion?.reflection ?? state.reflections[id] ?? '';
   const claims = unverifiedClaims(state, id);
   const block = approvalBlock(state, id);
   const observations = observationsFor(state, id);
+  const decisions = selectReportHistory(state.auditEvents, id);
   const status = report.status;
   const term = periodLabel(4);
-  const fw = frameworkFor(report.frameworkVersion);
+  const fw = frameworkFor(viewingVersion?.frameworkVersion ?? report.frameworkVersion);
   const openStudio = t('pages.shared.openStudio');
 
   const approve = () => {
     if (block) return;
-    dispatch({ type: 'approve', studentId: id, at: t('pages.report.approvedAt', { date: fmtDate(TODAY), time: fmtTime(new Date()) }) });
+    const at = new Date().toISOString();
+    dispatch({ type: 'approve', studentId: id, at, approvedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
+  };
+  const release = () => dispatch({ type: 'release', studentId: id, at: new Date().toISOString(), releasedBy: REVIEWER, actor: { role: 'reviewer', name: REVIEWER } });
+  const reopen = () => {
+    if (!reopenReason.trim()) { setReopenError(true); return; }
+    dispatch({ type: 'reopen', studentId: id, reason: reopenReason, reopenedBy: REVIEWER, at: new Date().toISOString(), actor: { role: 'reviewer', name: REVIEWER } });
+    setReopenOpen(false); setReopenReason(''); setSelectedVersion(null); reopenTrigger.current?.focus();
   };
   const linkFirstCandidate = (sentenceId: string, paragraphId: string) => {
     const domain = paragraphs.find((p) => p.id === paragraphId)!.domain;
@@ -110,6 +146,13 @@ export function ReportPreview() {
       <>
         <Link className="btn btn-secondary" to="/">{mobile ? t('pages.report.dashboard') : t('pages.report.backToDashboard')}</Link>
         <button className="btn btn-primary grow" type="button" onClick={() => window.print()}><Icon name="printer" size={18} />{t('pages.report.exportPrint')}</button>
+        {(status === 'approved' && role.can('report.review')) && (
+          <>
+            {report.releasedVersion !== latestVersion?.version && <button className="btn btn-primary" type="button" onClick={release}>{t('pages.report.releaseAction')}</button>}
+            <button ref={reopenTrigger} className="btn btn-secondary" type="button" onClick={() => { setReopenReason(''); setReopenError(false); setReopenOpen(true); }}>{t('pages.report.reopenAction')}</button>
+          </>
+        )}
+        {role.can('report.view') && <Link className="btn btn-ghost" to={`/students/${id}/report/family`}>{t('pages.report.familyCopy')}</Link>}
       </>
     );
   };
@@ -127,6 +170,22 @@ export function ReportPreview() {
           </Notice>
         )}
         {steps}
+        {viewingVersion && (
+          <div className="stack" style={{ gap: 8 }}>
+            <p className="sec semibold">{t('pages.report.versionBadge', { version: viewingVersion.version, date: fmtDate(viewingVersion.approvedAt), name: viewingVersion.approvedBy })}</p>
+            {report.releasedVersion === viewingVersion.version && <p className="cap semibold" role="status">{t('pages.report.releasedBadge')}</p>}
+            {versions.length > 1 && <label className="field"><span className="field-label">{t('pages.report.versions')}</span><select className="input" value={viewingVersion.version} onChange={(event) => setSelectedVersion(Number(event.target.value))}>{versions.map((version) => <option key={version.version} value={version.version}>{t('pages.report.version', { version: version.version })}</option>)}</select></label>}
+          </div>
+        )}
+        {report.releasedVersion !== undefined && <p className="cap muted">{t('pages.report.releasedBadge')} · {t('pages.report.version', { version: report.releasedVersion })}</p>}
+        <section className="stack" aria-labelledby="decision-history" style={{ gap: 8 }}>
+          <h3 id="decision-history" className="sec semibold">{t('pages.report.history')}</h3>
+          {decisions.map((decision, index) => {
+            const label = decision.type === 'submitted' ? t('pages.audit.submitted') : decision.type === 'changesRequested' ? t('pages.audit.changesRequested') : decision.type === 'approved' ? t('pages.audit.approved') : decision.type === 'released' ? t('pages.audit.released') : t('pages.audit.reopened');
+            return <div className="card stack" style={{ padding: 12, gap: 4 }} key={`${decision.type}-${decision.at}-${index}`}><p className="sec semibold">{label}{'version' in decision ? ` · ${t('pages.report.version', { version: decision.version })}` : ''}</p><p className="cap muted">{fmtDate(decision.at)} · {decision.by}</p>{'comment' in decision && <p className="sec">{decision.comment}</p>}{'reason' in decision && <p className="sec">{decision.reason}</p>}</div>;
+          })}
+        </section>
+        {role.can('audit.view') && <Link className="btn btn-ghost" to="/audit">{t('pages.audit.title')}</Link>}
         <div className="stack" style={{ gap: 8 }}>
           <h3 className="sec semibold">{t('pages.report.beforeApproval')}</h3>
           {mobile ? (
@@ -181,7 +240,7 @@ export function ReportPreview() {
         {status === 'approved' && (
           <Notice tone="success" icon="check" role="status">
             <p className="semibold">{statusLabel('approved')}</p>
-            <p className="body-text num">{t('pages.report.approvedBy', { date: report.approvedAt ?? fmtDate(TODAY), name: REVIEWER })}</p>
+            <p className="body-text num">{t('pages.report.approvedBy', { date: fmtDate(report.approvedAt ?? TODAY), name: report.approvedBy ?? REVIEWER })}</p>
           </Notice>
         )}
         {!mobile && <div className="row">{actions(false)}</div>}
@@ -223,7 +282,7 @@ export function ReportPreview() {
         ))}
         <section>
           <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{t('pages.report.reflection')}</h3></div>
-          <p className="narr">{state.reflections[id] ?? ''}</p>
+          <p className="narr">{reflection}</p>
         </section>
         <div className="grow" />
         <div className="row" style={{ justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
@@ -269,6 +328,20 @@ export function ReportPreview() {
               </>
             )}
           </div>
+          {reopenOpen && (
+            <div className="report-dialog-scrim" onMouseDown={(event) => { if (event.target === event.currentTarget) { setReopenOpen(false); reopenTrigger.current?.focus(); } }}>
+              <div ref={dialogRef} className="card stack report-dialog" role="dialog" aria-modal="true" aria-labelledby="reopen-title" aria-describedby="reopen-hint">
+                <h2 id="reopen-title" className="h2">{t('pages.report.reopenTitle')}</h2>
+                <p id="reopen-hint" className="sec muted">{t('pages.report.reopenHint')}</p>
+                <label className="field"><span className="field-label">{t('pages.report.reopenReason')}</span><textarea className="input" rows={4} value={reopenReason} aria-invalid={reopenError} onChange={(event) => { setReopenReason(event.target.value); setReopenError(false); }} /></label>
+                {reopenError && <p className="sec" role="alert">{t('pages.report.reopenRequired')}</p>}
+                <div className="row" style={{ justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary" type="button" onClick={() => { setReopenOpen(false); reopenTrigger.current?.focus(); }}>{t('pages.report.close')}</button>
+                  <button className="btn btn-primary" type="button" onClick={reopen}>{t('pages.report.reopenConfirm')}</button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </AppShell>
