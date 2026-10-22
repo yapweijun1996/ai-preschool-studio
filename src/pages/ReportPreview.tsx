@@ -3,7 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { MilestoneDots, Notice, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, REPORT_STATUS_LABEL, REVIEWER, TEACHER, TERM, TODAY, domainFull, formatDate, type ReportStatus } from '../data/demo';
+import { CLASS_NAME, REVIEWER, TEACHER, TODAY, type ReportStatus } from '../data/demo';
+import { useI18n } from '../i18n';
+import { useLabels } from '../i18n/labels';
+import { useDirtyGuard } from '../pwa';
 import { usePortfolio } from '../store/PortfolioContext';
 import { approvalBlock, observationsFor, unverifiedClaims } from '../store/reducer';
 import { studentSummary } from '../store/selectors';
@@ -15,10 +18,16 @@ const FLOW: ReportStatus[] = ['draft', 'review', 'changes', 'approved'];
 export function ReportPreview() {
   const { id = '' } = useParams();
   const { state, dispatch } = usePortfolio();
-  const [changeNote, setChangeNote] = useState('Please check the reading claim in English Language 英语 — I can’t see an observation for it.');
+  // Undefined until edited: the prefilled note follows the current language.
+  const [editedNote, setEditedNote] = useState<string | undefined>(undefined);
   const [requesting, setRequesting] = useState(false);
+  const { t, fmtDate, fmtTime } = useI18n();
+  const { domainFull, status: statusLabel } = useLabels();
+  const changeNote = editedNote ?? t('pages.report.defaultChangeNote', { domain: domainFull('en') });
   const sum = studentSummary(state, id);
   useVisit(id, !!sum);
+  // The request-changes note is unsaved work while its editor is open.
+  useDirtyGuard(requesting && sum?.report.status === 'review');
   if (!sum) return <NotFound />;
   const { student, report } = sum;
   const paragraphs = state.paragraphs[id] ?? [];
@@ -27,10 +36,12 @@ export function ReportPreview() {
   const observations = observationsFor(state, id);
   const status = report.status;
   const cur = FLOW.indexOf(status);
+  const term = t('common.term4');
+  const openStudio = t('pages.shared.openStudio');
 
   const approve = () => {
     if (block) return;
-    dispatch({ type: 'approve', studentId: id, at: `${formatDate(TODAY)}, ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` });
+    dispatch({ type: 'approve', studentId: id, at: t('pages.report.approvedAt', { date: fmtDate(TODAY), time: fmtTime(new Date()) }) });
   };
   const linkFirstCandidate = (sentenceId: string, paragraphId: string) => {
     const domain = paragraphs.find((p) => p.id === paragraphId)!.domain;
@@ -39,7 +50,7 @@ export function ReportPreview() {
   };
 
   const steps = (
-    <ol aria-label="Report flow" className="stack" style={{ gap: 4 }}>
+    <ol aria-label={t('pages.report.flowLabel')} className="stack" style={{ gap: 4 }}>
       {FLOW.map((st, i) => {
         const skipped = st === 'changes' && status === 'approved' && !report.hadChanges;
         const done = cur > i && !skipped;
@@ -47,8 +58,8 @@ export function ReportPreview() {
         return (
           <li key={st} className="step" aria-current={current ? 'step' : undefined}>
             <span className={`step-mark${done ? ' done' : current ? ' current' : ''}`}>{done ? <Icon name="check" size={14} /> : i + 1}</span>
-            <span className="sec semibold grow">{REPORT_STATUS_LABEL[st]}</span>
-            <span className="cap muted">{current ? 'Current' : skipped ? 'Not needed' : done ? 'Done' : ''}</span>
+            <span className="sec semibold grow">{statusLabel(st)}</span>
+            <span className="cap muted">{current ? t('pages.report.current') : skipped ? t('pages.report.notNeeded') : done ? t('pages.report.done') : ''}</span>
           </li>
         );
       })}
@@ -59,66 +70,66 @@ export function ReportPreview() {
     if (status === 'review') {
       return requesting ? (
         <>
-          <button className="btn btn-secondary" type="button" onClick={() => setRequesting(false)}>Cancel</button>
-          <button className="btn btn-primary grow" type="button" onClick={() => { dispatch({ type: 'requestChanges', studentId: id, text: changeNote, date: TODAY }); setRequesting(false); }}>Send request</button>
+          <button className="btn btn-secondary" type="button" onClick={() => setRequesting(false)}>{t('pages.shared.cancel')}</button>
+          <button className="btn btn-primary grow" type="button" onClick={() => { dispatch({ type: 'requestChanges', studentId: id, text: changeNote, date: TODAY }); setRequesting(false); }}>{t('pages.report.sendRequest')}</button>
         </>
       ) : (
         <>
-          <button className="btn btn-secondary" type="button" onClick={() => setRequesting(true)}>Request changes</button>
-          <button className="btn btn-primary grow" type="button" onClick={approve} aria-disabled={!!block} aria-describedby={block ? 'approve-blocked' : undefined}><Icon name="check" size={18} />Approve</button>
+          <button className="btn btn-secondary" type="button" onClick={() => setRequesting(true)}>{t('pages.report.requestChanges')}</button>
+          <button className="btn btn-primary grow" type="button" onClick={approve} aria-disabled={!!block} aria-describedby={block ? 'approve-blocked' : undefined}><Icon name="check" size={18} />{t('pages.report.approve')}</button>
         </>
       );
     }
     if (status === 'changes' || status === 'draft' || status === 'notStarted') {
       return (
         <>
-          <Link className="btn btn-secondary" to={`/students/${id}/studio`}>{mobile ? 'Edit draft' : 'Open AI Portfolio Studio'}</Link>
-          <button className="btn btn-primary grow" type="button" onClick={() => dispatch({ type: 'submitForReview', studentId: id })}>Submit for review</button>
+          <Link className="btn btn-secondary" to={`/students/${id}/studio`}>{mobile ? t('pages.report.editDraft') : openStudio}</Link>
+          <button className="btn btn-primary grow" type="button" onClick={() => dispatch({ type: 'submitForReview', studentId: id })}>{t('pages.shared.submitForReview')}</button>
         </>
       );
     }
     return (
       <>
-        <Link className="btn btn-secondary" to="/">{mobile ? 'Dashboard' : 'Back to dashboard'}</Link>
-        <button className="btn btn-primary grow" type="button" onClick={() => window.print()}><Icon name="printer" size={18} />Export PDF / Print</button>
+        <Link className="btn btn-secondary" to="/">{mobile ? t('pages.report.dashboard') : t('pages.report.backToDashboard')}</Link>
+        <button className="btn btn-primary grow" type="button" onClick={() => window.print()}><Icon name="printer" size={18} />{t('pages.report.exportPrint')}</button>
       </>
     );
   };
 
   const panel = (mobile: boolean) => (
-    <aside className="panel report-panel" aria-label="Review" style={{ overflow: 'visible' }}>
-      <div className="panel-head"><h2 className="h2 grow">Report status</h2><StatusLabel status={status} /></div>
+    <aside className="panel report-panel" aria-label={t('pages.report.reviewLabel')} style={{ overflow: 'visible' }}>
+      <div className="panel-head"><h2 className="h2 grow">{t('pages.report.statusHeading')}</h2><StatusLabel status={status} /></div>
       <div className="stack" style={{ padding: 16, gap: 20 }}>
         {steps}
         <div className="stack" style={{ gap: 8 }}>
-          <h3 className="sec semibold">Before approval</h3>
+          <h3 className="sec semibold">{t('pages.report.beforeApproval')}</h3>
           <ul className="sec stack" style={{ gap: 8 }}>
-            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />Four domains written, bilingual headings</li>
+            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkDomains')}</li>
             {claims.length === 0 ? (
-              <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />Every claim links to an observation</li>
+              <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkClaims')}</li>
             ) : (
-              <li className="row semibold" style={{ flexWrap: 'nowrap', color: 'var(--color-warning)' }}><Icon name="alert" size={18} />{claims.length} {claims.length === 1 ? 'claim needs' : 'claims need'} teacher verification</li>
+              <li className="row semibold" style={{ flexWrap: 'nowrap', color: 'var(--color-warning)' }}><Icon name="alert" size={18} />{t('pages.shared.claims', { count: claims.length })}</li>
             )}
-            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />Teacher reflection added</li>
-            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />Sample data labelled on the page</li>
+            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkReflection')}</li>
+            <li className="row" style={{ flexWrap: 'nowrap' }}><Icon name="check" size={18} className="ic-primary" />{t('pages.report.checkSample')}</li>
           </ul>
         </div>
         {report.comment && (status === 'review' || status === 'changes') && (
           <div className="card stack" style={{ padding: '12px 16px', gap: 6, background: 'var(--color-surface-muted)' }}>
-            <p className="cap muted num">{report.comment.by} · Reviewer (demo) · {formatDate(report.comment.date)}</p>
+            <p className="cap muted num">{t('pages.report.reviewerLine', { name: report.comment.by, date: fmtDate(report.comment.date) })}</p>
             <p className="sec">{report.comment.text}</p>
           </div>
         )}
         {status === 'review' && block?.reason === 'claims' && (
           <Notice tone="warning" icon="lock" id="approve-blocked" role="status">
-            <p className="semibold">Approval blocked</p>
-            <p className="body-text">{block.count} {block.count === 1 ? 'claim needs' : 'claims need'} teacher verification. Link evidence or remove the claim before approving.</p>
+            <p className="semibold">{t('pages.report.blocked')}</p>
+            <p className="body-text">{t('pages.report.blockedBody', { count: block.count })}</p>
             {claims.map((c) => (
               <div key={c.sentence.id} className="stack" style={{ gap: 6 }}>
                 <p className="body-text">“{c.sentence.text}” · {domainFull(paragraphs.find((p) => p.id === c.paragraphId)!.domain)}</p>
                 <div className="row">
-                  <button className="btn btn-secondary" type="button" onClick={() => linkFirstCandidate(c.sentence.id, c.paragraphId)}><Icon name="link" size={18} />Link evidence</button>
-                  <Link className="btn btn-ghost" to={`/students/${id}/studio`}>Fix in studio</Link>
+                  <button className="btn btn-secondary" type="button" onClick={() => linkFirstCandidate(c.sentence.id, c.paragraphId)}><Icon name="link" size={18} />{t('pages.report.linkEvidence')}</button>
+                  <Link className="btn btn-ghost" to={`/students/${id}/studio`}>{t('pages.report.fixInStudio')}</Link>
                 </div>
               </div>
             ))}
@@ -126,36 +137,36 @@ export function ReportPreview() {
         )}
         {status === 'review' && requesting && (
           <div className="field">
-            <label className="field-label" htmlFor="change-note">What should change?</label>
-            <textarea id="change-note" className="input" rows={3} value={changeNote} onChange={(e) => setChangeNote(e.target.value)} />
+            <label className="field-label" htmlFor="change-note">{t('pages.report.whatChange')}</label>
+            <textarea id="change-note" className="input" rows={3} value={changeNote} onChange={(e) => setEditedNote(e.target.value)} />
           </div>
         )}
-        {status === 'changes' && <Notice tone="warning" icon="alert" role="status"><p className="body-text">Changes requested. {TEACHER} updates the draft in AI Portfolio Studio, then submits again.</p></Notice>}
+        {status === 'changes' && <Notice tone="warning" icon="alert" role="status"><p className="body-text">{t('pages.report.changesNotice', { teacher: TEACHER })}</p></Notice>}
         {status === 'approved' && (
           <Notice tone="success" icon="check" role="status">
-            <p className="semibold">Approved</p>
-            <p className="body-text num">{report.approvedAt ?? formatDate(TODAY)} · {REVIEWER} (demo reviewer)</p>
+            <p className="semibold">{statusLabel('approved')}</p>
+            <p className="body-text num">{t('pages.report.approvedBy', { date: report.approvedAt ?? fmtDate(TODAY), name: REVIEWER })}</p>
           </Notice>
         )}
         {!mobile && <div className="row">{actions(false)}</div>}
-        {status === 'approved' && <p className="cap muted">Export includes the “Sample report — fictional student” label while demo mode is on.</p>}
+        {status === 'approved' && <p className="cap muted">{t('pages.report.exportNote')}</p>}
       </div>
     </aside>
   );
 
   const sheet = (
-    <article className="a4" aria-label="A4 report page preview">
-      <div className="a4-strip">Sample report — fictional student</div>
+    <article className="a4" aria-label={t('pages.report.sheetLabel')}>
+      <div className="a4-strip">{t('pages.report.sampleStrip')}</div>
       <div className="a4-body">
         <div className="row" style={{ alignItems: 'flex-start', gap: 24, flexWrap: 'nowrap' }}>
           <div className="grow stack" style={{ gap: 6 }}>
-            <p className="cap muted row" style={{ gap: 8 }}><span className="monogram" style={{ width: 24, height: 24, fontSize: 10 }}>AP</span>Learning portfolio · {TERM}</p>
+            <p className="cap muted row" style={{ gap: 8 }}><span className="monogram" style={{ width: 24, height: 24, fontSize: 10 }}>AP</span>{t('pages.report.portfolioLine', { term })}</p>
             <h2 className="h1">{student.name}</h2>
-            <p className="sec muted">{CLASS_NAME} · Key teacher: {TEACHER}</p>
+            <p className="sec muted">{t('pages.report.keyTeacherLine', { class: CLASS_NAME, teacher: TEACHER })}</p>
           </div>
-          <div className="ph" style={{ width: 88, height: 88, flex: 'none', padding: 8 }}>Photo placeholder</div>
+          <div className="ph" style={{ width: 88, height: 88, flex: 'none', padding: 8 }}>{t('pages.shared.photoPlaceholder')}</div>
         </div>
-        {paragraphs.length === 0 && <p className="sec muted">No narrative drafted yet.</p>}
+        {paragraphs.length === 0 && <p className="sec muted">{t('pages.report.noNarrative')}</p>}
         {paragraphs.map((p) => (
           <section key={p.id}>
             <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{domainFull(p.domain)}</h3><MilestoneDots milestone={student.term4[p.domain]} /></div>
@@ -175,13 +186,13 @@ export function ReportPreview() {
           </section>
         ))}
         <section>
-          <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">Teacher reflection</h3></div>
+          <div className="domain-head" style={{ marginBottom: 8 }}><h3 className="strong">{t('pages.report.reflection')}</h3></div>
           <p className="narr">{state.reflections[id] ?? ''}</p>
         </section>
         <div className="grow" />
         <div className="row" style={{ justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
-          <p className="cap muted">Prepared by {TEACHER} · {status === 'approved' ? `Approved by ${REVIEWER} (demo reviewer)` : 'Not yet approved'}</p>
-          <p className="cap muted num">Page 1 of 1</p>
+          <p className="cap muted">{t('pages.report.preparedBy', { teacher: TEACHER })} · {status === 'approved' ? t('pages.report.approvedByLine', { name: REVIEWER }) : t('pages.report.notApproved')}</p>
+          <p className="cap muted num">{t('pages.report.pageOf', { page: 1, total: 1 })}</p>
         </div>
       </div>
     </article>
@@ -191,8 +202,8 @@ export function ReportPreview() {
     <AppShell
       module="reports"
       currentStudentId={id}
-      mobileTitle="Report preview"
-      mobileSubtitle={`${student.name} · ${TERM}`}
+      mobileTitle={t('pages.report.title')}
+      mobileSubtitle={`${student.name} · ${term}`}
       mobileBack={`/students/${id}/studio`}
       mobileTrailing={<StatusLabel status={status} />}
       mobileActions={actions(true)}
@@ -201,10 +212,10 @@ export function ReportPreview() {
         <>
           {bp !== 'mobile' && (
             <div className="page-head">
-              <Link className="icon-btn" to={`/students/${id}/studio`} aria-label="Back to AI Portfolio Studio" title="Back to studio"><Icon name="arrowLeft" /></Link>
+              <Link className="icon-btn" to={`/students/${id}/studio`} aria-label={t('pages.report.backToStudio')} title={t('pages.report.backToStudioTitle')}><Icon name="arrowLeft" /></Link>
               <div className="grow">
-                <h1 className="h1">Report preview</h1>
-                <p className="sec muted">{student.name} · Demo student · {TERM} · A4</p>
+                <h1 className="h1">{t('pages.report.title')}</h1>
+                <p className="sec muted">{student.name} · {t('common.demoStudent')} · {term} · {t('pages.report.subtitleA4')}</p>
               </div>
               <StatusLabel status={status} />
             </div>
@@ -214,7 +225,7 @@ export function ReportPreview() {
               <>
                 {panel(true)}
                 {sheet}
-                <p className="cap muted">The phone view reflows the A4 page. Export PDF shows the exact printed layout.</p>
+                <p className="cap muted">{t('pages.report.phoneNote')}</p>
               </>
             ) : (
               <>
