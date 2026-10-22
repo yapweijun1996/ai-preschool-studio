@@ -4,6 +4,8 @@ import type { ApprovalBlock, AuditEvent, AuditFilters, DecisionEvent, Readiness,
 import type { StudentSummary } from '../store/selectors';
 import type { Suggestion } from '../services/mockProvider';
 import type { ClassCoverage, CoverageStudent, ReviewQueue } from '../coverage';
+import type { AuthorisedCollector, Child, Class, Guardian } from '../children/domain';
+import type { Actor } from '../store/reducer';
 
 export type PortRefusal =
   | 'unknown-student'
@@ -16,7 +18,15 @@ export type PortRefusal =
   | 'invalid-target'
   | 'no-observations'
   | 'not-approved'
-  | 'reason-required';
+  | 'reason-required'
+  | 'unknown-child'
+  | 'invalid-child'
+  | 'unknown-guardian'
+  | 'invalid-guardian'
+  | 'primary-guardian-required'
+  | 'unknown-collector'
+  | 'invalid-collector'
+  | 'report-in-review';
 
 
 export type PortResult<T> = { ok: true; value: T } | { ok: false; reason: PortRefusal };
@@ -82,6 +92,18 @@ export interface DataPort {
   getReleasedVersion(studentId: string): Promise<ReportVersion | undefined>;
   getReportHistory(studentId: string): Promise<DecisionEvent[]>;
   getAuditLog(filters?: AuditFilters): Promise<AuditEvent[]>;
+
+  // Children & Classes
+  getClasses(): Promise<Class[]>;
+  getChild(id: string): Promise<Child | undefined>;
+  getGuardians(childId: string): Promise<Guardian[]>;
+  getCollectors(childId: string): Promise<AuthorisedCollector[]>;
+  updateChild(child: Child, actor?: Actor): Promise<PortResult<Child>>;
+  upsertGuardian(guardian: Guardian, actor?: Actor): Promise<PortResult<Guardian>>;
+  removeGuardian(guardianId: string, actor?: Actor): Promise<PortResult<void>>;
+  upsertCollector(collector: AuthorisedCollector, actor?: Actor): Promise<PortResult<AuthorisedCollector>>;
+  removeCollector(collectorId: string, actor?: Actor): Promise<PortResult<void>>;
+  withdrawChild(childId: string, actor?: Actor): Promise<PortResult<Child>>;
 
   // Evidence coverage and review queue (derived reads)
   /** Returns coverage for every child and summary totals in the selected term. */

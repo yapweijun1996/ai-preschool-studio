@@ -38,6 +38,16 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `releaseReport` | Report release | Releases only the latest approved version; repeated release is idempotent. | Demo adapter dispatches the release reducer action. |
 | `reopenReport` | Report release | Requires an approved report and nonblank reason; preserves old versions. | Demo adapter dispatches the reopen reducer action. |
 | `getAuditLog` | Audit log | Returns newest-first events filtered by action, child and inclusive date range. | Demo adapter uses `selectAuditLog`. |
+| `getClasses` | Children & Classes | Returns the seeded class records. | Reads state classes. |
+| `getChild(id)` | Children & Classes | Returns child data extending the existing Student, or `undefined`. | Reads state children; names are sourced from the existing student records. |
+| `getGuardians(childId)` | Children & Classes | Returns guardians linked to the child. | Filters state guardians by child ID. |
+| `getCollectors(childId)` | Children & Classes | Returns authorised collectors linked to the child. | Filters state collectors by child ID. |
+| `updateChild(child, actor?)` | Children & Classes | Validates required fields and class membership; appends a fixed audit event. | Dispatches `updateChild`. |
+| `upsertGuardian(guardian, actor?)` | Children & Classes | Validates required fields, fictional SG phone/email formats and at least one primary guardian per linked child. | Dispatches create/update action and fixed audit event. |
+| `removeGuardian(id, actor?)` | Children & Classes | Refuses to remove the last primary guardian. | Dispatches removal and fixed audit event. |
+| `upsertCollector(collector, actor?)` | Children & Classes | Validates required fields and `validTo >= validFrom`; appends a fixed audit event. | Dispatches create/update action. |
+| `removeCollector(id, actor?)` | Children & Classes | Removes the collector and appends a fixed audit event. | Dispatches removal action. |
+| `withdrawChild(id, actor?)` | Children & Classes | Refuses while the report is in review; otherwise marks withdrawn and audits it. | Dispatches `withdrawChild`. |
 | `getCoverage` | Evidence coverage | Returns all children with per-area counts, dates and statuses plus class totals for a term. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
 | `getNeedsAttention` | Evidence coverage | Returns children with gaps ordered by gap count and oldest latest evidence. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
 | `getReviewQueue` | Evidence coverage, Report review | Returns oldest-first review items and changes-requested items awaiting teachers. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
@@ -57,6 +67,14 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `no-observations` | A draft cannot be started because no evidence exists. |
 | `not-approved` | A report has no approved latest version to release. |
 | `reason-required` | Reopening requires a nonblank reason. |
+| `unknown-child` | The requested child does not exist. |
+| `invalid-child` | Child fields or class reference are invalid. |
+| `unknown-guardian` | The requested guardian does not exist. |
+| `invalid-guardian` | Guardian fields or contact formats are invalid. |
+| `primary-guardian-required` | A change would leave a linked child without a primary guardian. |
+| `unknown-collector` | The requested authorised collector does not exist. |
+| `invalid-collector` | Collector fields or validity dates are invalid. |
+| `report-in-review` | Withdrawal is blocked while the child's report is in review. |
 
 ## Implementing an API adapter
 

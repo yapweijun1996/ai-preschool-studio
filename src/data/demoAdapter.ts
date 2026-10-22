@@ -1,4 +1,5 @@
 import type { DataPort, Draft, ObservationInput, PortRefusal, PortResult } from './port';
+import { hasPrimaryGuardian, validateChild, validateCollector, validateGuardian } from '../children/domain';
 import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, type Observation, type Paragraph } from './demo';
@@ -46,6 +47,52 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     },
     async getReportHistory(studentId) { return selectReportHistory(getState().auditEvents, studentId); },
     async getAuditLog(filters: AuditFilters = {}) { return selectAuditLog(getState().auditEvents, filters); },
+    async getClasses() { return getState().classes; },
+    async getChild(id) { return getState().children[id]; },
+    async getGuardians(childId) { return getState().guardians.filter((guardian) => guardian.childIds.includes(childId)); },
+    async getCollectors(childId) { return getState().collectors.filter((collector) => collector.childId === childId); },
+    async updateChild(child, actor) {
+      const state = getState();
+      if (!state.children[child.id]) return refusal('unknown-child');
+      if (Object.keys(validateChild(child)).length > 0 || !state.classes.some((item) => item.id === child.classId)) return refusal('invalid-child');
+      return run({ type: 'updateChild', child, actor }, child, 'invalid-child');
+    },
+    async upsertGuardian(guardian, actor) {
+      const state = getState();
+      if (guardian.childIds.length === 0 || guardian.childIds.some((id) => !state.children[id])) return refusal('unknown-child');
+      if (Object.keys(validateGuardian(guardian)).length > 0) return refusal('invalid-guardian');
+      const affected = new Set([...guardian.childIds, ...(state.guardians.find((item) => item.id === guardian.id)?.childIds ?? [])]);
+      const candidate = [...state.guardians.filter((item) => item.id !== guardian.id), guardian];
+      if ([...affected].some((childId) => !hasPrimaryGuardian(candidate, childId))) return refusal('primary-guardian-required');
+      return run({ type: 'upsertGuardian', guardian, actor }, guardian, 'invalid-guardian');
+    },
+    async removeGuardian(guardianId, actor) {
+      const state = getState();
+      const guardian = state.guardians.find((item) => item.id === guardianId);
+      if (!guardian) return refusal('unknown-guardian');
+      const candidate = state.guardians.filter((item) => item.id !== guardianId);
+      if (guardian.isPrimary && guardian.childIds.some((childId) => !hasPrimaryGuardian(candidate, childId))) return refusal('primary-guardian-required');
+      return run({ type: 'removeGuardian', guardianId, actor }, undefined, 'unknown-guardian');
+    },
+    async upsertCollector(collector, actor) {
+      const state = getState();
+      if (!state.children[collector.childId]) return refusal('unknown-child');
+      if (Object.keys(validateCollector(collector)).length > 0) return refusal('invalid-collector');
+      return run({ type: 'upsertCollector', collector, actor }, collector, 'invalid-collector');
+    },
+    async removeCollector(collectorId, actor) {
+      if (!getState().collectors.some((item) => item.id === collectorId)) return refusal('unknown-collector');
+      return run({ type: 'removeCollector', collectorId, actor }, undefined, 'unknown-collector');
+    },
+    async withdrawChild(childId, actor) {
+      const state = getState();
+      const child = state.children[childId];
+      if (!child) return refusal('unknown-child');
+      if (state.reports[childId]?.status === 'review') return refusal('report-in-review');
+      if (child.status === 'withdrawn') return refusal('invalid-target');
+      dispatch({ type: 'withdrawChild', childId, actor });
+      return success({ ...child, status: 'withdrawn' });
+    },
     async getStudentSummary(studentId) { return studentSummary(getState(), studentId); },
     async getCurrentFramework() { return frameworkFor(undefined); },
     async getPeriod(date) { return periodOf(date); },

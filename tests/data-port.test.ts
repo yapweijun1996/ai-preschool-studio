@@ -4,7 +4,7 @@ import { classCoverage, needsAttention, reviewQueue } from '../src/coverage';
 import { STUDENTS } from '../src/data/demo';
 import { CURRENT_FRAMEWORK, frameworkFor, periodOf } from '../src/framework';
 import { allSummaries, milestonesFor, studentSummary } from '../src/store/selectors';
-import { approvalBlock, initialState, observationsFor, readiness, unverifiedClaims, type Action } from '../src/store/reducer';
+import { approvalBlock, initialState, observationsFor, readiness, unverifiedClaims, type Action, type Actor } from '../src/store/reducer';
 
 function harness(seed = initialState()) {
   let state = seed;
@@ -18,6 +18,40 @@ function harness(seed = initialState()) {
 import { reducer as importReducer } from '../src/store/reducer';
 
 describe('DataPort demo adapter', () => {
+  it('reads classes, child, guardians and authorised collectors', async () => {
+    const { adapter } = harness();
+    expect(await adapter.getClasses()).toMatchObject([{ name: 'K2 Sunflower', level: 'K2', year: 2026 }]);
+    expect(await adapter.getChild('aria')).toMatchObject({ id: 'aria', classId: 'k2-sunflower-2026', status: 'active' });
+    expect(await adapter.getGuardians('aria')).toHaveLength(1);
+    expect(await adapter.getCollectors('aria')).toHaveLength(1);
+    expect(await adapter.getChild('missing')).toBeUndefined();
+  });
+
+  it('validates and audits child, guardian and collector writes', async () => {
+    const h = harness();
+    const actor: Actor = { role: 'admin', name: 'Mr. Wong' };
+    const child = (await h.adapter.getChild('aria'))!;
+    expect(await h.adapter.updateChild({ ...child, enrolledOn: '2025-01-01' }, actor)).toMatchObject({ ok: true });
+    const guardian = (await h.adapter.getGuardians('aria'))![0];
+    expect(await h.adapter.upsertGuardian({ ...guardian, id: 'guardian-new', isPrimary: false, phone: '555' }, actor)).toEqual({ ok: false, reason: 'invalid-guardian' });
+    expect(await h.adapter.upsertGuardian({ ...guardian, id: 'guardian-new', isPrimary: false }, actor)).toMatchObject({ ok: true });
+    expect(await h.adapter.removeGuardian(guardian.id, actor)).toEqual({ ok: false, reason: 'primary-guardian-required' });
+    const collector = (await h.adapter.getCollectors('aria'))![0];
+    expect(await h.adapter.upsertCollector({ ...collector, validFrom: '2026-10-23', validTo: '2026-10-22' }, actor)).toEqual({ ok: false, reason: 'invalid-collector' });
+    expect(await h.adapter.upsertCollector({ ...collector, note: 'Updated fictional note' }, actor)).toMatchObject({ ok: true });
+    expect(await h.adapter.removeCollector(collector.id, actor)).toMatchObject({ ok: true });
+    expect(h.state().auditEvents.slice(-3).map((event) => event.actor.role)).toEqual(['admin', 'admin', 'admin']);
+    expect(JSON.stringify(h.state().auditEvents.slice(-3))).not.toContain('Updated fictional note');
+  });
+
+  it('returns typed child and report-in-review withdrawal refusals', async () => {
+    const { adapter, state } = harness();
+    expect(await adapter.withdrawChild('missing')).toEqual({ ok: false, reason: 'unknown-child' });
+    expect(await adapter.withdrawChild('ethan')).toEqual({ ok: false, reason: 'report-in-review' });
+    expect(state().children.ethan.status).toBe('active');
+    expect(await adapter.withdrawChild('aria')).toMatchObject({ ok: true, value: { status: 'withdrawn' } });
+  });
+
   it('matches existing selectors and rules for every read method', async () => {
     const { adapter, state } = harness();
     const s = state();
