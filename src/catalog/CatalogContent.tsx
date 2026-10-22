@@ -8,6 +8,7 @@ import {
   MockProviderLabel,
   Notice,
   SaveIndicator,
+  ScrollRow,
   SourceChip,
   StatusLabel,
   VerifyLabel,
@@ -319,11 +320,11 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
     case 'ScrollRow':
       return (
         <MarkupExample title="Horizontally overflowing row">
-          <div className="chip-row scroll catalog-scroll" data-more="true">
+          <ScrollRow className="chip-row scroll catalog-scroll">
             {['Observation 1', 'Observation 2', 'Observation 3', 'Observation 4', 'Observation 5'].map((item) => (
               <span className="chip" key={item}>{item}</span>
             ))}
-          </div>
+          </ScrollRow>
         </MarkupExample>
       );
     case 'Cards':
