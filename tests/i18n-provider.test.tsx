@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { I18nProvider, useI18n } from '../src/i18n';
+import { en } from '../src/i18n/locales/en';
 
 function LanguageProbe() {
   const { lang, setLang } = useI18n();
@@ -13,7 +14,7 @@ function LanguageProbe() {
 
 describe('language request cancellation', () => {
   it('cancels zh when English is selected again before the dictionary finishes loading', async () => {
-    render(<I18nProvider initial="en"><LanguageProbe /></I18nProvider>);
+    render(<I18nProvider initial="en" initialDict={en}><LanguageProbe /></I18nProvider>);
     fireEvent.click(screen.getByRole('button', { name: 'Chinese' }));
     await new Promise((resolve) => window.setTimeout(resolve, 60));
     fireEvent.click(screen.getByRole('button', { name: 'English' }));

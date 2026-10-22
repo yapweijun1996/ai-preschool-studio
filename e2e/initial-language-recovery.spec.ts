@@ -43,3 +43,30 @@ test('a failed preferred language and English load show static recovery', async 
   await expect(page.locator('#root')).not.toBeEmpty();
   await expect.poll(() => documentRequests).toBeLessThanOrEqual(2);
 });
+
+test('a failed language switch keeps the selected language and announces the error', async ({ page }) => {
+  const entry = await entryScriptPath(page);
+  let englishChunkPath: string | undefined;
+  let documentRequests = 0;
+  page.on('request', (request) => {
+    if (request.isNavigationRequest()) documentRequests += 1;
+    const path = new URL(request.url()).pathname;
+    if (path.startsWith('/assets/index-') && path !== entry) englishChunkPath ??= path;
+  });
+  await page.goto('./#/');
+  await expect(page.locator('#rp-h')).toBeVisible();
+  expect(englishChunkPath).toBeTruthy();
+  await page.route('**/assets/index-*.js', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    return path === entry || path === englishChunkPath
+      ? route.continue()
+      : route.fulfill({ status: 404, contentType: 'text/javascript', body: '' });
+  });
+
+  await page.getByRole('button', { name: /Language: English/ }).click();
+  await page.getByRole('menuitemradio', { name: '中文' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'The language could not be loaded. Your current language is unchanged.' })).toHaveText('The language could not be loaded. Your current language is unchanged.');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.getByRole('button', { name: /Language: English/ })).toBeVisible();
+  expect(documentRequests).toBe(1);
+});

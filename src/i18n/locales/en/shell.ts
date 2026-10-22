@@ -94,7 +94,8 @@ export const shell = {
   },
   language: {
     label: 'Language',
-    current: 'Language: {name}'
+    current: 'Language: {name}',
+    loadError: 'The language could not be loaded. Your current language is unchanged.'
   },
   account: {
     label: 'Account',

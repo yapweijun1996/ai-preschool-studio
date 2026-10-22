@@ -19,11 +19,13 @@ export function clearChunkReloadAttempt(): void {
 
 export function installChunkFailureRecovery(): void {
   window.addEventListener('vite:preloadError', (event) => {
+    const payload = (event as Event & { payload?: unknown }).payload;
+    if (/\/index-[\w-]+\.js(?:\?|$)/i.test(String(payload))) return;
     event.preventDefault();
     reloadForChunkFailure();
   });
   window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason instanceof Error && /import|fetch|load/i.test(`${event.reason.name} ${event.reason.message}`)) {
+    if (event.reason instanceof Error && /import|fetch|load/i.test(`${event.reason.name} ${event.reason.message}`) && !/\/index-[\w-]+\.js(?:\?|$)/i.test(event.reason.message)) {
       reloadForChunkFailure();
     }
   });

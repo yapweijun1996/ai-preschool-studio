@@ -95,7 +95,8 @@ export const shell: Dict['shell'] = {
   },
   language: {
     label: 'Bahasa',
-    current: 'Bahasa: {name}'
+    current: 'Bahasa: {name}',
+    loadError: 'Bahasa tidak dapat dimuatkan. Bahasa semasa anda tidak berubah.'
   },
   account: {
     label: 'Akaun',

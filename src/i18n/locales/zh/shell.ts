@@ -95,7 +95,8 @@ export const shell: Dict['shell'] = {
   },
   language: {
     label: '语言',
-    current: '语言：{name}'
+    current: '语言：{name}',
+    loadError: '语言无法加载。当前语言未更改。'
   },
   account: {
     label: '账户',

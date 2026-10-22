@@ -112,9 +112,10 @@ function LanguageItems({ close }: { close: () => void }) {
 }
 
 function LanguageMenu() {
-  const { lang, t, loadingLang } = useI18n();
+  const { lang, t, loadingLang, languageLoadError } = useI18n();
   const meta = LANGS.find((l) => l.key === lang)!;
   return (
+    <>
     <Menu
       label={t('shell.language.label')}
       style={{ top: 'calc(100% + 8px)', right: 0 }}
@@ -127,6 +128,8 @@ function LanguageMenu() {
     >
       {(close) => <LanguageItems close={close} />}
     </Menu>
+    <span className="sr-only" role="status" aria-live="polite">{languageLoadError ? t('shell.language.loadError') : ''}</span>
+    </>
   );
 }
 

@@ -59,6 +59,7 @@ export interface I18n {
   setLang: (l: Lang) => void;
   loadingLang: boolean;
   requestedLang: Lang | null;
+  languageLoadError: boolean;
   /** Translate; `{name}` placeholders are filled from vars. With `count`, a `<key>_one` variant is used when count === 1. */
   t: (key: TKey, vars?: TVars) => string;
   /** Locale-aware date, e.g. 22 Oct 2026 / 2026年10月22日 / 22 Okt 2026. */
@@ -78,11 +79,12 @@ export function makeT(_lang: Lang, dict: Dict) {
   };
 }
 
-export function I18nProvider({ children, initial, initialDict }: { children: ReactNode; initial?: Lang; initialDict?: Dict }) {
-  const [lang, setLangState] = useState<Lang>(() => initial ?? readLang());
-  const [dict, setDict] = useState<Dict | undefined>(initialDict);
+export function I18nProvider({ children, initial, initialDict }: { children: ReactNode; initial: Lang; initialDict: Dict }) {
+  const [lang, setLangState] = useState<Lang>(() => initial);
+  const [dict, setDict] = useState<Dict>(initialDict);
   const [loadingLang, setLoadingLang] = useState(false);
   const [requestedLang, setRequestedLang] = useState<Lang | null>(null);
+  const [languageLoadError, setLanguageLoadError] = useState(false);
   const languageRequest = useRef(0);
   const pendingLang = useRef<Lang | null>(null);
   const languageIndicator = useRef<number | undefined>(undefined);
@@ -100,11 +102,13 @@ export function I18nProvider({ children, initial, initialDict }: { children: Rea
         languageIndicator.current = undefined;
         setLoadingLang(false);
         setRequestedLang(null);
+        setLanguageLoadError(false);
       }
       return;
     }
     const requestId = ++languageRequest.current;
     pendingLang.current = l;
+    setLanguageLoadError(false);
     if (languageIndicator.current !== undefined) window.clearTimeout(languageIndicator.current);
     languageIndicator.current = window.setTimeout(() => { setRequestedLang(l); setLoadingLang(true); }, 40);
     void Promise.all([loadDict(l), new Promise((resolve) => window.setTimeout(resolve, 180))]).then(([next]) => {
@@ -113,6 +117,8 @@ export function I18nProvider({ children, initial, initialDict }: { children: Rea
       setLangState(l);
       pendingLang.current = null;
       try { localStorage.setItem(KEY, l); } catch { /* ignore */ }
+    }).catch(() => {
+      if (requestId === languageRequest.current) setLanguageLoadError(true);
     }).finally(() => {
       if (requestId !== languageRequest.current) return;
       pendingLang.current = null;
@@ -128,11 +134,12 @@ export function I18nProvider({ children, initial, initialDict }: { children: Rea
       setLang,
       loadingLang,
       requestedLang,
+      languageLoadError,
       t: makeT(lang, dict!),
       fmtDate: (iso, opts) => new Date(iso.length === 10 ? iso + 'T00:00:00' : iso).toLocaleDateString(meta.intl, opts ?? { day: 'numeric', month: 'short', year: 'numeric' }),
       fmtTime: (d) => d.toLocaleTimeString(meta.intl, { hour: '2-digit', minute: '2-digit', hour12: false })
     }),
-    [lang, dict, setLang, loadingLang, requestedLang, meta.intl]
+    [lang, dict, setLang, loadingLang, requestedLang, languageLoadError, meta.intl]
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

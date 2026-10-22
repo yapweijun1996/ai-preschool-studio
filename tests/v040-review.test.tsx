@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { MilestoneDots } from '../src/components/ui';
 import { CURRENT_FRAMEWORK, FRAMEWORKS, termOf, type Framework } from '../src/framework';
 import { I18nProvider } from '../src/i18n';
+import { en } from '../src/i18n/locales/en';
 import { STUDENTS } from '../src/data/demo';
 import { loadState, serializeState } from '../src/store/PortfolioContext';
 import { initialState, reducer } from '../src/store/reducer';
@@ -40,7 +41,7 @@ describe('v0.4.0 review fixes', () => {
     const old: Framework = { ...CURRENT_FRAMEWORK, version: 'test.0', scale: CURRENT_FRAMEWORK.scale.map((m) => ({ ...m, label: { en: `Old ${m.label.en}`, zh: m.label.zh, ms: m.label.ms } })) };
     FRAMEWORKS[old.version] = old;
     try {
-      render(<I18nProvider initial="en"><MilestoneDots milestone="emerging" version="test.0" /></I18nProvider>);
+      render(<I18nProvider initial="en" initialDict={en}><MilestoneDots milestone="emerging" version="test.0" /></I18nProvider>);
       expect(screen.getByText('Old Emerging')).toBeTruthy();
     } finally {
       delete FRAMEWORKS[old.version];
