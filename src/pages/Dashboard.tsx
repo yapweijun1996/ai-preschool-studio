@@ -57,7 +57,7 @@ export function Dashboard() {
               <ul className="stack" style={{ paddingLeft: 24 }}>
                 {modules.map((key) => <li key={key} className="sec">{t(key)}</li>)}
               </ul>
-              <button className="btn btn-primary" type="button" onClick={() => role.setRole('teacher')}>{t('shell.roles.returnTeacher')}</button>
+              <button className="btn btn-primary" type="button" style={{ alignSelf: 'flex-start' }} onClick={() => role.setRole('teacher')}>{t('shell.roles.returnTeacher')}</button>
             </section>
           </div>
         )}

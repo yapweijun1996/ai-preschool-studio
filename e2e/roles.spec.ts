@@ -36,6 +36,11 @@ test('parent has a planned landing page and no Students navigation', async ({ pa
   await expect(page.getByRole('heading', { name: 'Parent view planned' })).toBeVisible();
   await expect(page.getByText('Family Portal — Phase 3')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Students', exact: true })).toHaveCount(0);
+  const plannedCard = page.locator('#planned-purpose').locator('..');
+  const returnButton = plannedCard.getByRole('button', { name: 'Switch back to Teacher' });
+  const cardWidth = await plannedCard.evaluate((element) => element.getBoundingClientRect().width);
+  const buttonWidth = await returnButton.evaluate((element) => element.getBoundingClientRect().width);
+  expect(buttonWidth).toBeLessThan(cardWidth - 100);
 });
 
 test('parent sees no student names on desktop or mobile, including global search', async ({ page }) => {
