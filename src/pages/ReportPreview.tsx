@@ -89,7 +89,7 @@ export function ReportPreview() {
           <button
             className="btn btn-primary grow"
             type="button"
-            onClick={() => ready.canSubmit && dispatch({ type: 'submitForReview', studentId: id })}
+            onClick={() => ready.canSubmit && dispatch({ type: 'submitForReview', studentId: id, submittedAt: TODAY })}
             aria-disabled={!ready.canSubmit}
             aria-describedby={ready.canSubmit ? undefined : 'not-ready'}
           >

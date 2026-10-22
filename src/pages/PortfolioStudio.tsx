@@ -7,7 +7,7 @@ import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
 import { ReadinessList } from '../components/ReportFlow';
 import { Avatar, MockProviderLabel, Notice, SaveIndicator, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME } from '../data/demo';
+import { CLASS_NAME, TODAY } from '../data/demo';
 import { DOMAINS } from '../framework';
 import { useAutosave } from '../hooks/useAutosave';
 import { useI18n } from '../i18n';
@@ -144,7 +144,7 @@ export function PortfolioStudio() {
       setWhyBlocked(true);
       return;
     }
-    dispatch({ type: 'submitForReview', studentId: id });
+    dispatch({ type: 'submitForReview', studentId: id, submittedAt: TODAY });
     navigate(`/students/${id}/report`);
   };
   const submitButton = (cls: string) =>

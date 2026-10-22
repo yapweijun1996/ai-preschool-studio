@@ -6,7 +6,7 @@ import { initialState, reducer, type Action, type State } from './reducer';
 
 // Bump SCHEMA whenever the seeded data or the state shape changes: a tab that updates the app
 // (PWA reload) must not resume demo state saved by an older build.
-const SCHEMA = 4;
+const SCHEMA = 5;
 const STORAGE_KEY = 'aps-demo-state';
 const LEGACY_KEYS = ['aps-demo-state-v1'];
 
@@ -25,7 +25,8 @@ export function loadState(raw: string | null): State {
       typeof s.reflections === 'object' && s.reflections !== null &&
       typeof s.sim === 'object' && s.sim !== null &&
       typeof s.nextObsNumber === 'number' &&
-      STUDENTS.every((st) => s.reports?.[st.id]?.status);
+      STUDENTS.every((st) => s.reports?.[st.id]?.status) &&
+      STUDENTS.every((st) => s.reports?.[st.id]?.status !== 'review' || /^\d{4}-\d{2}-\d{2}$/.test(s.reports[st.id].submittedAt ?? ''));
     if (parsed?.schema === SCHEMA && complete) return s;
   } catch {
     /* corrupt entry: start fresh */

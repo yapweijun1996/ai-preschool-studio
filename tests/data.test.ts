@@ -45,7 +45,7 @@ describe('report rules', () => {
   it('does not submit an incomplete draft', () => {
     const s0 = initialState();
     expect(readiness(s0, 'sofia').canSubmit).toBe(false);
-    const s1 = reducer(s0, { type: 'submitForReview', studentId: 'sofia' });
+    const s1 = reducer(s0, { type: 'submitForReview', studentId: 'sofia', submittedAt: '2026-10-22' });
     expect(s1.reports.sofia.status).toBe('draft');
   });
 

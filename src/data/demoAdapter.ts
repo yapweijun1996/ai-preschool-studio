@@ -1,6 +1,6 @@
 import type { DataPort, Draft, ObservationInput, PortRefusal, PortResult } from './port';
 import { periodOf, frameworkFor } from '../framework';
-import { STUDENTS, type Observation, type Paragraph } from './demo';
+import { STUDENTS, TODAY, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
 import { formatApprovalAt } from '../i18n';
 import {
@@ -107,7 +107,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     },
     async submitForReview(studentId) {
       if (!readiness(getState(), studentId).canSubmit) return refusal('not-ready');
-      return run({ type: 'submitForReview', studentId }, undefined, 'invalid-target');
+      return run({ type: 'submitForReview', studentId, submittedAt: TODAY }, undefined, 'invalid-target');
     },
     async getApprovalBlock(studentId) { return approvalBlock(getState(), studentId); },
     async requestChanges(studentId, text, date) {

@@ -10,7 +10,7 @@ describe('portfolio reducer', () => {
   });
 
   it('blocks approval with a reason until every claim has evidence', () => {
-    let s = reducer(initialState(), { type: 'submitForReview', studentId: 'aria' });
+    let s = reducer(initialState(), { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22' });
     expect(s.reports.aria.status).toBe('review');
     expect(approvalBlock(s, 'aria')).toEqual({ reason: 'claims', count: 2 });
 
@@ -31,10 +31,10 @@ describe('portfolio reducer', () => {
   });
 
   it('moves review → changes requested → review', () => {
-    let s = reducer(initialState(), { type: 'submitForReview', studentId: 'aria' });
+    let s = reducer(initialState(), { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22' });
     s = reducer(s, { type: 'requestChanges', studentId: 'aria', text: 'Check reading claim', date: '2026-10-22' });
     expect(s.reports.aria).toMatchObject({ status: 'changes', hadChanges: true, comment: { text: 'Check reading claim' } });
-    s = reducer(s, { type: 'submitForReview', studentId: 'aria' });
+    s = reducer(s, { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22' });
     expect(s.reports.aria.status).toBe('review');
   });
 

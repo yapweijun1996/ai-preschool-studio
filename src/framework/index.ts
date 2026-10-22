@@ -51,6 +51,8 @@ export interface Framework {
   areas: LearningArea[];
   scale: MilestoneLevel[];
   periods: ReportingPeriod[];
+  /** Evidence sufficiency policy for derived coverage views. */
+  coverage: { minPerArea: number; staleAfterDays: number };
 }
 
 const K2_DEMO_2026_1: Framework = {
@@ -76,7 +78,8 @@ const K2_DEMO_2026_1: Framework = {
   periods: [
     { term: 3, start: '2026-06-29', end: '2026-09-06', label: { en: '2026 Term 3', zh: '2026 年第 3 学期', ms: 'Penggal 3 2026' }, short: { en: 'Term 3', zh: '第 3 学期', ms: 'Penggal 3' } },
     { term: 4, start: '2026-09-14', end: '2026-11-20', label: { en: '2026 Term 4', zh: '2026 年第 4 学期', ms: 'Penggal 4 2026' }, short: { en: 'Term 4', zh: '第 4 学期', ms: 'Penggal 4' } }
-  ]
+  ],
+  coverage: { minPerArea: 2, staleAfterDays: 21 }
 };
 
 /** Every published version stays available, so an approved report keeps the labels it was approved with. */

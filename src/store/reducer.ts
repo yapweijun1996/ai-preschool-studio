@@ -1,5 +1,5 @@
 // Pure portfolio state + transitions. Kept free of React so it can be unit tested.
-import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, STUDENTS, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
+import { ARIA_PARAGRAPHS, ARIA_REFLECTION, NEXT_OBS_NUMBER, OBSERVATIONS, REVIEWER, STUDENTS, TODAY, draftFromObservations, seededDrafts, type Observation, type Paragraph, type ReportStatus, type Sentence } from '../data/demo';
 import { CURRENT_FRAMEWORK, DOMAINS, termOf, type DomainKey, type Milestone } from '../framework';
 import type { Suggestion } from '../services/mockProvider';
 
@@ -7,6 +7,7 @@ export interface ReportState {
   status: ReportStatus;
   hadChanges: boolean;
   comment?: { by: string; date: string; text: string };
+  submittedAt?: string;
   approvedAt?: string;
   /** Learning Framework version the report was approved under; its labels stay with the report. */
   frameworkVersion?: string;
@@ -32,7 +33,7 @@ export type Action =
   | { type: 'applySuggestion'; studentId: string; suggestion: Suggestion }
   | { type: 'restoreParagraph'; studentId: string; paragraph: Paragraph }
   | { type: 'setReflection'; studentId: string; text: string }
-  | { type: 'submitForReview'; studentId: string }
+  | { type: 'submitForReview'; studentId: string; submittedAt: string }
   | { type: 'requestChanges'; studentId: string; text: string; date: string }
   | { type: 'approve'; studentId: string; at: string }
   | { type: 'setSim'; key: keyof State['sim']; value: boolean }
@@ -44,6 +45,7 @@ export function initialState(): State {
     reports[s.id] = {
       status: s.reportStatus,
       hadChanges: s.reportStatus === 'changes',
+      ...(s.reportStatus === 'review' ? { submittedAt: seededSubmissionDate(s.id) } : {}),
       ...(s.reportStatus === 'approved' ? { frameworkVersion: CURRENT_FRAMEWORK.version, milestones: milestonesFrom(OBSERVATIONS, s.id, 4) } : {})
     };
   reports.rayan.comment = { by: REVIEWER, date: '2026-10-20', text: 'Mathematics 数学 needs a second observation before we can say “Consistently demonstrated”.' };
@@ -56,6 +58,16 @@ export function initialState(): State {
     sim: { aiDown: false, saveFail: false },
     nextObsNumber: NEXT_OBS_NUMBER
   };
+}
+
+function seededSubmissionDate(studentId: string): string {
+  const dates: Record<string, string> = {
+    ethan: '2026-10-16',
+    daniel: '2026-10-18',
+    priya: '2026-10-20',
+    weiming: '2026-10-21'
+  };
+  return dates[studentId] ?? TODAY;
 }
 
 function mapSentences(state: State, studentId: string, fn: (s: Sentence) => Sentence | null): State {
@@ -145,7 +157,7 @@ export function reducer(state: State, action: Action): State {
       if (!r || r.status === 'approved' || r.status === 'review' || r.status === 'notStarted') return state;
       // Only a structurally complete draft goes to review.
       if (!readiness(state, action.studentId).canSubmit) return state;
-      return setReport(state, action.studentId, { status: 'review' });
+      return setReport(state, action.studentId, { status: 'review', submittedAt: action.submittedAt });
     }
     case 'requestChanges': {
       if (state.reports[action.studentId]?.status !== 'review') return state;

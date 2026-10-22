@@ -43,7 +43,7 @@ describe('learning framework (single owner of areas, scale and periods)', () => 
 
   it('an approved report records the framework version it was approved under', () => {
     let s = initialState();
-    s = reducer(s, { type: 'submitForReview', studentId: 'aria' });
+    s = reducer(s, { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22' });
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-en-2', obsId: 'OBS-0149' });
     s = reducer(s, { type: 'linkSource', studentId: 'aria', sentenceId: 's-se-1', obsId: 'OBS-0151' });
     s = reducer(s, { type: 'approve', studentId: 'aria', at: 'now' });
