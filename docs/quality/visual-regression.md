@@ -17,7 +17,10 @@ between builds.
 
 ## Updating baselines
 
-Run the **Visual regression** GitHub Actions workflow with `update` enabled. It captures fresh
+The initial baselines were committed at `f0e0b6d` (57 PNGs). Whenever a UI change is intended,
+regenerate them by running the **Visual regression** GitHub Actions workflow via
+`workflow_dispatch` with `update=true`. This branch changes the report and audit UI, so its
+baselines will be regenerated before merge. The workflow captures fresh
 screenshots and uploads them as the `visual-baselines` artifact. Download and extract that artifact
 at the repository root, review the image changes, and commit the files under
 `e2e/__screenshots__/visual.spec.ts/` with the corresponding UI change. Pull requests and pushes

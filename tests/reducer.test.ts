@@ -43,11 +43,16 @@ describe('portfolio reducer', () => {
   });
   it('filters audit instants using the viewer local calendar date', () => {
     const seeded = initialState().auditEvents[0];
-    const events = ['2026-10-22T01:30:00.000Z', '2026-10-21T18:30:00.000Z'].map((at, index) => ({ ...seeded, id: `TZ-${index}`, at }));
+    const events = [
+      new Date(2026, 9, 22, 0, 30),
+      new Date(2026, 9, 22, 23, 30),
+      new Date(2026, 9, 23, 0, 5),
+    ].map((date, index) => ({ ...seeded, id: `TZ-${index}`, at: date.toISOString() }));
     const day = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     const localDay = day(new Date(events[0].at));
-    expect(events.every((event) => day(new Date(event.at)) === localDay)).toBe(true);
-    expect(selectAuditLog(events, { from: localDay, to: localDay })).toHaveLength(2);
+    expect(day(new Date(events[1].at))).toBe(localDay);
+    expect(day(new Date(events[2].at))).not.toBe(localDay);
+    expect(selectAuditLog(events, { from: localDay, to: localDay }).map((event) => event.id)).toEqual(['TZ-1', 'TZ-0']);
   });
   it('stores audit and decision timestamps as full instants and sorts same-time events by sequence', () => {
     const seeded = initialState();
