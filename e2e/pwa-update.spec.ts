@@ -136,3 +136,39 @@ test('offline navigation after the first load still renders the app shell', asyn
     await switchTo('a');
   }
 });
+
+// Manager probe: the visible update UI (shell) driving the real service worker end to end.
+test('visible update UI: dirty work blocks, then "Update to v…" installs the new release', async ({ page }) => {
+  await switchTo('a');
+  let loads = 0;
+  page.on('load', () => loads++);
+
+  // Add observation starts with an unsaved draft, so updating must wait.
+  await page.goto('./#/students/aria/observe');
+  await waitForController(page);
+  await expect.poll(async () => (await snap(page)).status).toBe('current');
+  await switchTo('b');
+  await page.evaluate(() => (window as unknown as { __apsPwa: { check(): Promise<void> } }).__apsPwa.check());
+
+  const update = page.getByRole('button', { name: 'Update to v0.3.0-b' });
+  await expect(update).toBeVisible();
+  expect((await snap(page)).hasDirtyWork).toBe(true);
+  await update.click();
+  await expect(page.getByRole('status').filter({ hasText: 'Save or finish your work first' })).toHaveCount(1);
+  await expect(page.locator('p', { hasText: 'Save or finish your work first; the update will wait.' })).toBeVisible();
+  await page.waitForTimeout(1500);
+  expect(loads).toBe(1);
+  expect((await snap(page)).currentVersion).toBe('0.3.0-a');
+
+  // Leave the draft for a screen without unsaved work, then update from the top bar.
+  await page.goto('./#/students');
+  await expect(page.getByText('Update available')).toBeVisible();
+  await page.getByRole('button', { name: 'Update to v0.3.0-b' }).click();
+  await expect.poll(() => loads, { timeout: 15_000 }).toBe(2);
+  await expect.poll(async () => (await snap(page)).currentVersion).toBe('0.3.0-b');
+  await page.waitForTimeout(1000);
+  expect(loads).toBe(2);
+
+  await page.goto('./#/settings/about');
+  await expect(page.getByTestId('app-version')).toContainText('0.3.0-b');
+});

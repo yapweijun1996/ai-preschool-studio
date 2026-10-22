@@ -177,7 +177,7 @@ export const pages: Dict['pages'] = {
       unavailable: 'Pembantu AI tidak tersedia',
       unavailableBody: 'Penyedia simulasi (Mock provider) tidak memberi respons. Naratif anda telah disimpan dan anda boleh terus menulis tanpanya.',
       tryAgain: 'Cuba lagi',
-      paused: 'Cadangan dan Jana semula dijeda sehingga penyedia memberi respons. Matikan “Simulasikan AI tidak tersedia” dalam Lagi untuk pulih.',
+      paused: 'Cadangan dan Jana semula dijeda sehingga penyedia memberi respons. Matikan “Simulasi AI tidak tersedia” dalam Lagi untuk pulih.',
       paragraph: 'Perenggan',
       actions: {
         clearer: 'Perjelaskan',
