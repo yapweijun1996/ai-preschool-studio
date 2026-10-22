@@ -3,7 +3,7 @@
 - Tier: Core
 - Owns: Derived student summaries and term-by-term milestone view
 - Reads: Student (Children & Classes; static fictional records), observations (Observations), learning framework (Learning Framework), report and narrative claim state (Portfolio Studio / Report Review)
-- Status: exists
+- Status: done (v0.4.0)
 
 ## Purpose
 
@@ -28,9 +28,10 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 
 ## Screens and states
 
-- Student profile default: fictional student/class details, four domain cards, latest four observations, report status, pinned control and links (`src/pages/StudentProfile.tsx:18-38,56-149`). Empty recent observations state provides Add observation (`src/pages/StudentProfile.tsx:99-118`); an individual domain with no observation shows no milestone and a no-observation label (`src/pages/StudentProfile.tsx:81-95`).
+- Student profile default: fictional student/class details, four domain cards, latest four Term 4 observations, report status, pinned control and links (`src/pages/StudentProfile.tsx:18-38,56-149`). Empty recent observations state provides Add observation (`src/pages/StudentProfile.tsx:99-118`); an individual domain with no observation shows no milestone and a no-observation label (`src/pages/StudentProfile.tsx:81-95`).
 - Student profile claims warning appears when `sum.unverified > 0` and links to claim focus (`src/pages/StudentProfile.tsx:129-136`). No profile loading or save-error state is implemented.
-- Learning progress default compares Term 3 and Term 4, shows milestone dots, counts, notes and source IDs (`src/pages/LearningProgress.tsx:27-54,56-129`). No observations are represented as null milestone / “Not yet observed”; comparison note can indicate first seen, unchanged or moved (`src/pages/LearningProgress.tsx:88-103`).
+- Learning progress default compares Term 3 and Term 4, shows milestone dots, counts, notes and Term 4 observation IDs (`src/pages/LearningProgress.tsx:27-54,56-129`). No observations are represented as null milestone / “Not yet observed”; comparison note can indicate first seen, unchanged or moved (`src/pages/LearningProgress.tsx:88-103`).
+- Aria's change notes are hard-coded teacher-authored text, not computed from milestone changes; other cases use derived neutral notes (`src/pages/LearningProgress.tsx:16-25,94-102`).
 - Unknown student route renders NotFound (`src/pages/StudentProfile.tsx:25-28`; `src/pages/LearningProgress.tsx:31-46`).
 - The profile/progress pages use AppShell responsive layout and StudentTabs; progress focuses a domain row when routed with `?domain=` (`src/pages/LearningProgress.tsx:34-45,76-125`). Desktop/tablet/mobile are handled by shared shell and page breakpoints; no separately asserted 390px module state (`src/components/AppShell.tsx:368-533`).
 
@@ -44,18 +45,17 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 
 ## Compliance hooks
 
-Evidence-linked progress supports the licensee's obligations under ECDA by showing the basis for reported milestones. Fictional records support the licensee's obligations under PDPA (Singapore) only as a design reference; real consent, retention, access controls and audit events are not implemented. Not in Studio Demo yet — planned (roadmap Phase 4 Privacy Centre and Records Retention; audit events planned with Report Release & History in Phase 1).
+No PDPA obligation is supported by this module in Studio Demo yet. Planned: consent, retention and audit-event mechanisms are addressed by roadmap Privacy Centre, Records Retention and Audit Log work.
 
 ## Data port
 
-Reads:
-- `getStudentSummary(state: State, id: string): StudentSummary | undefined` (`src/store/selectors.ts:5-27`)
-- `getAllSummaries(state: State): StudentSummary[]` (`src/store/selectors.ts:29-31`)
-- `getMilestones(state: State, id: string, term?: 3 | 4): Record<DomainKey, Milestone | null>` (`src/store/selectors.ts:33-38`)
-- `getObservations(state: State, studentId: string, term?: 3 | 4): Observation[]` (`src/store/reducer.ts:243-245`)
+Proposed async interfaces:
+- `getStudentSummary(studentId: string): Promise<StudentSummary | undefined>` (proposed; demo implementation: `studentSummary` `src/store/selectors.ts:15-27`)
+- `getAllSummaries(): Promise<StudentSummary[]>` (proposed; demo implementation: `allSummaries` `src/store/selectors.ts:29-31`)
+- `getMilestones(studentId: string, term?: 3 | 4): Promise<Record<DomainKey, Milestone | null>>` (proposed; demo implementation: `milestonesFor` `src/store/selectors.ts:33-38`)
+- `getObservations(studentId: string, term?: 3 | 4): Promise<Observation[]>` (proposed; demo implementation: `observationsFor` `src/store/reducer.ts:243-245`)
 
-Writes:
-- None in this module. Add observation and portfolio/report actions are owned by their respective modules.
+Writes: none in this module. Add observation and portfolio/report actions are owned by their respective modules.
 
 ## Acceptance criteria
 
