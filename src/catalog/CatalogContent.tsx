@@ -69,13 +69,13 @@ const readinessExamples: { title: string; readiness: Readiness }[] = [
   {
     title: 'No sentences',
     readiness: {
-      domainsWritten: DOMAINS.length,
+      domainsWritten: 0,
       domainsTotal: DOMAINS.length,
       sentences: 0,
       unverified: 0,
       hasReflection: true,
-      canSubmit: true,
-      canApprove: true,
+      canSubmit: false,
+      canApprove: false,
     },
   },
 ];
