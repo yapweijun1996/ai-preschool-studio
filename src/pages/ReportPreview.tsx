@@ -98,6 +98,12 @@ export function ReportPreview() {
         </>
       );
     }
+    if ((status === 'changes' || status === 'draft') && !role.can('report.submit')) {
+      return <Notice tone="info" icon="lock" role="status">
+        <p className="body-text">{t('shell.roles.draftBlocked')}</p>
+        <button className="btn btn-secondary" type="button" onClick={() => role.setRole('teacher')}>{t('shell.roles.switchTeacher')}</button>
+      </Notice>;
+    }
     return (
       <>
         <Link className="btn btn-secondary" to="/">{mobile ? t('pages.report.dashboard') : t('pages.report.backToDashboard')}</Link>
