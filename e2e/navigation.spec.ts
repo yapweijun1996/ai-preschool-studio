@@ -80,8 +80,8 @@ test.describe('breadcrumb, search and domain links · desktop 1440', () => {
   });
 });
 
-test.describe('search · tablet 1024', () => {
-  test.use({ viewport: { width: 1024, height: 860 }, hasTouch: true });
+test.describe('search · tablet 900', () => {
+  test.use({ viewport: { width: 900, height: 860 }, hasTouch: true });
   test('icon-only search trigger (44px) and breadcrumb fit the top bar', async ({ page }) => {
     await page.goto('./#/students/aria/report');
     const trigger = page.getByRole('button', { name: 'Search students or pages' });
