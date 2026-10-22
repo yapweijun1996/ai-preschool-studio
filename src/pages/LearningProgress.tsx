@@ -2,12 +2,12 @@ import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { StudentTabs } from '../components/StudentTabs';
-import { StudentsPanel } from '../components/StudentsPanel';
 import { MilestoneDots, Notice, SourceChip } from '../components/ui';
 import { DOMAINS, MILESTONES } from '../data/demo';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
 import { studentSummary } from '../store/selectors';
+import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
 // Teacher-written change notes for the demo student; other students show a neutral line.
@@ -26,6 +26,7 @@ export function LearningProgress() {
   const { id = '' } = useParams();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
+  useVisit(id, !!sum);
   if (!sum) return <NotFound />;
   const { student } = sum;
   const t4 = observationsFor(state, id, 4);
@@ -34,8 +35,7 @@ export function LearningProgress() {
   return (
     <AppShell
       module="students"
-      panelTitle="Students"
-      panel={<StudentsPanel currentId={id} />}
+      currentStudentId={id}
       mobileTitle="Learning progress"
       mobileSubtitle={`${student.name} · Term 3 vs Term 4`}
       mobileBack={`/students/${id}`}

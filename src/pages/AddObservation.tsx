@@ -6,6 +6,7 @@ import { Avatar, Notice, SourceChip } from '../components/ui';
 import { CLASS_NAME, DOMAINS, MILESTONES, TERM, TODAY, type DomainKey, type Milestone } from '../data/demo';
 import { usePortfolio } from '../store/PortfolioContext';
 import { studentSummary } from '../store/selectors';
+import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
 type Phase = { kind: 'editing' } | { kind: 'saving' } | { kind: 'saved'; id: string } | { kind: 'failed' };
@@ -21,6 +22,7 @@ export function AddObservation() {
   const [error, setError] = useState('');
   const textRef = useRef<HTMLTextAreaElement>(null);
   const sum = studentSummary(state, id);
+  useVisit(id, !!sum);
   if (!sum) return <NotFound />;
   const { student } = sum;
 
@@ -53,6 +55,7 @@ export function AddObservation() {
   return (
     <AppShell
       module="observations"
+      currentStudentId={id}
       mobileTitle="Add observation"
       mobileSubtitle={`${student.name} · Demo student`}
       mobileBack={`/students/${id}`}

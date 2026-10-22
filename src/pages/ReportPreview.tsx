@@ -7,6 +7,7 @@ import { CLASS_NAME, REPORT_STATUS_LABEL, REVIEWER, TEACHER, TERM, TODAY, domain
 import { usePortfolio } from '../store/PortfolioContext';
 import { approvalBlock, observationsFor, unverifiedClaims } from '../store/reducer';
 import { studentSummary } from '../store/selectors';
+import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
 const FLOW: ReportStatus[] = ['draft', 'review', 'changes', 'approved'];
@@ -17,6 +18,7 @@ export function ReportPreview() {
   const [changeNote, setChangeNote] = useState('Please check the reading claim in English Language 英语 — I can’t see an observation for it.');
   const [requesting, setRequesting] = useState(false);
   const sum = studentSummary(state, id);
+  useVisit(id, !!sum);
   if (!sum) return <NotFound />;
   const { student, report } = sum;
   const paragraphs = state.paragraphs[id] ?? [];
@@ -188,6 +190,7 @@ export function ReportPreview() {
   return (
     <AppShell
       module="reports"
+      currentStudentId={id}
       mobileTitle="Report preview"
       mobileSubtitle={`${student.name} · ${TERM}`}
       mobileBack={`/students/${id}/studio`}

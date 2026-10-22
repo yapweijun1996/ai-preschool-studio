@@ -12,6 +12,7 @@ import { ProviderUnavailableError, requestSuggestion, type AiAction } from '../s
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor, unverifiedClaims } from '../store/reducer';
 import { studentSummary } from '../store/selectors';
+import { useVisit } from '../hooks/useNavMemory';
 import { NotFound } from './NotFound';
 
 type MobileTab = 'evidence' | 'write' | 'ai';
@@ -21,6 +22,7 @@ export function PortfolioStudio() {
   const navigate = useNavigate();
   const { state, dispatch } = usePortfolio();
   const sum = studentSummary(state, id);
+  useVisit(id, !!sum);
   const paragraphs = state.paragraphs[id] ?? [];
   const [targetId, setTargetId] = useState('p-se');
   const [ai, setAi] = useState<AiState>({ kind: 'idle' });
@@ -152,6 +154,7 @@ export function PortfolioStudio() {
   return (
     <AppShell
       module="students"
+      currentStudentId={id}
       mobileTitle={student.name}
       mobileSubtitle={`Portfolio · ${TERM}`}
       mobileBack={`/students/${id}`}

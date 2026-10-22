@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
-import { StudentsPanel } from '../components/StudentsPanel';
 import { Avatar, StatusLabel } from '../components/ui';
 import { CLASS_NAME, REPORT_STATUS_LABEL, TERM, lastObservedLabel, type ReportStatus } from '../data/demo';
 import { usePortfolio } from '../store/PortfolioContext';
@@ -12,7 +11,11 @@ const FILTERS: (ReportStatus | 'all')[] = ['all', 'notStarted', 'draft', 'review
 
 export function Students() {
   const { state } = usePortfolio();
-  const [filter, setFilter] = useState<ReportStatus | 'all'>('all');
+  const [params, setParams] = useSearchParams();
+  const fromUrl = params.get('status') as ReportStatus | null;
+  const filter: ReportStatus | 'all' = fromUrl && fromUrl in REPORT_STATUS_LABEL ? fromUrl : 'all';
+  // The filter lives in the URL so the Reports panel can deep-link to a status.
+  const setFilter = (f: ReportStatus | 'all') => setParams(f === 'all' ? {} : { status: f }, { replace: true });
   const [query, setQuery] = useState('');
   // Simulated fetch so the loading state is part of the real flow.
   const [loading, setLoading] = useState(true);
@@ -28,8 +31,6 @@ export function Students() {
   return (
     <AppShell
       module="students"
-      panelTitle="Students"
-      panel={<StudentsPanel />}
       mobileTitle="My Students"
       mobileSubtitle={`${CLASS_NAME} · ${TERM}`}
       mobileActions={<Link className="btn btn-primary btn-block" to="/students/aria/observe"><Icon name="plus" size={18} />Add observation</Link>}

@@ -23,6 +23,12 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
 - **States** — loading (students list, AI), empty (no observations, no filter match), save failed
   (reflection autosave, Add observation), AI unavailable, approval blocked. Use **More → Demo
   controls** to simulate AI outage or save failure, or to reset demo data.
+- **Navigation** — ChatGPT-style two-level sidebar: 64px icon rail (Dashboard, Students,
+  Observations, Reports, More) with hover/focus tooltips and an active marker, plus a 260px
+  context panel whose content follows the module (class, report queue, latest observations),
+  with student search, Pinned and Recent (last 5 opened). The toggle — or Ctrl/Cmd+Shift+S —
+  collapses only the panel; the state persists. Top bar: theme menu (Light/Dark/System) and
+  account menu. Phones use a bottom tab bar with a More sheet.
 - **Responsive** — desktop ≥1200 (rail + context panel + 3 columns), tablet 768–1199 (rail,
   editor with a docked Evidence/AI drawer), mobile <768 (compact header, bottom tab bar,
   Evidence | Write | AI tabs, sticky action bar). Light and dark themes.

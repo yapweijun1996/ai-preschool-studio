@@ -1,8 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
+import { useNavMemory, useVisit } from '../hooks/useNavMemory';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { StudentTabs } from '../components/StudentTabs';
-import { StudentsPanel } from '../components/StudentsPanel';
 import { Avatar, MilestoneDots, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
 import { CLASS_NAME, DOMAINS, TEACHER, TERM, domainShort, formatDate, lastObservedLabel } from '../data/demo';
 import { usePortfolio } from '../store/PortfolioContext';
@@ -14,7 +14,10 @@ export function StudentProfile() {
   const { id = '' } = useParams();
   const { state } = usePortfolio();
   const sum = studentSummary(state, id);
+  const { isPinned, togglePin } = useNavMemory();
+  useVisit(id, !!sum);
   if (!sum) return <NotFound />;
+  const pinned = isPinned(id);
   const { student, report } = sum;
   const obs = observationsFor(state, id).sort((a, b) => b.date.localeCompare(a.date));
   const byDomain = (k: string) => obs.filter((o) => o.domain === k);
@@ -22,8 +25,7 @@ export function StudentProfile() {
   return (
     <AppShell
       module="students"
-      panelTitle="Students"
-      panel={<StudentsPanel currentId={id} />}
+      currentStudentId={id}
       mobileTitle={student.name}
       mobileSubtitle={`${CLASS_NAME} · Demo student`}
       mobileBack="/students"
@@ -46,6 +48,9 @@ export function StudentProfile() {
               </div>
               <p className="sec muted">{CLASS_NAME} · Age {student.age} · {lastObservedLabel(sum.lastObserved)}</p>
             </div>
+            <button className="icon-btn icon-btn-outline has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinned ? 'Unpin from sidebar' : 'Pin to sidebar'} data-tip={pinned ? 'Unpin from sidebar' : 'Pin to sidebar'}>
+              <Icon name="pin" />
+            </button>
             {bp !== 'mobile' && (
               <>
                 <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />Add observation</Link>

@@ -1,5 +1,6 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { ThemeContext } from './components/AppShell';
+import { NavMemoryProvider } from './hooks/useNavMemory';
 import { useTheme } from './hooks/useTheme';
 import { AddObservation } from './pages/AddObservation';
 import { Dashboard } from './pages/Dashboard';
@@ -17,6 +18,7 @@ export function App() {
   return (
     <ThemeContext.Provider value={theme}>
       <PortfolioProvider>
+        <NavMemoryProvider>
         <HashRouter>
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -29,6 +31,7 @@ export function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>
+        </NavMemoryProvider>
       </PortfolioProvider>
     </ThemeContext.Provider>
   );
