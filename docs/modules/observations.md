@@ -39,7 +39,7 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 - `reducer` assigns the next padded `OBS-xxxx` ID, derives term from the date, rejects dates outside every period without changing state, and increments the ID only after accepting the observation (`src/store/reducer.ts:81-91`).
 - `termOf` maps a date to a configured reporting term; out-of-period dates return no term (`src/framework/index.ts:92-98`).
 - `reducer` `addObservation` action accepts the `Observation` fields except generated `id`, then sets `id` and derives `term`; the record shape is `id, studentId, date, domain, text, milestone, hasPhoto, term` (`src/store/reducer.ts:26-28,81-91`; `src/data/demo.ts:22-31`). Seed data is fictional (`src/data/demo.ts:1,73-87,177-209`).
-- Photo upload and durable backend persistence are not implemented; Not in Studio Demo yet — planned (roadmap Phase 0 Data port; media capability to confirm).
+- `save` persists only through the in-memory reducer dispatch; photo upload and durable backend persistence are not implemented. Not in Studio Demo yet — planned (roadmap Phase 0 Data port; media capability to confirm) (`src/pages/AddObservation.tsx:62-84`; `src/store/reducer.ts:81-91`).
 
 ## Compliance hooks
 

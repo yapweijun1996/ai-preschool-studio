@@ -40,7 +40,7 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 - `allSummaries(state)` returns a summary for each static student; `milestonesFor(state,id,term)` delegates to evidence-derived milestones (`src/store/selectors.ts:29-38`).
 - `milestonesFrom(observations,studentId,term)` picks the latest dated observation per domain in that term and returns null if none exists (`src/store/reducer.ts:229-241`).
 - `observationsFor(state,studentId,term)` selects observations for the student and term, defaulting to Term 4 (`src/store/reducer.ts:243-245`).
-- Profile cards and comparison do not calculate scores, percentages or rankings (`src/pages/StudentProfile.tsx:81-95`; `src/pages/LearningProgress.tsx:77-125`).
+- `StudentProfile` and `LearningProgress` render evidence-derived milestones without calculating scores, percentages or rankings (`src/pages/StudentProfile.tsx:81-95`; `src/pages/LearningProgress.tsx:77-125`).
 
 ## Compliance hooks
 
