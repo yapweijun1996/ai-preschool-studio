@@ -77,7 +77,6 @@ function Tokens({ theme }: { theme: string }) {
         <div className="catalog-token" key={name}>
           <span className="catalog-swatch" style={{ background: `var(${name})` }} />
           <strong>{name}</strong>
-          <span>Light: {light[name]}</span>
           <span>Current: {values[name] || '—'}</span>
         </div>
       ))}
