@@ -1,3 +1,5 @@
+import { ADMIN, PARENT, REVIEWER, TEACHER } from '../data/demo';
+
 export type Role = 'teacher' | 'reviewer' | 'admin' | 'parent';
 
 export type Capability =
@@ -22,10 +24,10 @@ export function can(role: Role, capability: Capability): boolean {
 }
 
 export const DEMO_ROLES = [
-  { role: 'teacher', name: 'Ms. Lim', labelKey: 'shell.roles.teacher' },
-  { role: 'reviewer', name: 'Ms. Tan', labelKey: 'shell.roles.reviewer' },
-  { role: 'admin', name: 'Mr. Wong', labelKey: 'shell.roles.admin' },
-  { role: 'parent', name: "Aria's guardian", labelKey: 'shell.roles.parent' }
+  { role: 'teacher', name: TEACHER, labelKey: 'shell.roles.teacher' },
+  { role: 'reviewer', name: REVIEWER, labelKey: 'shell.roles.reviewer' },
+  { role: 'admin', name: ADMIN, labelKey: 'shell.roles.admin' },
+  { role: 'parent', name: PARENT, labelKey: 'shell.roles.parent' }
 ] as const satisfies readonly { role: Role; name: string; labelKey: `shell.roles.${Role}` }[];
 
 export function isRole(value: string | null): value is Role {

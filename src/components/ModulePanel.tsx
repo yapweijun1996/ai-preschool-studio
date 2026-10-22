@@ -130,15 +130,15 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
             )}
           </>
         )}
-        {module === 'settings' && (role.can('settings.demo') || role.can('catalog.view')) && <>
+        {module === 'settings' && role.can('settings.demo') && <>
           {SETTINGS_SECTIONS.map((sec) => (
             <Link key={sec.key} className="nav-link" to={`/settings/${sec.key}`} aria-current={path === `/settings/${sec.key}` ? 'page' : undefined}>
               <Icon name={sec.icon} size={18} />
               {t(`shell.settings.sections.${sec.key}`)}
             </Link>
           ))}
-          {role.can('catalog.view') && <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
         </>}
+        {module === 'settings' && role.can('catalog.view') && <Link className="nav-link" to="/catalog" aria-current={path === '/catalog' ? 'page' : undefined}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
       </nav>
 
       {(module === 'students' || module === 'dashboard') && (

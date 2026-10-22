@@ -133,7 +133,7 @@ function SettingsLink({ close, labelKey }: { close: () => void; labelKey: TKey }
 
 function AccountMenu() {
   const { t } = useI18n();
-  const { role, setRole } = useRole();
+  const { role, setRole, can: hasCapability } = useRole();
   const account = DEMO_ROLES.find((item) => item.role === role)!;
   const initials = account.name === 'Ms. Lim' ? 'ML' : account.name === 'Ms. Tan' ? 'MT' : account.name === 'Mr. Wong' ? 'MW' : 'AG';
   return (
@@ -155,7 +155,7 @@ function AccountMenu() {
             <Icon name="info" size={16} />
             <p className="body-text">{t('shell.account.demoNote')}</p>
           </div>
-          <SettingsLink close={close} labelKey="shell.account.settings" />
+          {hasCapability('settings.demo') && <SettingsLink close={close} labelKey="shell.account.settings" />}
           <button className="menu-item" type="button" role="menuitem" aria-disabled="true">
             <Icon name="lock" size={18} />{t('shell.account.signOut')}
           </button>
@@ -339,11 +339,12 @@ function TabBar({ active }: { active: Module }) {
       >
         {(close) => (
           <>
-            {(roleContext.can('settings.demo') || roleContext.can('catalog.view')) && <SettingsLink close={close} labelKey="shell.more.settings" />}
+            {roleContext.can('settings.demo') && <SettingsLink close={close} labelKey="shell.more.settings" />}
+            {roleContext.can('catalog.view') && <Link className="menu-item" role="menuitem" to="/catalog" onClick={close}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
             <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
             <p className="cap muted menu-head">{t('shell.more.language')}</p>
             <LanguageItems close={close} />
-            <DemoMenuItems close={close} />
+            {roleContext.can('settings.demo') && <DemoMenuItems close={close} />}
           </>
         )}
       </Menu>
@@ -536,9 +537,10 @@ export function AppShell({ module, crumbs, focus, currentStudentId, mobileTitle,
           >
             {(close) => (
               <>
-                {(roleContext.can('settings.demo') || roleContext.can('catalog.view')) && <SettingsLink close={close} labelKey="shell.more.settings" />}
+                {roleContext.can('settings.demo') && <SettingsLink close={close} labelKey="shell.more.settings" />}
+                {roleContext.can('catalog.view') && <Link className="menu-item" role="menuitem" to="/catalog" onClick={close}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
                 <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
-                <DemoMenuItems close={close} />
+                {roleContext.can('settings.demo') && <DemoMenuItems close={close} />}
               </>
             )}
           </Menu>

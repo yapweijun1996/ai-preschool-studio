@@ -14,6 +14,7 @@ import { observationsFor } from '../store/reducer';
 import { milestonesFor, studentSummary } from '../store/selectors';
 import { NotFound } from './NotFound';
 import { useLastObservedLabel } from './Students';
+import { useRole } from '../roles/RoleContext';
 
 export function StudentProfile() {
   const { id = '' } = useParams();
@@ -22,6 +23,7 @@ export function StudentProfile() {
   const terms = { term3: termShort(3), term4: termShort(4) };
   const lastObservedLabel = useLastObservedLabel();
   const { state } = usePortfolio();
+  const role = useRole();
   const sum = studentSummary(state, id);
   const { isPinned, togglePin } = useNavMemory();
   useVisit(id, !!sum);
@@ -46,8 +48,8 @@ export function StudentProfile() {
       mobileBack="/students"
       mobileActions={
         <>
-          <Link className="icon-btn icon-btn-outline" to={`/students/${id}/observe`} aria-label={addLabel} title={addLabel}><Icon name="plus" /></Link>
-          <Link className="btn btn-primary grow" to={`/students/${id}/studio`}>{openStudio}</Link>
+          {role.can('observation.add') && <Link className="icon-btn icon-btn-outline" to={`/students/${id}/observe`} aria-label={addLabel} title={addLabel}><Icon name="plus" /></Link>}
+          {role.can('report.view') && <Link className="btn btn-primary grow" to={`/students/${id}/studio`}>{openStudio}</Link>}
         </>
       }
     >
@@ -62,13 +64,13 @@ export function StudentProfile() {
               </div>
               <p className="sec muted"><span className="nowrap">{CLASS_NAME}</span> · <span className="nowrap">{t('pages.profile.age', { age: student.age })}</span> · <span className="nowrap">{lastObservedLabel(sum.lastObserved)}</span></p>
             </div>
-            <button className="icon-btn pin-btn has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinLabel} data-tip={pinLabel}>
+            {role.role !== 'admin' && <button className="icon-btn pin-btn has-tip tip-below" type="button" aria-pressed={pinned} onClick={() => togglePin(id)} aria-label={pinLabel} data-tip={pinLabel}>
               <Icon name="pin" />
-            </button>
+            </button>}
             {bp !== 'mobile' && (
               <>
-                <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>
-                <Link className="btn btn-primary" to={`/students/${id}/studio`}>{openStudio}</Link>
+                {role.can('observation.add') && <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>}
+                {role.can('report.view') && <Link className="btn btn-primary" to={`/students/${id}/studio`}>{openStudio}</Link>}
               </>
             )}
           </div>
@@ -103,7 +105,7 @@ export function StudentProfile() {
                     <div className="state-icon"><Icon name="clipboard" size={24} /></div>
                     <p className="strong">{t('pages.profile.emptyTitle', { name: student.name.split(' ')[0], term: termShort(4) })}</p>
                     <p className="sec muted">{t('pages.profile.emptyBody')}</p>
-                    <Link className="btn btn-primary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>
+                    {role.can('observation.add') && <Link className="btn btn-primary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>}
                   </div>
                 ) : (
                   obs.slice(0, 4).map((o) => (
@@ -118,7 +120,7 @@ export function StudentProfile() {
               </section>
             </section>
             <aside className="stack" style={{ gap: 16 }}>
-              <section className="card card-pad stack" aria-labelledby="pr-h">
+              {role.can('report.view') && <section className="card card-pad stack" aria-labelledby="pr-h">
                 <div className="row" style={{ alignItems: 'flex-start' }}>
                   <div className="grow">
                     <h2 id="pr-h" className="h2">{t('pages.profile.portfolioReport')}</h2>
@@ -135,7 +137,7 @@ export function StudentProfile() {
                   </div>
                 )}
                 <Link className="btn btn-ghost" to={`/students/${id}/report`} style={{ alignSelf: 'flex-start' }}><Icon name="eye" size={18} />{t('pages.shared.previewPdf')}</Link>
-              </section>
+              </section>}
               <section className="card card-pad stack" aria-labelledby="ab-h">
                 <h2 id="ab-h" className="h2">{t('pages.profile.about')}</h2>
                 <dl className="sec" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px' }}>
