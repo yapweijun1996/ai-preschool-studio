@@ -13,7 +13,8 @@ import {
   VerifyLabel,
 } from '../components/ui';
 import type { ReportStatus } from '../data/demo';
-import type { Milestone } from '../framework';
+import { DOMAINS, type Milestone } from '../framework';
+import type { Readiness } from '../store/reducer';
 import { MarkupExample } from './MarkupExample';
 
 const sections = [
@@ -58,6 +59,44 @@ const names = [
   '--color-focus',
 ];
 const statuses: ReportStatus[] = ['notStarted', 'draft', 'review', 'changes', 'approved'];
+const readinessExamples: { title: string; readiness: Readiness }[] = [
+  {
+    title: 'Complete',
+    readiness: {
+      domainsWritten: DOMAINS.length,
+      domainsTotal: DOMAINS.length,
+      sentences: 5,
+      unverified: 0,
+      hasReflection: true,
+      canSubmit: true,
+      canApprove: true,
+    },
+  },
+  {
+    title: 'Incomplete',
+    readiness: {
+      domainsWritten: 1,
+      domainsTotal: DOMAINS.length,
+      sentences: 2,
+      unverified: 1,
+      hasReflection: false,
+      canSubmit: false,
+      canApprove: false,
+    },
+  },
+  {
+    title: 'No sentences',
+    readiness: {
+      domainsWritten: DOMAINS.length,
+      domainsTotal: DOMAINS.length,
+      sentences: 0,
+      unverified: 0,
+      hasReflection: true,
+      canSubmit: true,
+      canApprove: true,
+    },
+  },
+];
 
 function sectionId(name: string) {
   return name.toLowerCase().replaceAll(' ', '-');
@@ -252,13 +291,9 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
     case 'ReadinessList':
       return (
         <>
-          {[
-            ['Complete', { domainsWritten: 3, domainsTotal: 3, sentences: 5, unverified: 0, hasReflection: true }],
-            ['Incomplete', { domainsWritten: 1, domainsTotal: 3, sentences: 2, unverified: 1, hasReflection: false }],
-            ['No sentences', { domainsWritten: 3, domainsTotal: 3, sentences: 0, unverified: 0, hasReflection: true }],
-          ].map(([title, readiness]) => (
-            <MarkupExample key={title as string} title={title as string}>
-              <ReadinessList r={readiness as never} />
+          {readinessExamples.map(({ title, readiness }) => (
+            <MarkupExample key={title} title={title}>
+              <ReadinessList r={readiness} />
             </MarkupExample>
           ))}
         </>
