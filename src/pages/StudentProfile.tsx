@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useNavMemory, useVisit } from '../hooks/useNavMemory';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { EmptyIllustration } from '../components/EmptyIllustration';
 import { ReportFlow } from '../components/ReportFlow';
 import { StudentTabs } from '../components/StudentTabs';
 import { Avatar, MilestoneDots, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
@@ -102,7 +103,7 @@ export function StudentProfile() {
                 <div className="card-head"><h2 id="ro-h" className="h2 grow">{t('pages.profile.recentObservations')}</h2></div>
                 {obs.length === 0 ? (
                   <div className="empty">
-                    <div className="state-icon"><Icon name="clipboard" size={24} /></div>
+                    <EmptyIllustration name="no-observations" />
                     <p className="strong">{t('pages.profile.emptyTitle', { name: student.name.split(' ')[0], term: termShort(4) })}</p>
                     <p className="sec muted">{t('pages.profile.emptyBody')}</p>
                     {role.can('observation.add') && <Link className="btn btn-primary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>}

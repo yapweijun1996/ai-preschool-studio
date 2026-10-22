@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
+import { EmptyIllustration } from '../components/EmptyIllustration';
 import { AiPanel, type AiState } from '../components/studio/AiPanel';
 import { EvidencePanel } from '../components/studio/EvidencePanel';
 import { NarrativePanel } from '../components/studio/NarrativePanel';
@@ -160,21 +161,21 @@ export function PortfolioStudio() {
       <div className="panel-body">
         {observations.length > 0 && report.status === 'notStarted' ? (
           <div className="empty">
-            <div className="state-icon"><Icon name="fileText" size={24} /></div>
+            <EmptyIllustration name="report-not-started" />
             <p className="strong">{t('pages.studio.startTitle')}</p>
             <p className="sec muted" style={{ maxWidth: '52ch' }}>{t('pages.studio.startBody', { count: observations.length })}</p>
             <button className="btn btn-primary" type="button" onClick={() => dispatch({ type: 'startDraft', studentId: id })}>{t('pages.studio.startDraft')}</button>
           </div>
         ) : observations.length === 0 ? (
           <div className="empty">
-            <div className="state-icon"><Icon name="clipboard" size={24} /></div>
+            <EmptyIllustration name="no-observations" />
             <p className="strong">{t('pages.studio.noObsTitle')}</p>
             <p className="sec muted">{t('pages.studio.noObsBody')}</p>
             <Link className="btn btn-secondary" to={`/students/${id}/observe`}><Icon name="plus" size={18} />{t('pages.shared.addObservation')}</Link>
           </div>
         ) : (
           <div className="empty">
-            <div className="state-icon"><Icon name="fileText" size={24} /></div>
+            <EmptyIllustration name="no-observations" />
             <p className="strong">{t('pages.studio.noNarrative')}</p>
             <p className="sec muted">{t('pages.studio.noNarrativeBody')}</p>
           </div>

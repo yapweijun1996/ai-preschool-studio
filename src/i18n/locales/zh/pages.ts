@@ -28,7 +28,8 @@ export const pages: Dict['pages'] = {
     today: '今天',
     notObserved: '本学期尚未观察',
     photoPlaceholder: '照片占位',
-    photoPlaceholderFor: '{name}的照片占位'
+    photoPlaceholderFor: '{name}的照片占位',
+    sampleIllustration: '示例插图——非真实照片'
   },
   tabs: {
     label: '学生页面分区',

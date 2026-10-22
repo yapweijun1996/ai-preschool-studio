@@ -5,6 +5,7 @@ import { DOMAINS, type DomainKey } from '../../framework';
 import { useI18n } from '../../i18n';
 import { useLabels } from '../../i18n/labels';
 import { Icon } from '../Icon';
+import { EmptyIllustration, PhotoIllustration } from '../EmptyIllustration';
 import { ScrollRow, SourceChip } from '../ui';
 
 export function EvidencePanel({
@@ -45,7 +46,7 @@ export function EvidencePanel({
       <div className="panel-body" style={{ gap: 12 }}>
         {observations.length === 0 ? (
           <div className="empty">
-            <div className="state-icon"><Icon name="clipboard" size={24} /></div>
+            <EmptyIllustration name="no-observations" />
             <p className="strong">{t('pages.studio.ev.empty', { term: termShort(4) })}</p>
             <p className="sec muted">{t('pages.studio.ev.emptyBody')}</p>
             {headerless && <Link className="btn btn-primary" to={`/students/${studentId}/observe`}><Icon name="plus" size={18} />{addLabel}</Link>}
@@ -63,7 +64,7 @@ export function EvidencePanel({
                 <button key={d.key} className="chip" type="button" aria-pressed={filter === d.key} onClick={() => setFilter(d.key)}>{domainShort(d.key)}</button>
               ))}
             </ScrollRow>
-            {list.length === 0 && <p className="sec muted" role="status">{t('pages.studio.ev.noMatch')}</p>}
+            {list.length === 0 && <div className="empty" role="status"><EmptyIllustration name="no-results" /><p className="sec muted">{t('pages.studio.ev.noMatch')}</p></div>}
             {list.map((o) => {
               const linked = linkedIds.has(o.id);
               return (
@@ -71,7 +72,7 @@ export function EvidencePanel({
                   <span className="row"><SourceChip id={o.id} /><span className="cap muted num">{fmtDate(o.date)}</span></span>
                   <span className="cap muted">{domainShort(o.domain)}</span>
                   <span className="sec">{o.text}</span>
-                  {o.hasPhoto && <span className="ph" style={{ width: '100%', height: 72 }}><Icon name="image" size={18} />{t('pages.shared.photoPlaceholder')}</span>}
+                  {o.hasPhoto && <PhotoIllustration domain={o.domain} id={o.id} />}
                   {linked ? (
                     <span className="cap row" style={{ gap: 4, color: 'var(--color-primary-hover)' }}><Icon name="check" size={14} />{t('pages.studio.ev.linked')}</span>
                   ) : (
