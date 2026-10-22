@@ -28,9 +28,10 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   context panel whose content follows the module (class, report queue, latest observations),
   with student search, Pinned and Recent (last 5 opened). The toggle — or Ctrl/Cmd+Shift+S —
   collapses only the panel; the state persists. Top bar: theme menu (Light/Dark/System) and
-  account menu. Phones use a bottom tab bar with a More sheet.
-- **Responsive** — desktop ≥1200 (rail + context panel + 3 columns), tablet 768–1199 (rail,
-  editor with a docked Evidence/AI drawer), mobile <768 (compact header, bottom tab bar,
+  account menu. Phones and tablets up to 1024px use a bottom tab bar with a More sheet.
+- **Responsive** — desktop ≥1200 (rail + context panel + 3 columns, content centred up to
+  1440px), tablet 768–1199 (editor with a docked Evidence/AI drawer; bottom tab bar up to
+  1024px, rail + overlay panel from 1025px), mobile <768 (compact header, bottom tab bar,
   Evidence | Write | AI tabs, sticky action bar). Light and dark themes.
 - **Languages** — English (default), 中文 (Simplified Chinese) and Bahasa Melayu. Switch from
   the top-bar language menu, the phone More sheet or Settings › Language; the choice persists

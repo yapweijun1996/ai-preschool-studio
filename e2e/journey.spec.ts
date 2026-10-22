@@ -85,6 +85,7 @@ test.describe('tablet 1024', () => {
     await page.goto('./#/students/aria/studio');
     await expect(page.getByRole('complementary', { name: 'AI Assistant' })).toBeVisible();
     await page.screenshot(shot('11-studio-tablet'));
+    await expect(page.locator('.tabbar')).toBeVisible();
     await page.goto('./#/students');
     await page.screenshot(shot('12-students-tablet'));
   });

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { CLASS_NAME, TEACHER } from '../data/demo';
-import { useBreakpoint, type Breakpoint } from '../hooks/useBreakpoint';
+import { useBottomTabs, useBreakpoint, type Breakpoint } from '../hooks/useBreakpoint';
 import type { Theme, ThemePref } from '../hooks/useTheme';
 import { LANGS, useI18n, type TKey } from '../i18n';
 import { usePwa } from '../pwa';
@@ -337,6 +337,8 @@ export interface AppShellProps {
 
 export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle, mobileBack, mobileTrailing, mobileActions, children }: AppShellProps) {
   const bp = useBreakpoint();
+  // Tablets up to 1024px keep the tablet page layouts but navigate with the bottom tab bar (no rail, no panel).
+  const tabNav = useBottomTabs();
   const { t } = useI18n();
   const pwa = usePwa();
   // Read synchronously so the panel state is right on first paint (no flash).
@@ -360,7 +362,7 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
 
   // Layout effect: the shortcut must work as soon as the page is visible after a route change.
   useLayoutEffect(() => {
-    if (bp === 'mobile') return;
+    if (tabNav) return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
@@ -369,7 +371,7 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [bp, toggle]);
+  }, [bp, tabNav, toggle]);
 
   const moduleLabel = t(`shell.module.${module}`);
   const content = <ShellPanelContext.Provider value={{ panelOpen: desktopOpen, setPanelOpen }}>{children(bp)}</ShellPanelContext.Provider>;
@@ -403,6 +405,30 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
           </div>
         )}
         {mobileActions && <div className="action-bar">{mobileActions}</div>}
+        <TabBar active={module} />
+        <UpdateOverlay />
+      </div>
+    );
+  }
+
+  if (tabNav) {
+    return (
+      <div className={`app is-${bp} has-tabbar`}>
+        <a className="skip-link" href="#main">{t('shell.skipToContent')}</a>
+        <header className="topbar">
+          <Link className="brand" to="/"><span className="monogram">AP</span><span>{t('shell.appName')}</span></Link>
+          <span className="topbar-context">{moduleLabel}</span>
+          <div className="grow" />
+          <UpdateButton />
+          <LanguageMenu />
+          <ThemeMenu />
+          <AccountMenu />
+        </header>
+        <main className="main" id="main" tabIndex={-1}>
+          <DemoStrip />
+          <UpdateError />
+          {content}
+        </main>
         <TabBar active={module} />
         <UpdateOverlay />
       </div>

@@ -79,14 +79,47 @@ test.describe('ChatGPT-style sidebar · desktop 1440', () => {
   });
 });
 
-test.describe('tablet 1024 sidebar', () => {
-  test.use({ viewport: { width: 1024, height: 860 } });
+test.describe('tablet 1024 bottom tabs', () => {
+  test.use({ viewport: { width: 1024, height: 860 }, hasTouch: true });
+  test('tablet ≤1024 navigates with the bottom tab bar, not the rail', async ({ page }) => {
+    await page.goto('./#/students');
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    await expect(page.locator('.tabbar')).toBeVisible();
+    await expect(page.locator('.rail')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Open sidebar' })).toHaveCount(0);
+    // Every tab shows its label at tablet width.
+    for (const name of ['Dashboard', 'Students', 'Observations', 'Reports', 'More']) await expect(nav.getByText(name, { exact: true })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Students' })).toHaveAttribute('aria-current', 'page');
+    // Top bar keeps language, theme and account.
+    await expect(page.getByRole('button', { name: /^Language:/ })).toBeVisible();
+    await page.screenshot(shot('23-tablet-tabbar'));
+    await nav.getByRole('link', { name: 'Dashboard' }).click();
+    await expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
+    await nav.getByRole('button', { name: 'More' }).click();
+    await page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Settings' }).click();
+    await expect(page).toHaveURL(/#\/settings\/appearance$/);
+    await expect(nav.getByRole('button', { name: 'More' })).toHaveAttribute('data-active', 'true');
+  });
+
+  test('the tab bar never covers the end of the page and every control is 44px', async ({ page }) => {
+    await page.goto('./#/students/aria');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const lastBottom = await page.locator('main .page').evaluate((el) => el.getBoundingClientRect().bottom);
+    const barTop = await page.locator('.tabbar').evaluate((el) => el.getBoundingClientRect().top);
+    expect(lastBottom).toBeLessThanOrEqual(barTop + 1);
+    const small = await page.$$eval('.tabbar button, .tabbar a[href]', (els) => els.map((e) => e.getBoundingClientRect().height).filter((h) => h < 44));
+    expect(small).toEqual([]);
+  });
+});
+
+test.describe('tablet 1100 sidebar', () => {
+  test.use({ viewport: { width: 1100, height: 860 } });
   test('panel opens as an overlay and closes with Escape', async ({ page }) => {
     await page.goto('./#/students');
     await expect(page.getByRole('complementary', { name: 'Students sidebar' })).toBeHidden();
     await page.getByRole('button', { name: 'Open sidebar' }).click();
     await expect(page.getByRole('complementary', { name: 'Students sidebar' })).toBeVisible();
-    await page.screenshot(shot('23-tablet-overlay'));
+    await page.screenshot(shot('23b-tablet-overlay'));
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary', { name: 'Students sidebar' })).toBeHidden();
   });
@@ -102,5 +135,17 @@ test.describe('mobile 390 shell', () => {
     await page.screenshot(shot('24-mobile-more-sheet'));
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
+  });
+});
+
+test.describe('wide 1920 content', () => {
+  test.use({ viewport: { width: 1920, height: 1000 } });
+  test('page content is centred and tab rows have no stray scrollbar', async ({ page }) => {
+    await page.goto('./#/students/aria');
+    const main = await page.locator('main').evaluate((el) => el.getBoundingClientRect());
+    const pg = await page.locator('main .page').first().evaluate((el) => el.getBoundingClientRect());
+    expect(Math.abs((pg.left - main.left) - (main.right - pg.right))).toBeLessThanOrEqual(2);
+    const tabs = await page.locator('nav.tabs').evaluate((el) => ({ sh: el.scrollHeight, ch: el.clientHeight }));
+    expect(tabs.sh).toBeLessThanOrEqual(tabs.ch);
   });
 });
