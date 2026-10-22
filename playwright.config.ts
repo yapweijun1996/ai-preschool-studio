@@ -10,6 +10,8 @@ const port = process.env.PW_PORT ?? '4173';
 export default defineConfig({
   testDir: 'e2e',
   timeout: 30_000,
+  // The live CDN can be briefly flaky; local runs must be deterministic, so no retries there.
+  retries: remote ? 2 : 0,
   use: {
     baseURL: remote ?? `http://localhost:${port}/`,
     launchOptions: executablePath ? { executablePath } : {}

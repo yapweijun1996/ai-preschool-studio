@@ -189,8 +189,9 @@ function DemoStrip({ compact }: { compact?: boolean }) {
 }
 
 /**
- * "Update to vX" button. Never reloads over unsaved work: with dirty work it shows
- * a small notice instead and the waiting release stays queued.
+ * "Update to vX" button ("Update now" when the new version is unknown). Never reloads over
+ * unsaved work: with dirty work it shows a small notice instead and the waiting release stays queued.
+ * Also shown after a failed install while the new release is still there to install.
  */
 function UpdateButton({ inBanner }: { inBanner?: boolean }) {
   const pwa = usePwa();
@@ -218,8 +219,7 @@ function UpdateButton({ inBanner }: { inBanner?: boolean }) {
     };
   }, [notice]);
 
-  if (pwa.status !== 'available') return null;
-  const version = pwa.availableVersion ?? '';
+  if (!pwa.updateOffered) return null;
   const onClick = () => {
     if (pwa.hasDirtyWork) setNotice((n) => !n);
     else pwa.applyUpdate();
@@ -228,7 +228,7 @@ function UpdateButton({ inBanner }: { inBanner?: boolean }) {
     <div ref={wrap} className="menu-wrap">
       <button ref={btn} className={`btn ${inBanner ? 'btn-secondary' : 'btn-primary'} btn-compact`} type="button" onClick={onClick} aria-expanded={pwa.hasDirtyWork ? notice : undefined}>
         <Icon name="download" size={18} />
-        {t('shell.update.button', { version })}
+        {pwa.availableVersion ? t('shell.update.button', { version: pwa.availableVersion }) : t('shell.update.buttonGeneric')}
       </button>
       <span className="sr-only" role="status">{notice ? t('shell.update.waitNotice') : ''}</span>
       {notice && (
@@ -254,31 +254,36 @@ function UpdateOverlay() {
       <div className="update-overlay-card">
         <Icon name="loader" size={24} className="spin ic-primary" />
         <p className="h2">{t('shell.update.applyingTitle')}</p>
-        <p className="sec muted">{t('shell.update.applyingBody', { version: pwa.availableVersion ?? '' })}</p>
+        <p className="sec muted">{pwa.availableVersion ? t('shell.update.applyingBody', { version: pwa.availableVersion }) : t('shell.update.applyingBodyGeneric')}</p>
       </div>
     </div>
   );
 }
 
-// Dismissal survives page changes (each page mounts its own AppShell) until the next failed check.
+// Dismissal survives page changes (each page mounts its own AppShell) until the next failure.
 let dismissedErrorKey: string | undefined;
-const errorKey = (d?: Date) => String(d?.getTime() ?? 'none');
+const errorKey = (kind: string | undefined, d: Date | undefined, error: string | undefined) => `${kind ?? 'check'}|${d?.getTime() ?? 'none'}|${error ?? ''}`;
 
+/**
+ * A failed check (Retry re-checks, and re-registers the worker if that failed) or a failed install
+ * (own message; Retry re-offers the update while it is still waiting).
+ */
 function UpdateError() {
   const pwa = usePwa();
   const { t } = useI18n();
   const [, force] = useState(0);
-  if (pwa.status !== 'error' || dismissedErrorKey === errorKey(pwa.lastChecked)) return null;
+  const key = errorKey(pwa.errorKind, pwa.lastChecked, pwa.error);
+  if (pwa.status !== 'error' || dismissedErrorKey === key) return null;
   return (
     <div className="notice notice-danger update-error" role="alert">
       <Icon name="alertCircle" size={18} />
-      <p className="grow body-text">{t('shell.update.errorText')}</p>
+      <p className="grow body-text">{t(pwa.errorKind === 'apply' ? 'shell.update.applyErrorText' : 'shell.update.errorText')}</p>
       <div className="row">
         <button className="btn btn-secondary" type="button" onClick={() => void pwa.checkNow()}>
           <Icon name="refresh" size={18} />
           {t('shell.update.retry')}
         </button>
-        <button className="btn btn-ghost" type="button" onClick={() => { dismissedErrorKey = errorKey(pwa.lastChecked); force((n) => n + 1); }}>
+        <button className="btn btn-ghost" type="button" onClick={() => { dismissedErrorKey = key; force((n) => n + 1); }}>
           {t('shell.update.keep', { version: pwa.currentVersion })}
         </button>
       </div>
@@ -369,7 +374,7 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
   const content = <ShellPanelContext.Provider value={{ panelOpen: desktopOpen, setPanelOpen }}>{children(bp)}</ShellPanelContext.Provider>;
 
   if (bp === 'mobile') {
-    const showBanner = pwa.status === 'available';
+    const showBanner = pwa.updateOffered;
     return (
       <div className={`app is-mobile${showBanner ? ' has-update' : ''}`}>
         <header className="m-header">

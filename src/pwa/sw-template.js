@@ -47,8 +47,10 @@ function cacheFirst(request) {
 }
 
 // Network-first for navigations; offline falls back to this release's cached shell.
+// `no-cache` revalidates with the server, so the HTTP cache (GitHub Pages sends max-age=600)
+// cannot hand back the previous release's index.html after a deploy.
 function networkFirstShell(request) {
-  return fetch(request).catch(() =>
+  return fetch(request, { cache: 'no-cache' }).catch(() =>
     caches
       .open(CACHE)
       .then((cache) => cache.match(SHELL_URL))

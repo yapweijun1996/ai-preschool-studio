@@ -159,7 +159,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
           <span className="sr-only">{t('shell.panel.versionPrefix')} </span>
           <span className="num">v{APP_VERSION} · {BUILD_ID}</span>
         </Link>
-        {pwa.status === 'available' && (
+        {pwa.updateOffered && (
           <span className="ctx-update cap">
             <Icon name="download" size={14} />
             {t('shell.panel.updateAvailable')}

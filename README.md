@@ -38,9 +38,11 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   (observations, narratives, reflections) stays in the language it was written in.
 - **Installable app (PWA)** — manifest, icons and a versioned service worker. The app checks for
   a new release on start, when you return to the tab, when the network comes back and hourly.
-  A new release shows **Update to vX.Y.Z** (top bar, sidebar footer, Settings › About); it
-  installs with a loader and one reload. It updates by itself only while the tab is in the
-  background and nothing is unsaved; it never reloads over a draft. Offline: the app shell and
+  A new release shows **Update to vX.Y.Z** (top bar, sidebar footer, Settings › About; **Update
+  now** if its version can't be read); it installs with a loader and one reload. It updates by
+  itself only while the tab is in the background and nothing is unsaved; it never reloads over a
+  draft. A failed check (or service-worker registration) offers Retry; a failed install says so
+  and keeps the update on offer. Offline: the app shell and
   demo data keep working; the Mock provider runs locally.
 - **Settings** — Appearance (Light/Dark/System, sidebar panel), Language, About & updates
   (version, build, update status, Check for updates), Demo data (simulate AI outage or save
