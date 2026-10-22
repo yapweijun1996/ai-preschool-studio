@@ -1,0 +1,78 @@
+# Module: Report Review & Release
+
+- Tier: Core
+- Owns: Report status, reviewer comment, approval time, approved framework version and approved milestones
+- Reads: Narrative paragraphs/reflection and source claims (Portfolio Studio), observations (Observations), learning framework (Learning Framework), student (Children & Classes; static fictional records)
+- Status: partial (no frozen version or history)
+
+## Purpose
+
+Displays a one-page fictional report preview and drives the draft → in review → changes requested → approved lifecycle. Approval records a time, framework version and milestone snapshot, but the demo does not create a frozen report version, decision history, audit log or family release.
+
+## Users and permissions
+
+| Role | Can see | Can do |
+|---|---|---|
+| Teacher | Draft/changes report, readiness and status; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can edit in Studio, submit for review and view the preview. |
+| Reviewer / Principal | In-review report and evidence claims; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can request changes, link same-child evidence or approve when unblocked. |
+| School admin | Report screens; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no separate admin permissions. |
+| Parent | Released report in future Family Portal; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no family release or parent account. |
+
+Access is enforced by Studio Platform; the demo shows it with the role switcher. The role switcher is planned (roadmap Phase 0); today the demo has one user and no real roles.
+
+## Flows
+
+1. Open Report Preview from the profile or Studio; review report content, lifecycle status and readiness checks.
+2. For draft/changes, return to Studio or submit when all four domains have content and reflection is nonblank.
+3. In review, inspect unverified claims; link a same-student observation or return to Studio, then approve only when complete and every sentence has evidence.
+4. Instead of approval, enter/request changes; the report becomes Changes requested with reviewer name/date/comment.
+5. Approved state displays approval metadata and provides browser print/PDF action; this is not a persisted family release.
+
+## Screens and states
+
+- Report Preview default: A4 sample report and status/readiness panel, narrative, reflection, framework and milestones (`src/pages/ReportPreview.tsx:34-46,177-219`). Empty narrative is shown when no paragraphs exist (`src/pages/ReportPreview.tsx:189`).
+- notStarted: Open Studio action; draft/changes: Edit and Submit; review: Request changes and Approve; approved: dashboard and Export PDF / Print (`src/pages/ReportPreview.tsx:60-99`).
+- Incomplete submit is disabled with reason; approval block distinguishes invalid status, incomplete report and unverified claims (`src/store/reducer.ts:211-227`; `src/pages/ReportPreview.tsx:135-157`). Claims can be linked to the first observation in that paragraph's domain (`src/pages/ReportPreview.tsx:52-56,144-157`).
+- Changes state shows reviewer comment; review may show prior comment; request-changes editor is dirty-guarded while open (`src/pages/ReportPreview.tsx:21-33,105-110,129-164`). No network save-failed state is implemented.
+- Approved state reports approval date/name and prints the approved milestone snapshot; approved content is frozen by reducer guards (`src/pages/ReportPreview.tsx:35-45,165-172,190-216`; `src/store/reducer.ts:71-75,158-167`).
+- Mobile stacks review panel and report sheet and collapses readiness checks; other breakpoints show sheet with side panel (`src/pages/ReportPreview.tsx:101-174,221-258`). Shared AppShell supplies bottom tabs at ≤1024px (`src/components/AppShell.tsx:368-470`).
+
+## Rules
+
+- `readiness` requires every framework domain to contain a sentence and a nonblank reflection to submit; unverified claims additionally block approval (`src/store/reducer.ts:185-209`).
+- `approvalBlock` returns a status reason unless report is in review, an incomplete reason if domains/reflection are missing, a claim count if any sentence is uncited, otherwise null (`src/store/reducer.ts:211-223`). `canApprove` is true only when no block exists (`src/store/reducer.ts:225-227`).
+- `reducer` `submitForReview` accepts only an existing non-approved, non-review, started report with `readiness.canSubmit` (`src/store/reducer.ts:143-149`).
+- `reducer` `requestChanges` only changes an in-review report; it records simulated reviewer name, supplied date and text (`src/store/reducer.ts:150-157`).
+- `reducer` `approve` only succeeds when `canApprove`; it stores status, approval time, current framework version and Term 4 milestone snapshot (`src/store/reducer.ts:158-167`).
+- `milestonesFrom` selects the latest observation for each domain within the term; reports use saved milestones after approval (`src/store/reducer.ts:229-241`; `src/pages/ReportPreview.tsx:35-36`).
+- Frozen report version, decision history, audit events and family release are not implemented; Not in Studio Demo yet — planned (roadmap Phase 1 Report Release & History + Audit Log).
+
+## Compliance hooks
+
+Evidence-gated approval and recorded reviewer comment support the licensee's obligations under ECDA; report content and approval metadata support the licensee's obligations under PDPA (Singapore) only as a demo design reference. The demo does not implement access controls, retention, consent, release history or audit events. Not in Studio Demo yet — planned (roadmap Phase 1 Report Release & History + Audit Log; Phase 3 Family Portal; Phase 4 Privacy Centre and Records Retention).
+
+## Data port
+
+Reads:
+- `getStudentSummary(state: State, id: string): StudentSummary | undefined` (`src/store/selectors.ts:15-27`)
+- `getReadiness(state: State, studentId: string): Readiness` (`src/store/reducer.ts:185-209`)
+- `getApprovalBlock(state: State, studentId: string): ApprovalBlock` (`src/store/reducer.ts:211-223`)
+- `getObservations(state: State, studentId: string, term?: 3 | 4): Observation[]` (`src/store/reducer.ts:243-245`)
+- `getUnverifiedClaims(state: State, studentId: string): UnverifiedClaim[]` (`src/store/reducer.ts:175-183`)
+
+Writes (dispatch actions):
+- `submitForReview({ studentId: string }): void`
+- `requestChanges({ studentId: string; text: string; date: string }): void`
+- `approve({ studentId: string; at: string }): void`
+- `linkSource({ studentId: string; sentenceId: string; obsId: string }): void`
+
+Payload definitions: `src/store/reducer.ts:26-39`; report fields `status, hadChanges, comment?, approvedAt?, frameworkVersion?, milestones?` are in `src/store/reducer.ts:6-15`.
+
+## Acceptance criteria
+
+- [ ] Every flow works in en, 中文 and BM, light and dark, desktop and mobile.
+- [ ] axe: no serious or critical violations on every screen and state.
+- [ ] Keyboard-only and screen-reader walkthrough recorded.
+- [ ] Catalog entries and visual regression shots for new components.
+- [ ] Unit tests for every rule; e2e for every flow; live smoke updated.
+- [ ] Independent review passed (no open P0/P1).
