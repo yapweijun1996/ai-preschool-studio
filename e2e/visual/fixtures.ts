@@ -25,6 +25,28 @@ export async function openVisualPage(page: import('@playwright/test').Page, path
   await page.goto(path);
   await expect(page.getByRole('main')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
+  await settleVisualPage(page, path);
+}
+
+/** Wait for asynchronous UI that can otherwise leave a screenshot on a fallback state. */
+export async function settleVisualPage(page: import('@playwright/test').Page, path: string) {
+  // The catalog is a lazy route and Students has a short simulated fetch.
+  await page.getByRole('status', { name: 'Loading catalog' }).waitFor({ state: 'hidden' });
+  await page.getByRole('status', { name: 'Loading students…' }).waitFor({ state: 'hidden' });
+
+  // PWA update UI is normally prevented by the visual project's blocked service workers;
+  // make the settled-state expectation explicit in case the shell has already surfaced it.
+  await page.locator('.update-overlay, .update-banner').waitFor({ state: 'hidden' });
+  await page.getByRole('status', { name: 'Saving…' }).waitFor({ state: 'hidden' });
+
+  if (path.includes('/students/aria/studio')) {
+    // Mobile captures show the Write tab. Visit AI, wait for its ready action, then restore
+    // Write so the readiness check does not change the screenshot's intended contents.
+    const mobile = await page.getByRole('tab', { name: 'AI', exact: true }).isVisible();
+    if (mobile) await page.getByRole('tab', { name: 'AI', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Apply', exact: true })).toBeVisible();
+    if (mobile) await page.getByRole('tab', { name: 'Write', exact: true }).click();
+  }
 }
 
 export const buildFooter = (page: import('@playwright/test').Page) => page.locator('.ctx-version');
