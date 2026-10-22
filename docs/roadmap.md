@@ -15,7 +15,7 @@ Status values: **done**, **in progress**, **planned**.
 | Data port interface (demo adapter now; platform adapter later) | in progress (contract + demo adapter; pages migrate next) |
 | Demo role switcher (Teacher, Reviewer/Principal, School admin, Parent) | done (v0.6.0) |
 | Module spec template and specs for existing modules | done |
-| Lighthouse budget in CI | planned |
+| Lighthouse budget in CI | done (v0.6.x) |
 
 ## Phase 1: Core portfolio loop (complete it)
 
