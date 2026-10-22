@@ -68,6 +68,19 @@ describe('makeT', () => {
     }
   });
 
+  it('translates reducer audit summaries instead of storing rendered English', () => {
+    const samples = [
+      ['pages.audit.summarySubmitted', undefined, 'Submitted for review.'],
+      ['pages.audit.summaryChangesRequested', undefined, 'Changes requested.'],
+      ['pages.audit.summaryApproved', { version: 2 }, 'Approved as version 2.']
+    ] as const;
+    for (const lang of ['zh', 'ms'] as const) {
+      for (const [key, params, english] of samples) {
+        expect(makeT(lang)(key, params)).not.toBe(english);
+      }
+    }
+  });
+
   it('interpolates {vars}', () => {
     const t = makeT('en');
     expect(t('pages.dashboard.greeting', { name: 'Ms. Lim' })).toBe('Good morning, Ms. Lim');
