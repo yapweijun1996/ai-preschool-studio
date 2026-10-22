@@ -40,6 +40,24 @@ export const NotFound = lazy(pageLoaders.notFound);
 
 export type PageKind = keyof typeof pageLoaders;
 
+export function pageKindForPath(pathname: string): PageKind | undefined {
+  const path = pathname.split('?')[0];
+  return path === '/students' ? 'students'
+    : path === '/classes' ? 'classes'
+    : path === '/coverage' ? 'coverage'
+    : path === '/reviews' ? 'reviews'
+    : path === '/audit' ? 'audit'
+    : path === '/settings' || path.startsWith('/settings/') ? 'settings'
+    : path === '/catalog' ? 'catalog'
+    : /^\/students\/[^/]+\/observe$/.test(path) ? 'observe'
+    : /^\/students\/[^/]+\/progress$/.test(path) ? 'progress'
+    : /^\/students\/[^/]+\/studio$/.test(path) ? 'studio'
+    : /^\/students\/[^/]+\/report\/family$/.test(path) ? 'family'
+    : /^\/students\/[^/]+\/report$/.test(path) ? 'report'
+    : /^\/students\/[^/]+$/.test(path) ? 'profile'
+    : path === '/' ? undefined : 'notFound';
+}
+
 export function RouteChunkSuccess({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   useEffect(() => clearChunkReloadAttempt(), [pathname]);
@@ -101,29 +119,14 @@ export function RouteFallback({ kind }: { kind: PageKind }) {
           </section>
         </div>
   );
-  // During an in-app lazy transition React keeps the previous route mounted until the
-  // target resolves. Its AppShell remains the stable frame around this shared skeleton.
-  if (typeof document !== 'undefined' && document.querySelector('.app')) return skeleton;
   return <AppShell module={shell.module} mobileTitle={shell.title} currentStudentId={id} focus={shell.focus}>{() => skeleton}</AppShell>;
 }
 
 export function RoutePreloadHints() {
   useEffect(() => {
     const preload = (raw: string) => {
-      const path = raw.startsWith('#') ? raw.slice(1).split('?')[0] : raw;
-      const kind: PageKind | undefined = path === '/students' ? 'students'
-        : path === '/classes' ? 'classes'
-        : path === '/coverage' ? 'coverage'
-        : path === '/reviews' ? 'reviews'
-        : path === '/audit' ? 'audit'
-        : path === '/settings' || path.startsWith('/settings/') ? 'settings'
-        : path === '/catalog' ? 'catalog'
-        : /^\/students\/[^/]+\/observe$/.test(path) ? 'observe'
-        : /^\/students\/[^/]+\/progress$/.test(path) ? 'progress'
-        : /^\/students\/[^/]+\/studio$/.test(path) ? 'studio'
-        : /^\/students\/[^/]+\/report\/family$/.test(path) ? 'family'
-        : /^\/students\/[^/]+\/report$/.test(path) ? 'report'
-        : /^\/students\/[^/]+$/.test(path) ? 'profile' : undefined;
+      const path = raw.startsWith('#') ? raw.slice(1) : raw;
+      const kind = pageKindForPath(path);
       if (kind) void pageLoaders[kind]();
     };
     const onIntent = (event: Event) => {

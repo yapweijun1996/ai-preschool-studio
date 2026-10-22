@@ -64,3 +64,33 @@ for (const role of ['teacher', 'reviewer'] as const) {
     expect(total, `cumulative layout shift was ${total}`).toBeLessThan(0.05);
   });
 }
+
+test('in-app Dashboard to Coverage navigation stays below 0.05 CLS', async ({ page }) => {
+  await page.addInitScript(() => {
+    const measuredWindow = window as Window & { __layoutShiftTotal?: number };
+    measuredWindow.__layoutShiftTotal = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as (PerformanceEntry & { hadRecentInput: boolean; value: number })[]) {
+        if (!entry.hadRecentInput) measuredWindow.__layoutShiftTotal! += entry.value;
+      }
+    }).observe({ type: 'layout-shift', buffered: true });
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await cdp.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 150,
+    downloadThroughput: (1.6 * 1024 * 1024) / 8,
+    uploadThroughput: (750 * 1024) / 8
+  });
+
+  await page.goto('./#/');
+  await expect(page.locator('#rp-h')).toBeVisible();
+  await page.getByRole('link', { name: 'Evidence coverage' }).click();
+  await expect(page.locator('#main').getByRole('heading', { name: 'Evidence coverage' })).toBeVisible();
+  await page.getByRole('button', { name: 'All', exact: true }).waitFor({ state: 'visible' });
+  const total = await page.evaluate(() => (window as Window & { __layoutShiftTotal?: number }).__layoutShiftTotal ?? 0);
+  expect(total, `in-app Dashboard to Coverage cumulative layout shift was ${total}`).toBeLessThan(0.05);
+  await cdp.detach();
+});
