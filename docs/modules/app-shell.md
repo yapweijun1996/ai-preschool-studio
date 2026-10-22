@@ -3,7 +3,7 @@
 - Tier: Platform
 - Owns: Shared navigation/layout, theme and language preference, shell panel state, global search, service-worker update UI
 - Reads: Student summaries and report status (Children & Classes / Report Review), observations (Observations), framework labels (Learning Framework), PWA service-worker/version state
-- Status: exists
+- Status: done (v0.4.0)
 
 ## Purpose
 
@@ -22,52 +22,53 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 
 ## Flows
 
-1. Navigate via desktop icon rail and context panel, or bottom tabs and More sheet at widths ≤1024px; panel toggle persists outside focus mode.
-2. Search student names or Dashboard/Students/Settings with Ctrl/⌘+K; arrows select, Enter navigates and Escape closes/restores focus.
+1. At widths ≥1200px navigate via desktop icon rail and context panel; at 1025–1199px the context panel overlays behind a scrim and is not persisted. At ≤1024px use bottom tabs and More sheet; panel is absent.
+2. Search students or Dashboard/Students/Settings with Ctrl/⌘+K where global search is available; arrows select, Enter navigates and Escape closes/restores trigger focus.
 3. Change theme (Light/Dark/System) or language (English/中文/BM) from shell menus or Settings.
 4. Check for an app update; review version/status, apply when safe, or retry a failed check/install.
 5. In Settings, view About/update status, read framework, adjust language/appearance and toggle/reset demo failure controls.
 
 ## Screens and states
 
-- Desktop ≥1025: top bar, rail, contextual module panel, breadcrumb, global search, theme/language/account menus. Sidebar panel persists in `aps-panel-open`; Studio focus mode opens with it closed and its open/close state is not persisted (`src/components/AppShell.tsx:37-53,368-406,472-529`).
-- Tablet ≤1024: bottom tab bar with More sheet; tablet layouts retain content and use panel overlay where applicable (`src/components/AppShell.tsx:295-326,368-470`).
-- Mobile: compact header, bottom tabs, More sheet, update banner and optional sticky screen action bar (`src/components/AppShell.tsx:412-444`).
-- Global Search: closed/open palette, matching students/pages, empty query/no match, active result and keyboard navigation; selection closes and restores trigger focus (`src/components/GlobalSearch.tsx:18-20,22-32,54-93`).
-- Language: English default, 中文 and Bahasa Melayu; selection is shared with Settings and updates app language through i18n (`src/components/AppShell.tsx:88-120`; `src/pages/Settings.tsx:100-120`). Domain labels remain bilingual via framework labels (`src/i18n/labels.ts:5-24`).
+- Desktop ≥1200: top bar, rail, contextual module panel, breadcrumb, global search, theme/language/account menus. Sidebar panel persists in `aps-panel-open`; Studio focus mode opens with it closed and its open/close state is not persisted (`src/components/AppShell.tsx:37-53,368-406,472-529`).
+- Tablet 768–1199: at 1025–1199 the shell has a rail and context panel overlay behind a scrim; overlay state is not persisted. At 768–1024 use bottom tabs and More sheet; no context panel (`src/hooks/useBreakpoint.ts:9-15`; `src/components/AppShell.tsx:447-470,472,518-523`).
+- Mobile <768: compact header, bottom tabs, More sheet, update banner and optional sticky screen action bar; no global search or Ctrl/⌘+K, and language menu is in More (`src/components/AppShell.tsx:315-321,412-444`).
+- Global Search: closed/open palette, matching students/pages, empty query/no match, active result and keyboard navigation; selection navigates without restoring trigger focus; Escape and scrim close and restore focus (`src/components/GlobalSearch.tsx:18-20,22-32,63-70`).
 - Settings sections: Appearance, Language, Learning framework, About and Demo data; invalid section routes show NotFound (`src/components/ModulePanel.tsx:13-21`; `src/pages/Settings.tsx:295-338`). Framework is read-only (`src/pages/Settings.tsx:216-255`). Demo controls toggle simulated AI/save failure and reset fictional state (`src/pages/Settings.tsx:258-292`).
 - PWA states include unsupported, checking/current, offline, update available, update applying, check/registration error and install error; Retry is offered for failed check/registration and install (`src/pwa/index.tsx:98-104,290-319,332-354`; `src/components/AppShell.tsx:192-293`). Update button shows known version or Update now; apply is guarded against unsaved work; failures leave pending updates available (`src/components/AppShell.tsx:192-293`; `src/pwa/index.tsx:321-354,418-429`).
 - No app-shell backend loading or settings-save failure is implemented. Demo data is local; session storage failure falls back to in-memory state (`src/store/PortfolioContext.tsx:34-54`).
 
 ## Rules
 
-- `AppShell` uses bottom tab navigation at mobile and tablet widths through 1024px; desktop uses rail/context panel (`src/components/AppShell.tsx:368-470`).
+- `AppShell` uses bottom tabs at widths ≤1024px; no context panel at those widths. At 1025–1199 the panel is a non-persisted overlay; at ≥1200 desktop rail/context panel is used (`src/hooks/useBreakpoint.ts:9-15`; `src/components/AppShell.tsx:447-470,472,518-523`).
 - `AppShell` focus mode keeps a separate transient panel state; regular desktop panel state uses `readPanelOpen`/`writePanelOpen` (`src/components/AppShell.tsx:37-53,380-393`).
-- `GlobalSearch` lists matching students and three fixed pages and supports keyboard navigation with focus restoration (`src/components/GlobalSearch.tsx:10-14,18-20,63-89`).
-- `ModulePanel` shows pinned and recent students locally, limits recent to five and excludes pinned entries (`src/components/ModulePanel.tsx:36-65`).
-- `LanguageItems` exposes English, Chinese and Malay language options; framework names are sourced from `useLabels` (`src/components/AppShell.tsx:88-120`; `src/i18n/labels.ts:9-24`).
+- `GlobalSearch` lists matching students and three fixed pages; selection navigates; Escape/scrim restore trigger focus (`src/components/GlobalSearch.tsx:10-14,18-20,63-70`).
+- `ModulePanel` reads `STUDENTS`, `state.reports` and `state.observations` directly (`src/components/ModulePanel.tsx:23,62-65`). Proposed port: `getStudentSummary(studentId: string): Promise<StudentSummary | undefined>` (proposed; demo implementation: `studentSummary` `src/store/selectors.ts:15-27`), plus port reads for pinned/recent students and report/observation counts.
 - `PwaProvider` checks on startup, tab visibility, network return and hourly; calls share an in-flight check (`src/pwa/index.tsx:290-319,390-416`).
-- `shouldAutoApply` only triggers automatic application when tab is hidden and no dirty work exists (`src/pwa/index.tsx:418-429`). Manual `applyUpdate` also refuses while dirty and has duplicate/reload guards (`src/pwa/index.tsx:332-354`).
+- `shouldAutoApply` only triggers automatic application when tab is hidden and no dirty work exists; `index.tsx` invokes it (`src/pwa/machine.ts:81-83`; `src/pwa/index.tsx:427-429`). Manual `applyUpdate` also refuses while dirty and has duplicate/reload guards (`src/pwa/index.tsx:332-354`).
 - `useDirtyGuard` registers unsaved work and PWA provider warns before unload (`src/pwa/index.tsx:161-185,480-487`).
 - PWA registration/update errors distinguish check/install paths and can be retried; app-shell update UI is in `UpdateButton`, `UpdateOverlay` and `UpdateError` (`src/components/AppShell.tsx:192-293`).
 
 ## Compliance hooks
 
-Language, accessibility affordances and update controls support the licensee's obligations under PDPA (Singapore) and ECDA by making shared screens usable and keeping update behavior visible; this is a design reference, not a compliance claim. User authentication, role enforcement, consent, retention, audit events and production incident handling are not implemented. Not in Studio Demo yet — planned (roadmap Phase 0 role switcher; Phase 4 Privacy Centre and Records Retention; Phase 1 audit events).
+No PDPA obligation is supported by this module in Studio Demo yet. Planned: consent, role enforcement, retention, audit events and incident handling are addressed by the roadmap's role switcher, Privacy Centre, Records Retention and Audit Log work.
 
 ## Data port
 
-Reads:
-- `getAllSummaries(state: State): StudentSummary[]` (`src/store/selectors.ts:29-31`; GlobalSearch)
-- `getStudentSummary(state: State, id: string): StudentSummary | undefined` (`src/store/selectors.ts:15-27`; ModulePanel)
-- `getShellUpdateState(): PwaApi` with status/version/error/updateOffered/hasDirtyWork/checkNow/applyUpdate (`src/pwa/index.tsx:37-58,431-447`)
-- `getCurrentLanguage(): Lang` and framework labels through `useLabels(version?)` (`src/i18n/labels.ts:9-24`)
+Proposed async data interfaces:
+- `getAllSummaries(): Promise<StudentSummary[]>` (proposed; demo implementation: `allSummaries` `src/store/selectors.ts:29-31`)
+- `getStudentSummary(studentId: string): Promise<StudentSummary | undefined>` (proposed; demo implementation: `studentSummary` `src/store/selectors.ts:15-27`)
+- Module panel reads for pinned/recent students and report/observation counts (proposed; demo currently reads `STUDENTS`, `state.reports`, `state.observations` directly; `src/components/ModulePanel.tsx:23,62-65`)
 
-Writes:
-- `setDemoState(key: 'aiDown' | 'saveFail', value: boolean): void` (reducer action `setSim`; `src/store/reducer.ts:26-39,168-171`)
-- `resetDemoState(): void` (reducer action `reset`; `src/store/reducer.ts:26-39,170-171`)
-- `setLanguage(lang: Lang): void` and `setTheme(theme: 'light' | 'dark' | 'system'): void` (UI preference APIs; `src/pages/Settings.tsx:73-120`; provider implementation is in i18n/theme modules)
-- `checkForUpdate(): Promise<void>` / `applyUpdate(): void` (`src/pwa/index.tsx:431-447`)
+## Shell runtime APIs (not data port)
+
+- PWA runtime: `PwaApi.checkNow(): Promise<void>` and `applyUpdate(): void` (`src/pwa/index.tsx:37-58`).
+- i18n runtime: `useI18n()` exposes `lang`, `setLang`, translations and locale formatting (`src/i18n/index.tsx:48-56,98-102`).
+- Theme runtime: `useTheme()` exposes `pref`, `theme`, `setPref` (`src/hooks/useTheme.ts:20-42`).
+
+Settings writes:
+- `setDemoState(key: 'aiDown' | 'saveFail', value: boolean): void` (demo reducer action `setSim`; `src/store/reducer.ts:26-39,168-171`)
+- `resetDemoState(): void` (demo reducer action `reset`; `src/store/reducer.ts:26-39,170-171`)
 
 ## Acceptance criteria
 
