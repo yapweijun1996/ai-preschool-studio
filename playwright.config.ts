@@ -16,6 +16,11 @@ export default defineConfig({
     baseURL: remote ?? `http://localhost:${port}/`,
     launchOptions: executablePath ? { executablePath } : {}
   },
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'firefox', testIgnore: '**/a11y.spec.ts', use: { browserName: 'firefox', viewport: { width: 1440, height: 900 } } },
+    { name: 'webkit', testIgnore: '**/a11y.spec.ts', use: { browserName: 'webkit', viewport: { width: 1440, height: 900 } } }
+  ],
   webServer: remote
     ? undefined
     : {
