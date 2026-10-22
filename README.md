@@ -29,8 +29,8 @@ Dashboard → My Students → Student Profile → Add Observation → Learning P
   with student search, Pinned and Recent (last 5 opened). The toggle — or Ctrl/Cmd+Shift+S —
   collapses only the panel; the state persists. Top bar: theme menu (Light/Dark/System) and
   account menu. Phones and tablets up to 1024px use a bottom tab bar with a More sheet.
-- **Responsive** — desktop ≥1200 (rail + context panel + 3 columns, content centred up to
-  1440px), tablet 768–1199 (editor with a docked Evidence/AI drawer; bottom tab bar up to
+- **Responsive** — desktop ≥1200 (rail + context panel + 3 columns; pages are fluid and
+  fill the width), tablet 768–1199 (editor with a docked Evidence/AI drawer; bottom tab bar up to
   1024px, rail + overlay panel from 1025px), mobile <768 (compact header, bottom tab bar,
   Evidence | Write | AI tabs, sticky action bar). Light and dark themes.
 - **Languages** — English (default), 中文 (Simplified Chinese) and Bahasa Melayu. Switch from
