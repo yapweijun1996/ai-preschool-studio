@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDemoAdapter } from '../src/data/demoAdapter';
+import { classCoverage, needsAttention, reviewQueue } from '../src/coverage';
 import { formatApprovalAt } from '../src/i18n';
 import { STUDENTS } from '../src/data/demo';
 import { CURRENT_FRAMEWORK, frameworkFor, periodOf } from '../src/framework';
@@ -32,6 +33,9 @@ describe('DataPort demo adapter', () => {
     expect(await adapter.getUnverifiedClaims('aria')).toEqual(unverifiedClaims(s, 'aria'));
     expect(await adapter.getDraft('aria')).toEqual({ paragraphs: s.paragraphs.aria, reflection: s.reflections.aria });
     expect(await adapter.getApprovalBlock('ethan')).toEqual(approvalBlock(s, 'ethan'));
+    expect(await adapter.getCoverage(4)).toEqual(classCoverage(s, 4));
+    expect(await adapter.getNeedsAttention(4)).toEqual(needsAttention(s, 4));
+    expect(await adapter.getReviewQueue()).toEqual(reviewQueue(s));
   });
 
   it('adds an observation with the reducer assigned id and advances the counter', async () => {

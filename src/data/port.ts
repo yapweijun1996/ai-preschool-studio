@@ -3,6 +3,7 @@ import type { Framework, DomainKey, Milestone, ReportingPeriod } from '../framew
 import type { ApprovalBlock, Readiness, UnverifiedClaim } from '../store/reducer';
 import type { StudentSummary } from '../store/selectors';
 import type { Suggestion } from '../services/mockProvider';
+import type { ClassCoverage, CoverageStudent, ReviewQueue } from '../coverage';
 
 export type PortRefusal =
   | 'unknown-student'
@@ -71,5 +72,13 @@ export interface DataPort {
   requestChanges(studentId: string, text: string, date: string): Promise<PortResult<void>>;
   /** Approves only review reports with complete readiness and verified claims. */
   approve(studentId: string, approvedBy: string, at: string): Promise<PortResult<{ approvedBy: string; at: string }>>;
+
+  // Evidence coverage and review queue (derived reads)
+  /** Returns coverage for every child and summary totals in the selected term. */
+  getCoverage(term: 3 | 4): Promise<ClassCoverage>;
+  /** Returns children with non-ok coverage, ordered by number of gaps then oldest evidence. */
+  getNeedsAttention(term: 3 | 4): Promise<CoverageStudent[]>;
+  /** Returns the oldest-first review queue and changes-requested reports awaiting teachers. */
+  getReviewQueue(): Promise<ReviewQueue>;
 }
 

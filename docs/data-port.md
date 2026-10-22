@@ -33,6 +33,9 @@ listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, va
 | `getApprovalBlock` | Report review | Reports the existing approval guard. | [demoAdapter.ts](../src/data/demoAdapter.ts#L101) |
 | `requestChanges` | Report review | Only reports in review can receive changes; other statuses return `report-not-editable`. | [demoAdapter.ts](../src/data/demoAdapter.ts#L102) |
 | `approve` | Report review | Requires review status, readiness and evidence for every claim. | [demoAdapter.ts](../src/data/demoAdapter.ts#L106) |
+| `getCoverage` | Evidence coverage | Returns all children with per-area counts, dates and statuses plus class totals for a term. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
+| `getNeedsAttention` | Evidence coverage | Returns children with gaps ordered by gap count and oldest latest evidence. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
+| `getReviewQueue` | Evidence coverage, Report review | Returns oldest-first review items and changes-requested items awaiting teachers. | [demoAdapter.ts](../src/data/demoAdapter.ts) |
 
 ## Refusal reasons
 

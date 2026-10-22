@@ -1,4 +1,5 @@
 import type { DataPort, Draft, ObservationInput, PortRefusal, PortResult } from './port';
+import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, TODAY, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
@@ -32,6 +33,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
   };
 
   return {
+    async getCoverage(term) { return classCoverage(getState(), term); },
+    async getNeedsAttention(term) { return needsAttention(getState(), term); },
+    async getReviewQueue() { return reviewQueue(getState()); },
     async getStudentSummary(studentId) { return studentSummary(getState(), studentId); },
     async getCurrentFramework() { return frameworkFor(undefined); },
     async getPeriod(date) { return periodOf(date); },
