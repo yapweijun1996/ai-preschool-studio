@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { CLASS_NAME, TEACHER } from '../data/demo';
 import { useBreakpoint, type Breakpoint } from '../hooks/useBreakpoint';
@@ -358,7 +358,8 @@ export function AppShell({ module, currentStudentId, mobileTitle, mobileSubtitle
     } else setOverlayOpen((o) => !o);
   }, [bp]);
 
-  useEffect(() => {
+  // Layout effect: the shortcut must work as soon as the page is visible after a route change.
+  useLayoutEffect(() => {
     if (bp === 'mobile') return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
