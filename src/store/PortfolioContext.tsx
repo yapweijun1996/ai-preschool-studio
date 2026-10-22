@@ -1,5 +1,7 @@
-import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, type Dispatch, type ReactNode } from 'react';
 import { STUDENTS } from '../data/demo';
+import { createDemoAdapter } from '../data/demoAdapter';
+import type { DataPort } from '../data/port';
 import { initialState, reducer, type Action, type State } from './reducer';
 
 // Bump SCHEMA whenever the seeded data or the state shape changes: a tab that updates the app
@@ -41,10 +43,17 @@ function load(): State {
   }
 }
 
-const Ctx = createContext<{ state: State; dispatch: Dispatch<Action> } | null>(null);
+type PortfolioContextValue = { state: State; dispatch: Dispatch<Action>; dataPort: DataPort };
+const Ctx = createContext<PortfolioContextValue | null>(null);
 
 export function PortfolioProvider({ children, initial }: { children: ReactNode; initial?: State }) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => initial ?? load());
+  const [state, reactDispatch] = useReducer(reducer, undefined, () => initial ?? load());
+  const latest = useRef(state);
+  const dispatch = useMemo<Dispatch<Action>>(() => (action) => {
+    latest.current = reducer(latest.current, action);
+    reactDispatch(action);
+  }, [reactDispatch]);
+  const dataPort = useMemo(() => createDemoAdapter(() => latest.current, dispatch), [dispatch]);
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_KEY, serializeState(state));
@@ -52,11 +61,16 @@ export function PortfolioProvider({ children, initial }: { children: ReactNode; 
       /* ignore */
     }
   }, [state]);
-  return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ state, dispatch, dataPort }}>{children}</Ctx.Provider>;
 }
 
 export function usePortfolio() {
   const v = useContext(Ctx);
   if (!v) throw new Error('usePortfolio must be used inside PortfolioProvider');
   return v;
+}
+
+/** Returns a stable adapter whose reads always use the latest provider state. */
+export function useDataPort(): DataPort {
+  return usePortfolio().dataPort;
 }
