@@ -1,9 +1,9 @@
 # Module: Portfolio Studio
 
 - Tier: Core
-- Owns: Draft paragraphs, sentences, observation source links, teacher reflection and draft readiness
+- Owns: Draft paragraphs, observation source links, teacher reflection and draft readiness
 - Reads: Student (Children & Classes; static fictional records), observations (Observations), learning areas/milestones/periods (Learning Framework), report status/comments (Report Review & Release), Mock provider suggestions (AI Provider Gateway)
-- Status: exists
+- Status: done (v0.4.0)
 
 ## Purpose
 
@@ -13,7 +13,7 @@ Combines a student's observations, evidence-linked narrative, teacher reflection
 
 | Role | Can see | Can do |
 |---|---|---|
-| Teacher | Evidence, narrative, Mock assistant and report readiness; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can create drafts, edit/link narrative, set reflection, apply/reject/regenerate proposals and submit a ready draft for review. |
+| Teacher | Evidence, narrative, Mock assistant and report readiness; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today the single demo user can create drafts, remove an uncited claim, link a source, replace a paragraph by applying an AI suggestion, set free-text reflection and submit a ready draft for review. |
 | Reviewer / Principal | Portfolio draft in review; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no role-specific permission, though a demo user may view and link evidence during review. |
 | School admin | Portfolio screens; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no separate admin permission. |
 | Parent | Released narrative in future family experience; planned (role switcher, Phase 0) | Planned role switcher (Phase 0); today no parent account or released family view. |
@@ -22,14 +22,15 @@ Access is enforced by Studio Platform; the demo shows it with the role switcher.
 
 ## Flows
 
-1. Open Studio from a student's profile; inspect evidence and use filters/search to select an observation.
-2. Start a draft from observations when status is not started, or fill missing domains from available evidence; edit sentences, link sources and write reflection.
-3. Request a Mock suggestion, inspect its diff, then Apply, Reject or Regenerate; Undo restores the prior paragraph after applying.
-4. Resolve missing domains/reflection and submit a structurally ready draft to review; preview the report separately.
+1. Open Studio from a student's profile; inspect evidence and use filters/search to select an observation. Selection only highlights it; linking is done from an uncited claim's buttons, which offer the first two Term 4 observations of the same domain (`src/components/studio/EvidencePanel.tsx:67-80`; `src/components/studio/NarrativePanel.tsx:77-92`).
+2. Start a draft from observations when status is not started, or fill missing domains from available evidence; remove an uncited claim, link a source, or replace a paragraph by applying an AI suggestion; reflection is free text.
+3. Studio requests a “clearer” suggestion automatically on open; inspect its diff, then Apply, Reject or Regenerate; Undo restores the prior paragraph after applying. For a ready suggestion, Apply/Reject/Regenerate controls are hidden while locked; a rejected suggestion's Regenerate control remains visible (`src/components/studio/AiPanel.tsx:119-146`).
+4. Resolve missing domains/reflection and submit a structurally ready draft to review; submission opens the report preview directly.
 
 ## Screens and states
 
 - Studio desktop: Evidence, Narrative and AI panels in three columns; focus mode starts the shell panel closed (`src/pages/PortfolioStudio.tsx:232-283`; `src/components/AppShell.tsx:357-358,385-393,472-473`). Evidence has no-observations empty state, text search/filter no-match state, selected and linked evidence states (`src/components/studio/EvidencePanel.tsx:27-32,45-84`).
+- Studio reads `state.paragraphs[id]` and `state.reflections[id]` directly (`src/pages/PortfolioStudio.tsx:33,48`).
 - Narrative: no-observation, not-started-with-observations (Start draft), and empty narrative states (`src/pages/PortfolioStudio.tsx:155-179`); existing paragraph, missing-domain, unverified-claim, linked-source and reflection states (`src/components/studio/NarrativePanel.tsx:10-30,32-120`).
 - AI assistant states are idle, loading, ready, applied, rejected, no suggestion, and unavailable (`src/components/studio/AiPanel.tsx:10-17`). Mock provider label is shown; `aiDown` simulates provider unavailable (`src/pages/PortfolioStudio.tsx:54-70,200-214`).
 - Reflection autosave shows save status and retry; simulated save failure is configurable in demo settings (`src/pages/PortfolioStudio.tsx:48-52,259-263,317-320`; `src/pages/Settings.tsx:258-290`). No server save exists.
@@ -53,23 +54,24 @@ Source links and teacher review support the licensee's obligations under PDPA (S
 
 ## Data port
 
-Reads:
-- `getStudentSummary(state: State, id: string): StudentSummary | undefined` (`src/store/selectors.ts:15-27`)
-- `getObservations(state: State, studentId: string, term?: 3 | 4): Observation[]` (`src/store/reducer.ts:243-245`)
-- `getReadiness(state: State, studentId: string): Readiness` (`src/store/reducer.ts:185-209`)
-- `getUnverifiedClaims(state: State, studentId: string): UnverifiedClaim[]` (`src/store/reducer.ts:175-183`)
+Proposed async interfaces:
+- `getStudentSummary(studentId: string): Promise<StudentSummary | undefined>` (proposed; demo implementation: `studentSummary` `src/store/selectors.ts:15-27`)
+- `getObservations(studentId: string, term?: 3 | 4): Promise<Observation[]>` (proposed; demo implementation: `observationsFor` `src/store/reducer.ts:243-245`)
+- `getReadiness(studentId: string): Promise<Readiness>` (proposed; demo implementation: `readiness` `src/store/reducer.ts:185-209`)
+- `getUnverifiedClaims(studentId: string): Promise<UnverifiedClaim[]>` (proposed; demo implementation: `unverifiedClaims` `src/store/reducer.ts:175-183`)
+- `getDraft(studentId: string): Promise<{ paragraphs: Paragraph[]; reflection: string }>` (proposed; demo implementation: direct reads of `state.paragraphs[id]` and `state.reflections[id]` `src/pages/PortfolioStudio.tsx:33,48`)
+- `getMilestones(studentId: string, term: 3 | 4): Promise<Record<DomainKey, Milestone | null>>` (proposed; demo implementation: `milestonesFor` `src/store/selectors.ts:33-38`)
+- `getFramework(version?: string): Promise<Framework>` (proposed; demo implementation: `frameworkFor` `src/framework/index.ts:82-86`)
 
-Writes (dispatch actions):
-- `startDraft({ studentId: string }): void`
-- `fillMissingDomains({ studentId: string }): void`
-- `linkSource({ studentId: string; sentenceId: string; obsId: string }): void`
-- `removeSentence({ studentId: string; sentenceId: string }): void`
-- `applySuggestion({ studentId: string; suggestion: Suggestion }): void`
-- `restoreParagraph({ studentId: string; paragraph: Paragraph }): void`
-- `setReflection({ studentId: string; text: string }): void`
-- `submitForReview({ studentId: string }): void`
-
-These action payloads are declared in `src/store/reducer.ts:26-39`; `Paragraph` and `Sentence` are in `src/data/demo.ts:33-43`.
+Writes (proposed async; demo dispatches corresponding action):
+- `startDraft(studentId: string): Promise<void>` (demo: dispatch `{type:'startDraft', ...}`)
+- `fillMissingDomains(studentId: string): Promise<void>` (demo: dispatch `{type:'fillMissingDomains', ...}`)
+- `linkSource(studentId: string, sentenceId: string, obsId: string): Promise<void>` (demo: dispatch `{type:'linkSource', ...}`)
+- `removeSentence(studentId: string, sentenceId: string): Promise<void>` (demo: dispatch `{type:'removeSentence', ...}`)
+- `applySuggestion(studentId: string, suggestion: Suggestion): Promise<void>` (demo: dispatch `{type:'applySuggestion', ...}`)
+- `restoreParagraph(studentId: string, paragraph: Paragraph): Promise<void>` (demo: dispatch `{type:'restoreParagraph', ...}`)
+- `setReflection(studentId: string, text: string): Promise<void>` (demo: dispatch `{type:'setReflection', ...}`)
+- `submitForReview(studentId: string): Promise<void>` (demo: dispatch `{type:'submitForReview', ...})
 
 ## Acceptance criteria
 
