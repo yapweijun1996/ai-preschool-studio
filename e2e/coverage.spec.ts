@@ -62,6 +62,14 @@ test('review queue is oldest first and opens the selected child report', async (
   await expect(page).toHaveURL(/#\/students\/ethan\/report$/);
 });
 
+test('school admin sees review metadata without report links', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
+  await page.goto('./#/reviews');
+  await expect(page.locator('.review-row')).toHaveCount(4);
+  await expect(page.locator('.review-row').first()).toContainText('Ethan Koh');
+  await expect(page.getByRole('link', { name: 'Open report' })).toHaveCount(0);
+});
+
 test('parent cannot open coverage or review data', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'parent'));
   for (const path of ['./#/coverage', './#/reviews']) {
