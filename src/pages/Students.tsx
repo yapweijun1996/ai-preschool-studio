@@ -4,12 +4,14 @@ import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 import { Avatar, ScrollRow, StatusLabel } from '../components/ui';
-import { CLASS_NAME, STUDENTS, daysAgo, type ReportStatus } from '../data/demo';
+import { CLASS_NAME, daysAgo, type ReportStatus } from '../data/demo';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
-import { usePortfolio } from '../store/PortfolioContext';
-import { allSummaries } from '../store/selectors';
+import { useDataPort } from '../store/PortfolioContext';
 import { useRole } from '../roles/RoleContext';
+import { demoRole } from '../roles';
+import type { ChildRead } from '../data/port';
+import type { StudentSummary } from '../store/selectors';
 
 const FILTERS: (ReportStatus | 'all')[] = ['all', 'notStarted', 'draft', 'review', 'changes', 'approved'];
 
@@ -39,23 +41,35 @@ export function Students() {
   const { status: statusLabel, term: periodLabel } = useLabels();
   const lastObservedLabel = useLastObservedLabel();
   const agoLabel = useAgoLabel();
-  const { state } = usePortfolio();
+  const port = useDataPort();
   const role = useRole();
+  const [summaries, setSummaries] = useState<StudentSummary[]>([]);
+  const [children, setChildren] = useState<ChildRead[]>([]);
   const [params, setParams] = useSearchParams();
   const fromUrl = params.get('status') as ReportStatus | 'all' | null;
   const filter: ReportStatus | 'all' = fromUrl && fromUrl !== 'all' && FILTERS.includes(fromUrl) ? fromUrl : 'all';
   // The filter lives in the URL so the Reports panel can deep-link to a status.
   const setFilter = (f: ReportStatus | 'all') => setParams(f === 'all' ? {} : { status: f }, { replace: true });
   const [query, setQuery] = useState('');
+  const [includeWithdrawn, setIncludeWithdrawn] = useState(false);
   // Simulated fetch so the loading state is part of the real flow.
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 450);
     return () => window.clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    const actor = { role: role.role, name: demoRole(role.role).name };
+    void Promise.all([port.getAllSummaries(actor), port.getAllChildren(actor)]).then(([nextSummaries, nextChildren]) => {
+      setSummaries(nextSummaries);
+      setChildren(nextChildren);
+    });
+  }, [port, role.role]);
 
-  const rows = allSummaries(state).filter(
-    (s) => (filter === 'all' || s.report.status === filter) && s.student.name.toLowerCase().includes(query.trim().toLowerCase())
+  const childrenById = new Map(children.map((child) => [child.id, child]));
+  const rows = summaries.filter(
+    (s) => (includeWithdrawn || childrenById.get(s.student.id)?.status !== 'withdrawn') &&
+      (filter === 'all' || s.report.status === filter) && s.student.name.toLowerCase().includes(query.trim().toLowerCase())
   );
   const term = periodLabel(4);
   const addLabel = t('pages.shared.addObservation');
@@ -68,7 +82,7 @@ export function Students() {
     <AppShell
       module="students"
       mobileTitle={t('pages.students.title')}
-      mobileSubtitle={`${CLASS_NAME} · ${term} · ${t('pages.students.count', { count: STUDENTS.length })}`}
+      mobileSubtitle={`${CLASS_NAME} · ${term} · ${t('pages.students.count', { count: rows.length })}`}
       mobileActions={<Link className="btn btn-primary btn-block" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link>}
     >
       {(bp) => (
@@ -77,12 +91,14 @@ export function Students() {
             <div className="page-title-row">
               <div className="grow">
                 <h1 className="h1">{t('pages.students.title')}</h1>
-                <p className="sec muted">{CLASS_NAME} · {term} · {t('pages.students.count', { count: STUDENTS.length })}</p>
+                <p className="sec muted">{CLASS_NAME} · {term} · {t('pages.students.count', { count: rows.length })}</p>
               </div>
-              <div className="row"><Link className="btn btn-secondary" to="/classes">{t('pages.children.viewClasses')}</Link><Link className="btn btn-primary" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link></div>
+              <Link className="btn btn-primary" to="/students/aria/observe"><Icon name="plus" size={18} />{addLabel}</Link>
             </div>
           )}
           <div className="row" style={{ gap: 12, alignItems: 'center' }}>
+            <Link className="btn btn-secondary" to="/classes">{t('pages.children.viewClasses')}</Link>
+            <label className="row sec" style={{ gap: 8 }}><input type="checkbox" checked={includeWithdrawn} onChange={(event) => setIncludeWithdrawn(event.target.checked)} />{t('pages.children.includeWithdrawn')}</label>
             <div className="search-wrap" style={{ width: bp === 'mobile' ? '100%' : 320 }}>
               <label className="sr-only" htmlFor="st-search">{t('pages.students.search')}</label>
               <Icon name="search" />

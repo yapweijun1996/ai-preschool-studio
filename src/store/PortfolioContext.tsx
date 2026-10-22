@@ -20,6 +20,15 @@ export function loadState(raw: string | null): State {
   try {
     const parsed = JSON.parse(raw) as { schema?: number; state?: State };
     const s = parsed?.state;
+    const string = (value: unknown): value is string => typeof value === 'string';
+    const guardianShape = (guardian: unknown): boolean => !!guardian && typeof guardian === 'object' &&
+      string((guardian as Record<string, unknown>).id) && Array.isArray((guardian as Record<string, unknown>).childIds) &&
+      ((guardian as Record<string, unknown>).childIds as unknown[]).every((id) => string(id)) &&
+      ['name', 'relationship', 'phone', 'email', 'preferredLanguage'].every((key) => string((guardian as Record<string, unknown>)[key])) &&
+      typeof (guardian as Record<string, unknown>).isPrimary === 'boolean';
+    const collectorShape = (collector: unknown): boolean => !!collector && typeof collector === 'object' &&
+      ['id', 'childId', 'name', 'relationship', 'validFrom', 'note'].every((key) => string((collector as Record<string, unknown>)[key])) &&
+      ((collector as Record<string, unknown>).validTo === undefined || string((collector as Record<string, unknown>).validTo));
     const complete =
       !!s &&
       Array.isArray(s.observations) &&
@@ -30,6 +39,8 @@ export function loadState(raw: string | null): State {
       Array.isArray(s.auditEvents) && typeof s.nextAuditNumber === 'number' &&
       Array.isArray(s.classes) && typeof s.children === 'object' && s.children !== null &&
       Array.isArray(s.guardians) && Array.isArray(s.collectors) &&
+      STUDENTS.every((student) => !!s.children[student.id]) &&
+      s.guardians.every(guardianShape) && s.collectors.every(collectorShape) &&
       s.auditEvents.every((event) => isIsoInstant(event.at) && (!event.decision || (isIsoInstant(event.decision.at) && event.decision.at === event.at))) &&
       STUDENTS.every((st) => s.reports?.[st.id]?.status) &&
       STUDENTS.every((st) => Array.isArray(s.reports[st.id].versions)) &&

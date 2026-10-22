@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Icon } from './Icon';
 import { Notice } from './ui';
 import { Modal } from './Modal';
@@ -6,6 +6,8 @@ import { useI18n } from '../i18n';
 import { useRole } from '../roles/RoleContext';
 import { demoRole } from '../roles';
 import { useDataPort, usePortfolio } from '../store/PortfolioContext';
+import type { ChildRead } from '../data/port';
+import type { Class } from '../children/domain';
 import type { PortRefusal, PortResult } from '../data/port';
 import {
   validateChild,
@@ -67,21 +69,36 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
   const role = useRole();
   const { state } = usePortfolio();
   const port = useDataPort();
-  const child = state.children[childId];
-  const guardians = state.guardians.filter((guardian) => guardian.childIds.includes(childId));
-  const collectors = state.collectors.filter((collector) => collector.childId === childId);
+  const [child, setChild] = useState<ChildRead>();
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [guardians, setGuardians] = useState<Guardian[]>([]);
+  const [collectors, setCollectors] = useState<AuthorisedCollector[]>([]);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [selectedGuardian, setSelectedGuardian] = useState<Guardian | undefined>();
   const [selectedCollector, setSelectedCollector] = useState<AuthorisedCollector | undefined>();
   const [fields, setFields] = useState<FormFields>(emptyFields);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState('');
+  const [refused, setRefused] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const sectionHeading = useRef<HTMLHeadingElement>(null);
   const targetChildId = useRef(childId);
   const actor: Actor = { role: role.role, name: demoRole(role.role).name };
   const editable = role.can('children.edit');
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([port.getChild(childId, actor), port.getGuardians(childId, actor), port.getCollectors(childId, actor), port.getClasses(actor)])
+      .then(([nextChild, nextGuardians, nextCollectors, nextClasses]) => {
+        if (!active) return;
+        setChild(nextChild);
+        setGuardians(nextGuardians);
+        setCollectors(nextCollectors);
+        setClasses(nextClasses);
+      });
+    return () => { active = false; };
+  }, [childId, port, state, role.role]);
 
   const openDialog = (
     kind: Exclude<Dialog, null>,
@@ -94,11 +111,12 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     setSelectedCollector(collector);
     setErrors({});
     setFormError('');
+    setRefused(false);
     setSaved(false);
     if (kind === 'child' && child) {
       setFields({
         ...emptyFields, name: child.name, dateOfBirth: child.dateOfBirth, enrolledOn: child.enrolledOn,
-        homeLanguages: child.homeLanguages, allergies: child.notes.allergies ?? '', medical: child.notes.medical ?? ''
+        homeLanguages: child.homeLanguages, allergies: child.notes?.allergies ?? '', medical: child.notes?.medical ?? ''
       });
     } else if (kind === 'guardian' && guardian) {
       setFields({
@@ -115,7 +133,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     setDialog(kind);
   };
 
-  const close = () => { setDialog(null); setErrors({}); setFormError(''); };
+  const close = () => { setDialog(null); setErrors({}); setFormError(''); setRefused(false); };
   const setField = (key: string, value: string) => setFields((current) => ({ ...current, [key]: value }));
   const field = (key: string, label: string, type = 'text') => (
     <label className="field" key={key}>
@@ -135,7 +153,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!child) return;
-    setErrors({}); setFormError(''); setSaving(true); setSaved(false);
+    setErrors({}); setFormError(''); setRefused(false); setSaving(true); setSaved(false);
     let result: PortResult<unknown>;
     if (dialog === 'child') {
       const updated: Child = {
@@ -184,7 +202,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     } else { setSaving(false); return; }
     setSaving(false);
     if (result.ok) { setSaved(true); close(); }
-    else { setFormError(t(REFUSAL_KEYS[result.reason])); }
+      else { setRefused(true); setFormError(t(REFUSAL_KEYS[result.reason])); }
   };
 
   const removeOrWithdraw = async () => {
@@ -197,11 +215,11 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
         : dialog === 'withdraw' ? await port.withdrawChild(childId, actor) : { ok: false, reason: 'invalid-target' };
     setSaving(false);
     if (result.ok) { setSaved(true); close(); }
-    else setFormError(t(REFUSAL_KEYS[result.reason]));
+    else { setRefused(true); setFormError(t(REFUSAL_KEYS[result.reason])); }
   };
 
   if (!child) return null;
-  const classRecord = state.classes.find((item) => item.id === child.classId);
+  const classRecord = classes.find((item) => item.id === child.classId);
   const familyCanView = role.can('contacts.view');
   const canViewHealth = role.can('health.view');
   const activeDialog = dialog !== null;
@@ -235,13 +253,12 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
           <strong>{classRecord?.name ?? '—'}</strong>
         </div>
         <div>
-          <span className="cap muted">
-            {t('pages.children.levelYear', {
-              level: classRecord?.level ?? '',
-              year: classRecord?.year ?? ''
-            })}
-          </span>
+          <span className="cap muted">{t('pages.children.status')}</span>
           <strong>{t(`pages.children.${child.status}`)}</strong>
+        </div>
+        <div>
+          <span className="cap muted">{t('pages.children.levelYear', { level: classRecord?.level ?? '', year: classRecord?.year ?? '' })}</span>
+          <strong>{classRecord ? `${classRecord.level} · ${classRecord.year}` : '—'}</strong>
         </div>
         <div>
           <span className="cap muted">{t('pages.children.dateOfBirth')}</span>
@@ -330,7 +347,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
                   ? ` – ${fmtDate(collector.validTo)}`
                   : ` · ${t('pages.children.noExpiry')}`}
               </p>
-              <p className="cap muted">{t('pages.children.photoIdNote')}</p>
+              {collector.note && <p className="cap muted">{collector.note}</p>}
             </div>
             {editable && (
               <div className="row">
@@ -360,11 +377,11 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
           <div className="stack">
             <p className="sec">
               <strong>{t('pages.children.allergies')}:</strong>
-              {' '}{child.notes.allergies || t('pages.children.noneRecorded')}
+              {' '}{child.notes?.allergies || t('pages.children.noneRecorded')}
             </p>
             <p className="sec">
               <strong>{t('pages.children.medical')}:</strong>
-              {' '}{child.notes.medical || t('pages.children.noneRecorded')}
+              {' '}{child.notes?.medical || t('pages.children.noneRecorded')}
             </p>
           </div>
         ) : <p className="sec muted">{t('pages.children.healthRestricted')}</p>}
@@ -402,7 +419,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
               <div role="alert" className="notice notice-danger">
                 <Icon name="alert" />
                 <div>
-                  <strong>{t('pages.children.formError')}</strong>
+                  <strong>{t(refused ? 'pages.children.refusalTitle' : 'pages.children.formError')}</strong>
                   <p className="sec">{formError}</p>
                 </div>
               </div>

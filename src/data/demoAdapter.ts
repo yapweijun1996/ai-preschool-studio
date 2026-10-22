@@ -1,10 +1,12 @@
 import type { DataPort, Draft, ObservationInput, PortRefusal, PortResult } from './port';
 import { hasPrimaryGuardian, validateChild, validateCollector, validateGuardian } from '../children/domain';
+import type { Child } from '../children/domain';
 import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
 import { now } from '../utils/clock';
+import { can } from '../roles';
 import {
   approvalBlock,
   observationsFor,
@@ -47,17 +49,40 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     },
     async getReportHistory(studentId) { return selectReportHistory(getState().auditEvents, studentId); },
     async getAuditLog(filters: AuditFilters = {}) { return selectAuditLog(getState().auditEvents, filters); },
-    async getClasses() { return getState().classes; },
-    async getChild(id) { return getState().children[id]; },
-    async getGuardians(childId) { return getState().guardians.filter((guardian) => guardian.childIds.includes(childId)); },
-    async getCollectors(childId) { return getState().collectors.filter((collector) => collector.childId === childId); },
+    async getClasses(actor) { return can(actor.role, 'students.view') ? getState().classes : []; },
+    async getAllChildren(actor) {
+      if (!can(actor.role, 'students.view')) return [];
+      const children = Object.values(getState().children);
+      return can(actor.role, 'health.view') ? children : children.map(({ notes: _notes, ...child }) => child);
+    },
+    async getChild(id, actor) {
+      if (!can(actor.role, 'students.view')) return undefined;
+      const child = getState().children[id];
+      if (!child) return undefined;
+      if (can(actor.role, 'health.view')) return child;
+      const { notes: _notes, ...basics } = child;
+      return basics;
+    },
+    async getGuardians(childId, actor) {
+      if (!can(actor.role, 'students.view')) return [];
+      const guardians = getState().guardians.filter((guardian) => guardian.childIds.includes(childId));
+      if (can(actor.role, 'contacts.view')) return guardians;
+      return guardians.map((guardian) => ({ ...guardian, name: 'Restricted', relationship: 'Restricted', phone: guardian.phone.replace(/^(\+65 9)\d{3}( \d{4})$/, '$1•••$2'), email: guardian.email.replace(/^[^@]+/, '••••••••') }));
+    },
+    async getCollectors(childId, actor) {
+      if (!can(actor.role, 'students.view')) return [];
+      const collectors = getState().collectors.filter((collector) => collector.childId === childId);
+      if (can(actor.role, 'contacts.view')) return collectors;
+      return collectors.map((collector) => ({ ...collector, name: 'Restricted', relationship: 'Restricted', note: '' }));
+    },
     async updateChild(child, actor) {
       const state = getState();
       const stored = state.children[child.id];
       if (!stored) return refusal('unknown-child');
       if (stored.status !== child.status) return refusal('status-change-not-allowed');
-      if (Object.keys(validateChild(child)).length > 0 || !state.classes.some((item) => item.id === child.classId)) return refusal('invalid-child');
-      return run({ type: 'updateChild', child, actor }, child, 'invalid-child');
+      const updated: Child = { ...child, notes: child.notes ?? stored.notes };
+      if (Object.keys(validateChild(updated)).length > 0 || !state.classes.some((item) => item.id === updated.classId)) return refusal('invalid-child');
+      return run({ type: 'updateChild', child: updated, actor }, updated, 'invalid-child');
     },
     async upsertGuardian(guardian, actor) {
       const state = getState();
@@ -113,7 +138,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       dispatch({ type: 'addObservation', obs });
       return success(next.observations[0]);
     },
-    async getAllSummaries() { return allSummaries(getState()); },
+    async getAllSummaries(actor) { return can(actor.role, 'students.view') ? allSummaries(getState()) : []; },
     async getMilestones(studentId, term = 4) { return milestonesFor(getState(), studentId, term); },
     async getObservations(studentId, term = 4) { return observationsFor(getState(), studentId, term); },
     async getReadiness(studentId) { return readiness(getState(), studentId); },

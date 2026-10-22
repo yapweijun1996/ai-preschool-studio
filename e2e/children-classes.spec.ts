@@ -68,6 +68,7 @@ test('school admin sees the typed reason when withdrawal is blocked by an in-rev
   await family.getByRole('button', { name: 'Withdraw child' }).click();
   const dialog = page.getByRole('dialog', { name: 'Confirm withdrawal' });
   await dialog.getByRole('button', { name: 'Confirm' }).click();
+  await expect(dialog.getByRole('alert')).toContainText('The change could not be saved.');
   await expect(dialog.getByRole('alert')).toContainText('This child cannot be withdrawn while a report is in review.');
   await expect(family.getByText('Active', { exact: true })).toBeVisible();
 });
@@ -76,6 +77,8 @@ test('an open collector editor cannot move Aria’s record to Chloe after route 
   await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
   await page.goto('./#/students/aria');
   const family = page.locator('.family-section');
+  await expect(family.locator('.family-facts')).toContainText('Status');
+  await expect(family.locator('.family-facts')).toContainText('Active');
   const collectors = family.locator('.family-subsection').filter({ has: page.getByRole('heading', { name: 'Authorised collectors' }) });
   await collectors.getByRole('button', { name: 'Edit' }).click();
   const dialog = page.getByRole('dialog', { name: 'Authorised collector details' });
@@ -104,6 +107,30 @@ test('confirmation dialogs manage initial focus, Escape, Tab, and focus return',
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(trigger).toBeFocused();
+});
+
+test('Classes is discoverable from Students context and global search', async ({ page }) => {
+  await page.goto('./#/students');
+  await expect(page.getByRole('link', { name: 'Class roster' })).toBeVisible();
+  await page.getByRole('button', { name: 'Search students or pages' }).click();
+  const search = page.getByRole('combobox', { name: 'Search' });
+  await search.fill('Classes');
+  await page.getByRole('option', { name: 'Classes' }).click();
+  await expect(page).toHaveURL(/#\/classes$/);
+  await expect(page.getByRole('heading', { name: 'Ms. Lim' })).toHaveCount(0);
+  await expect(page.locator('.class-teacher')).toContainText('Ms. Lim');
+});
+
+test('withdrawn children are hidden from Students until included', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('aps-demo-role', 'admin'));
+  await page.goto('./#/students/aria');
+  await page.locator('.family-section').getByRole('button', { name: 'Withdraw child' }).click();
+  await page.getByRole('dialog', { name: 'Confirm withdrawal' }).getByRole('button', { name: 'Confirm' }).click();
+  await expect(page.locator('.family-facts')).toContainText('Withdrawn');
+  await page.locator('a[href="#/students"]').first().click();
+  await expect(page.locator('.page').getByRole('link', { name: /Aria Tan/ })).toHaveCount(0);
+  await page.getByRole('checkbox', { name: 'Include withdrawn children' }).check();
+  await expect(page.locator('.page').getByRole('link', { name: /Aria Tan/ })).toBeVisible();
 });
 
 test('teacher sees guardian contacts and health notes but has no edit actions', async ({ page }) => {

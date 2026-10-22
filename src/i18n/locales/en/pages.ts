@@ -354,7 +354,7 @@ export const pages = {
   },
   children: {
     classesTitle: 'Classes', classCount: '{name} · {count} children', levelYear: '{level} · {year}', teacher: 'Teacher', enrolled: 'Enrolled',
-    statusFilter: 'Filter children by enrolment status', active: 'Active', withdrawn: 'Withdrawn', loading: 'Loading class roster…',
+    statusFilter: 'Filter children by enrolment status', active: 'Active', withdrawn: 'Withdrawn', includeWithdrawn: 'Include withdrawn children', loading: 'Loading class roster…',
     rosterLabel: 'Children in {name}', child: 'Child', age: 'Age', ageValue: '{age} years', status: 'Status', emptyRoster: 'No children in this filter',
     emptyRosterBody: 'Choose the other enrolment status to see children in this class.', noClass: 'No class is available.', portfolioStudents: 'Portfolio students', viewClasses: 'Class roster',
     familyTitle: 'Family & enrolment', class: 'Class', dateOfBirth: 'Date of birth', enrolledOn: 'Enrolled on', homeLanguages: 'Home languages',
@@ -367,7 +367,7 @@ export const pages = {
     healthRestricted: 'Restricted — visible to teachers and school admins.', withdraw: 'Withdraw child', saved: 'Changes saved.', saving: 'Saving…', confirm: 'Confirm', close: 'Close',
     confirmRemoveGuardian: 'Remove {name} from this child’s guardian list?', confirmRemoveCollector: 'Remove {name} from authorised collectors?', confirmWithdraw: 'Withdraw {name} from this class?',
     guardianName: 'Guardian name', collectorName: 'Collector name', relationship: 'Relationship', validFrom: 'Valid from', validToOptional: 'Valid to (optional)', note: 'Note',
-    noIdentityNumbers: 'Do not enter identity numbers. Identity is checked against photo ID at pick-up.', formError: 'Check the highlighted fields and try again.',
+    noIdentityNumbers: 'Do not enter identity numbers. Identity is checked against photo ID at pick-up.', formError: 'Check the highlighted fields and try again.', refusalTitle: 'The change could not be saved.',
     errorRequired: 'This field is required.', errorPhone: 'Use the fictional Singapore format +65 9000 1234.', errorEmail: 'Use an email address ending in @example.com.',
     errorDate: 'Enter a valid calendar date.', errorDateOrder: 'The end date must be the same as or later than the start date.', accessTitle: 'Child access unavailable', loadingFamily: 'Loading family and enrolment…',
     refusal: {

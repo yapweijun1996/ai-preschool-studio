@@ -6,25 +6,37 @@ import { Icon } from '../components/Icon';
 import { Avatar } from '../components/ui';
 import { TEACHER } from '../data/demo';
 import { useI18n } from '../i18n';
-import { usePortfolio } from '../store/PortfolioContext';
+import { useDataPort } from '../store/PortfolioContext';
 import { useRole } from '../roles/RoleContext';
+import { demoRole } from '../roles';
+import type { Class } from '../children/domain';
+import type { ChildRead } from '../data/port';
 
 type StatusFilter = 'active' | 'withdrawn';
 const STATUSES: StatusFilter[] = ['active', 'withdrawn'];
 
 export function Classes() {
   const { t } = useI18n();
-  const { state } = usePortfolio();
+  const port = useDataPort();
   const role = useRole();
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [children, setChildren] = useState<ChildRead[]>([]);
   const [filter, setFilter] = useState<StatusFilter>('active');
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const timer = window.setTimeout(() => setLoading(false), 300);
     return () => window.clearTimeout(timer);
   }, []);
-  const classRecord = state.classes[0];
-  const children = Object.values(state.children).filter((child) => child.classId === classRecord?.id);
-  const rows = children.filter((child) => child.status === filter);
+  useEffect(() => {
+    const actor = { role: role.role, name: demoRole(role.role).name };
+    void Promise.all([port.getClasses(actor), port.getAllChildren(actor)]).then(([nextClasses, nextChildren]) => {
+      setClasses(nextClasses);
+      setChildren(nextChildren);
+    });
+  }, [port, role.role]);
+  const classRecord = classes[0];
+  const classChildren = children.filter((child) => child.classId === classRecord?.id);
+  const rows = classChildren.filter((child) => child.status === filter);
 
   if (!role.can('students.view')) {
     return (
@@ -50,7 +62,7 @@ export function Classes() {
             <div className="grow">
               <h1 className="h1">{t('pages.children.classesTitle')}</h1>
               <p className="sec muted">
-                {t('pages.children.classCount', { name: classRecord?.name ?? '', count: children.length })}
+                {t('pages.children.classCount', { name: classRecord?.name ?? '', count: classChildren.length })}
               </p>
             </div>
             <Link className="btn btn-secondary" to="/students">{t('pages.children.portfolioStudents')}</Link>
@@ -66,11 +78,11 @@ export function Classes() {
                 </div>
                 <div className="class-teacher">
                   <span className="cap muted">{t('pages.children.teacher')}</span>
-                  <strong>{TEACHER}</strong>
+                  <strong>{classRecord.teacherIds.map((id) => id === 'teacher-lim' ? TEACHER : id).join(', ')}</strong>
                 </div>
                 <div className="class-total">
                   <span className="cap muted">{t('pages.children.enrolled')}</span>
-                  <strong>{children.length}</strong>
+                  <strong>{classChildren.length}</strong>
                 </div>
               </section>
               <div className="row class-filters" role="group" aria-label={t('pages.children.statusFilter')}>
@@ -82,14 +94,14 @@ export function Classes() {
                     aria-pressed={filter === status}
                     onClick={() => setFilter(status)}
                   >
-                    {t(`pages.children.${status}`)} ({children.filter((child) => child.status === status).length})
+                    {t(`pages.children.${status}`)} ({classChildren.filter((child) => child.status === status).length})
                   </button>
                 ))}
               </div>
               {loading ? (
                 <section className="card" aria-busy="true" style={{ minHeight: 460 }}>
                   <p className="sec muted table-head" role="status">{t('pages.children.loading')}</p>
-                  {children.slice(0, 6).map((child) => (
+                  {classChildren.slice(0, 6).map((child) => (
                     <div key={child.id} className="row-link">
                       <span className="skel" style={{ width: 40, height: 40, borderRadius: 999 }} />
                       <span className="skel" style={{ height: 14, width: 180 }} />

@@ -16,27 +16,39 @@ function harness(seed = initialState()) {
 }
 
 import { reducer as importReducer } from '../src/store/reducer';
+const teacher: Actor = { role: 'teacher', name: 'Teacher' };
 
 describe('DataPort demo adapter', () => {
   it('reads classes, child, guardians and authorised collectors', async () => {
     const { adapter } = harness();
-    expect(await adapter.getClasses()).toMatchObject([{ name: 'K2 Sunflower', level: 'K2', year: 2026 }]);
-    expect(await adapter.getChild('aria')).toMatchObject({ id: 'aria', classId: 'k2-sunflower-2026', status: 'active' });
-    expect(await adapter.getGuardians('aria')).toHaveLength(1);
-    expect(await adapter.getCollectors('aria')).toHaveLength(1);
-    expect(await adapter.getChild('missing')).toBeUndefined();
+    expect(await adapter.getClasses(teacher)).toMatchObject([{ name: 'K2 Sunflower', level: 'K2', year: 2026 }]);
+    expect(await adapter.getChild('aria', teacher)).toMatchObject({ id: 'aria', classId: 'k2-sunflower-2026', status: 'active' });
+    expect(await adapter.getGuardians('aria', teacher)).toHaveLength(1);
+    expect(await adapter.getCollectors('aria', teacher)).toHaveLength(1);
+    expect(await adapter.getChild('missing', teacher)).toBeUndefined();
+  });
+
+  it('masks contact fields and omits health notes at the port boundary by role', async () => {
+    const { adapter } = harness();
+    const reviewer = { role: 'reviewer' as const, name: 'Reviewer' };
+    expect(await adapter.getChild('aria', reviewer)).not.toHaveProperty('notes');
+    expect(await adapter.getGuardians('aria', reviewer)).toMatchObject([{ phone: '+65 9••• 1000', email: '••••••••@example.com' }]);
+    expect(await adapter.getCollectors('aria', reviewer)).toMatchObject([{ name: 'Restricted' }]);
+    const parent: Actor = { role: 'parent', name: 'Parent' };
+    expect(await adapter.getChild('aria', parent)).toBeUndefined();
+    expect(await adapter.getGuardians('aria', parent)).toEqual([]);
   });
 
   it('validates and audits child, guardian and collector writes', async () => {
     const h = harness();
     const actor: Actor = { role: 'admin', name: 'Mr. Wong' };
-    const child = (await h.adapter.getChild('aria'))!;
+    const child = (await h.adapter.getChild('aria', teacher))!;
     expect(await h.adapter.updateChild({ ...child, enrolledOn: '2025-01-01' }, actor)).toMatchObject({ ok: true });
-    const guardian = (await h.adapter.getGuardians('aria'))![0];
+    const guardian = (await h.adapter.getGuardians('aria', teacher))![0];
     expect(await h.adapter.upsertGuardian({ ...guardian, id: 'guardian-new', isPrimary: false, phone: '555' }, actor)).toEqual({ ok: false, reason: 'invalid-guardian' });
     expect(await h.adapter.upsertGuardian({ ...guardian, id: 'guardian-new', isPrimary: false }, actor)).toMatchObject({ ok: true });
     expect(await h.adapter.removeGuardian(guardian.id, actor)).toEqual({ ok: false, reason: 'primary-guardian-required' });
-    const collector = (await h.adapter.getCollectors('aria'))![0];
+    const collector = (await h.adapter.getCollectors('aria', teacher))![0];
     expect(await h.adapter.upsertCollector({ ...collector, validFrom: '2026-10-23', validTo: '2026-10-22' }, actor)).toEqual({ ok: false, reason: 'invalid-collector' });
     expect(await h.adapter.upsertCollector({ ...collector, note: 'Updated fictional note' }, actor)).toMatchObject({ ok: true });
     expect(await h.adapter.removeCollector(collector.id, actor)).toMatchObject({ ok: true });
@@ -46,18 +58,18 @@ describe('DataPort demo adapter', () => {
 
   it('refuses changing the child attached to an existing collector', async () => {
     const h = harness();
-    const collector = (await h.adapter.getCollectors('aria'))[0];
+    const collector = (await h.adapter.getCollectors('aria', teacher))[0];
     expect(await h.adapter.upsertCollector({ ...collector, childId: 'chloe' })).toEqual({ ok: false, reason: 'record-child-mismatch' });
     expect(h.state().collectors.find((item) => item.id === collector.id)?.childId).toBe('aria');
   });
 
   it('rejects status changes through updateChild in either direction', async () => {
     const h = harness();
-    const ethan = (await h.adapter.getChild('ethan'))!;
+    const ethan = (await h.adapter.getChild('ethan', teacher))!;
     expect(await h.adapter.updateChild({ ...ethan, status: 'withdrawn' })).toEqual({ ok: false, reason: 'status-change-not-allowed' });
     expect(await h.adapter.updateChild({ ...ethan, enrolledOn: '2025-01-01' })).toMatchObject({ ok: true });
     await h.adapter.withdrawChild('aria');
-    const aria = (await h.adapter.getChild('aria'))!;
+    const aria = (await h.adapter.getChild('aria', teacher))!;
     expect(await h.adapter.updateChild({ ...aria, status: 'active' })).toEqual({ ok: false, reason: 'status-change-not-allowed' });
   });
 
@@ -66,9 +78,9 @@ describe('DataPort demo adapter', () => {
     const original = seed.guardians.find((item) => item.childIds.includes('aria'))!;
     original.childIds = ['aria', 'chloe'];
     const h = harness(seed);
-    const guardian = (await h.adapter.getGuardians('aria'))[0];
+    const guardian = (await h.adapter.getGuardians('aria', teacher))[0];
     expect(await h.adapter.upsertGuardian({ ...guardian, name: 'Updated fictional guardian' })).toMatchObject({ ok: true });
-    expect((await h.adapter.getGuardians('chloe')).some((item) => item.id === guardian.id)).toBe(true);
+    expect((await h.adapter.getGuardians('chloe', teacher)).some((item) => item.id === guardian.id)).toBe(true);
     expect(h.state().auditEvents.slice(-2).map((event) => event.target.id).sort()).toEqual(['aria', 'chloe']);
     const unprotected = { ...guardian, isPrimary: false };
     expect(await h.adapter.upsertGuardian(unprotected)).toEqual({ ok: false, reason: 'primary-guardian-required' });
@@ -85,9 +97,9 @@ describe('DataPort demo adapter', () => {
 
   it('returns a typed refusal for every Children & Classes write guard', async () => {
     const h = harness();
-    const child = (await h.adapter.getChild('aria'))!;
-    const guardian = (await h.adapter.getGuardians('aria'))![0];
-    const collector = (await h.adapter.getCollectors('aria'))![0];
+    const child = (await h.adapter.getChild('aria', teacher))!;
+    const guardian = (await h.adapter.getGuardians('aria', teacher))![0];
+    const collector = (await h.adapter.getCollectors('aria', teacher))![0];
     expect(await h.adapter.updateChild({ ...child, dateOfBirth: 'bad-date' })).toEqual({ ok: false, reason: 'invalid-child' });
     expect(await h.adapter.updateChild({ ...child, classId: 'missing-class' })).toEqual({ ok: false, reason: 'invalid-child' });
     expect(await h.adapter.upsertGuardian({ ...guardian, childIds: ['missing-child'] })).toEqual({ ok: false, reason: 'unknown-child' });
@@ -103,7 +115,7 @@ describe('DataPort demo adapter', () => {
     const { adapter, state } = harness();
     const s = state();
     expect(await adapter.getStudentSummary('aria')).toEqual(studentSummary(s, 'aria'));
-    expect(await adapter.getAllSummaries()).toEqual(allSummaries(s));
+    expect(await adapter.getAllSummaries(teacher)).toEqual(allSummaries(s));
     expect(await adapter.getCurrentFramework()).toEqual(CURRENT_FRAMEWORK);
     expect(await adapter.getFramework('2026.1')).toEqual(frameworkFor('2026.1'));
     expect(await adapter.getPeriod('2026-10-22')).toEqual(periodOf('2026-10-22'));

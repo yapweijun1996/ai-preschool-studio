@@ -32,6 +32,7 @@ export type PortRefusal =
 
 
 export type PortResult<T> = { ok: true; value: T } | { ok: false; reason: PortRefusal };
+export type ChildRead = Omit<Child, 'notes'> & { notes?: Child['notes'] };
 export type Draft = { paragraphs: Paragraph[]; reflection: string };
 export type ObservationInput = Omit<Observation, 'id' | 'term'>;
 
@@ -48,7 +49,7 @@ export interface DataPort {
 
   // Learning progress
   /** Returns summaries for all available students. */
-  getAllSummaries(): Promise<StudentSummary[]>;
+  getAllSummaries(actor: Actor): Promise<StudentSummary[]>;
   /** Derives each domain milestone from its latest observation in the selected term. */
   getMilestones(studentId: string, term?: 3 | 4): Promise<Record<DomainKey, Milestone | null>>;
   /** Filters observations by child and selected term. */
@@ -96,11 +97,12 @@ export interface DataPort {
   getAuditLog(filters?: AuditFilters): Promise<AuditEvent[]>;
 
   // Children & Classes
-  getClasses(): Promise<Class[]>;
-  getChild(id: string): Promise<Child | undefined>;
-  getGuardians(childId: string): Promise<Guardian[]>;
-  getCollectors(childId: string): Promise<AuthorisedCollector[]>;
-  updateChild(child: Child, actor?: Actor): Promise<PortResult<Child>>;
+  getClasses(actor: Actor): Promise<Class[]>;
+  getAllChildren(actor: Actor): Promise<ChildRead[]>;
+  getChild(id: string, actor: Actor): Promise<ChildRead | undefined>;
+  getGuardians(childId: string, actor: Actor): Promise<Guardian[]>;
+  getCollectors(childId: string, actor: Actor): Promise<AuthorisedCollector[]>;
+  updateChild(child: ChildRead, actor?: Actor): Promise<PortResult<Child>>;
   upsertGuardian(guardian: Guardian, actor?: Actor): Promise<PortResult<Guardian>>;
   removeGuardian(guardianId: string, actor?: Actor): Promise<PortResult<void>>;
   upsertCollector(collector: AuthorisedCollector, actor?: Actor): Promise<PortResult<AuthorisedCollector>>;

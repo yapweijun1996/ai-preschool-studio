@@ -2,8 +2,9 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type Keyb
 import { useNavigate } from 'react-router-dom';
 import { CLASS_NAME } from '../data/demo';
 import { useI18n, type TKey } from '../i18n';
-import { usePortfolio } from '../store/PortfolioContext';
-import { allSummaries } from '../store/selectors';
+import { useDataPort } from '../store/PortfolioContext';
+import type { StudentSummary } from '../store/selectors';
+import { demoRole } from '../roles';
 import { Icon, type IconName } from './Icon';
 import { Avatar, StatusLabel } from './ui';
 import { useRole } from '../roles/RoleContext';
@@ -11,6 +12,7 @@ import { useRole } from '../roles/RoleContext';
 const PAGES: { key: string; label: TKey; to: string; icon: IconName }[] = [
   { key: 'dashboard', label: 'shell.nav.dashboard', to: '/', icon: 'home' },
   { key: 'students', label: 'shell.nav.students', to: '/students', icon: 'users' },
+  { key: 'classes', label: 'pages.children.classesTitle', to: '/classes', icon: 'users' },
   { key: 'coverage', label: 'pages.coverage.title', to: '/coverage', icon: 'layers' },
   { key: 'reviews', label: 'pages.reviews.title', to: '/reviews', icon: 'fileText' },
   { key: 'audit', label: 'pages.audit.title', to: '/audit', icon: 'fileText' },
@@ -27,7 +29,8 @@ export function GlobalSearch() {
   const { t } = useI18n();
   const role = useRole();
   const navigate = useNavigate();
-  const { state } = usePortfolio();
+  const port = useDataPort();
+  const [summaries, setSummaries] = useState<StudentSummary[]>([]);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -35,6 +38,10 @@ export function GlobalSearch() {
   const input = useRef<HTMLInputElement>(null);
   const listId = useId();
   const shortcut = isMac() ? '⌘K' : 'Ctrl K';
+
+  useEffect(() => {
+    void port.getAllSummaries({ role: role.role, name: demoRole(role.role).name }).then(setSummaries);
+  }, [port, role.role]);
 
   // Layout effect: the shortcut must work as soon as the page is visible.
   useLayoutEffect(() => {
@@ -58,12 +65,13 @@ export function GlobalSearch() {
 
   const q = query.trim().toLowerCase();
   const items = useMemo(() => {
-    const students = (role.can('students.view') ? allSummaries(state) : [])
+    const students = (role.can('students.view') ? summaries : [])
       .filter((s) => !q || s.student.name.toLowerCase().includes(q))
       .map((s) => ({ kind: 'student' as const, key: s.student.id, to: `/students/${s.student.id}`, summary: s }));
     const pages = PAGES.filter((p) => {
       if (p.key === 'dashboard') return role.can('dashboard.view');
       if (p.key === 'students') return role.can('students.view');
+      if (p.key === 'classes') return role.can('students.view');
       if (p.key === 'coverage') return role.can('coverage.view');
       if (p.key === 'reviews') return role.can('reviews.view') || role.can('reviews.changes');
       if (p.key === 'audit') return role.can('audit.view');
@@ -72,7 +80,7 @@ export function GlobalSearch() {
       .filter((p) => !q || t(p.label).toLowerCase().includes(q))
       .map((p) => ({ kind: 'page' as const, key: p.key, to: p.to, page: p }));
     return [...students, ...pages];
-  }, [state, q, t, role]);
+  }, [summaries, q, t, role]);
 
   const close = () => {
     setOpen(false);

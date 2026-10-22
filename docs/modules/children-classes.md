@@ -19,12 +19,16 @@ admins.
 |---|---|---|
 | Teacher | Child basics, class and enrolment; guardian contacts; health and allergy notes; authorised collectors | No edits. Additions and changes are made by school admin. |
 | Reviewer / Principal | Child basics and class only | No child record changes. Contacts and health notes are hidden. |
-| School admin | Child basics, class, enrolment, guardian contacts, health and allergy notes, authorised collectors | Create and update child, guardian and collector records; remove guardians/collectors; withdraw a child when no report is in review. |
+| School admin | Child basics, class, enrolment, guardian contacts, health and allergy notes, authorised collectors | Update seeded child records and create/update guardian and collector records; remove guardians/collectors; withdraw a child when no report is in review. |
 | Parent | No child page or child-specific data | No access; Family Portal remains a separate planned module. |
 
 Access is enforced by Studio Platform; the demo shows it with the role switcher. `children.edit` is
 admin-only; `contacts.view` and `health.view` are teacher/admin capabilities. A role switcher is not
 an authorization boundary.
+
+The demo does not create children. Every child ID is tied to seeded observations, reports and audit
+history; creating a child without those linked records would present an incomplete portfolio as real.
+The production port can add a create-child transaction with its related records and provenance.
 
 ## Flows
 

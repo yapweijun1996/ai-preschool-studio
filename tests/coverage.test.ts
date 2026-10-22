@@ -106,4 +106,16 @@ describe('review queue and stored schema', () => {
     released.reports.meiling.versions[0].contentHash = 'corrupt';
     expect(loadState(JSON.stringify({ schema: 8, state: released })).reports.meiling.versions[0].contentHash).not.toBe('corrupt');
   });
+
+  it('rejects stored state without every child and well-shaped guardian or collector data', () => {
+    const missingChild = structuredClone(initialState());
+    delete missingChild.children.aria;
+    expect(loadState(serializeState(missingChild)).children.aria).toBeDefined();
+    const invalidContact = structuredClone(initialState());
+    invalidContact.guardians[0].phone = 42 as unknown as string;
+    expect(typeof loadState(serializeState(invalidContact)).guardians[0].phone).toBe('string');
+    const invalidCollector = structuredClone(initialState());
+    invalidCollector.collectors[0].note = null as unknown as string;
+    expect(typeof loadState(serializeState(invalidCollector)).collectors[0].note).toBe('string');
+  });
 });
