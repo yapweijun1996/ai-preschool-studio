@@ -204,6 +204,7 @@ export const shell: Dict['shell'] = {
     },
     demo: {
       restricted: '演示数据控制仅供教师和学校管理员使用。',
+      goAppearance: '前往外观设置',
       heading: '模拟问题',
       intro: '用这些控制查看出错时应用的表现。只影响当前浏览器标签页。',
       aiDown: '模拟 AI 不可用',

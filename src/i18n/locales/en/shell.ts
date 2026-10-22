@@ -203,6 +203,7 @@ export const shell = {
     },
     demo: {
       restricted: 'Demo data controls are available to teachers and school admins.',
+      goAppearance: 'Go to Appearance',
       heading: 'Simulate problems',
       intro: 'Use these to see how the app behaves when things go wrong. They only affect this browser tab.',
       aiDown: 'Simulate AI unavailable',

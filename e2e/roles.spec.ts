@@ -71,8 +71,13 @@ test('all roles can open personal settings while restricted demo settings explai
   await expect(page.getByRole('heading', { level: 1, name: 'Learning framework' })).toBeVisible();
   await page.goto('./#/settings/demo');
   await expect(page.getByText('Demo data controls are available to teachers and school admins.')).toBeVisible();
-  await expect(page.locator('#main').getByRole('link', { name: 'Appearance' })).toBeVisible();
+  await expect(page.locator('#main').getByRole('link', { name: 'Go to Appearance' })).toBeVisible();
   await expect(page.getByRole('switch', { name: 'AI unavailable' })).toHaveCount(0);
+  for (const [lang, label] of [['zh', '前往外观设置'], ['ms', 'Pergi ke Penampilan']]) {
+    await page.evaluate((value) => localStorage.setItem('aps-lang', value), lang);
+    await page.reload();
+    await expect(page.locator('#main').getByRole('link', { name: label })).toBeVisible();
+  }
 });
 
 test('non-teachers get an explanation and teacher switch on draft reports', async ({ page }) => {

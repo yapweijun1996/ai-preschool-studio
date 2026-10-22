@@ -204,6 +204,7 @@ export const shell: Dict['shell'] = {
     },
     demo: {
       restricted: 'Kawalan data demo hanya tersedia kepada guru dan pentadbir sekolah.',
+      goAppearance: 'Pergi ke Penampilan',
       heading: 'Simulasi masalah',
       intro: 'Gunakan kawalan ini untuk melihat cara aplikasi bertindak apabila berlaku masalah. Ia hanya menjejaskan tab pelayar ini.',
       aiDown: 'Simulasi AI tidak tersedia',

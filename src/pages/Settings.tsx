@@ -322,7 +322,7 @@ function SettingsBody({ section, bp }: { section: SettingsSection; bp: Breakpoin
       {section === 'demo' && !role.can('demo.controls') ? (
         <Notice tone="info" icon="lock" role="status">
           <p className="body-text">{t('shell.settings.demo.restricted')}</p>
-          <Link className="btn btn-secondary" to="/settings/appearance">{t('shell.settings.sections.appearance')}</Link>
+          <Link className="btn btn-secondary" to="/settings/appearance">{t('shell.settings.demo.goAppearance')}</Link>
         </Notice>
       ) : section === 'appearance' ? <Appearance />
       : section === 'language' ? <Language />
