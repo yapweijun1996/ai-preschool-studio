@@ -1,4 +1,4 @@
-import { Fragment, lazy, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { ThemeContext } from './components/AppShell';
 import { NavMemoryProvider } from './hooks/useNavMemory';
@@ -47,7 +47,14 @@ export function App() {
             <Route path="/students/:id/report" element={<PerStudent><ReportPreview /></PerStudent>} />
             <Route path="/settings" element={<Navigate to="/settings/appearance" replace />} />
             <Route path="/settings/:section" element={<Settings />} />
-            <Route path="/catalog" element={<Catalog />} />
+            <Route
+              path="/catalog"
+              element={(
+                <Suspense fallback={<div className="skel" role="status" aria-label="Loading catalog" />}>
+                  <Catalog />
+                </Suspense>
+              )}
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>
