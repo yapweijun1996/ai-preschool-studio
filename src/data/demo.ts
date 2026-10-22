@@ -7,6 +7,8 @@ export type ReportStatus = 'notStarted' | 'draft' | 'review' | 'changes' | 'appr
 export const CLASS_NAME = 'K2 Sunflower';
 export const TEACHER = 'Ms. Lim';
 export const REVIEWER = 'Ms. Tan';
+export const ADMIN = 'Mr. Wong';
+export const PARENT = "Aria's guardian";
 // Fixed "today" keeps relative dates stable in the demo and in tests.
 export const TODAY = '2026-10-22';
 
