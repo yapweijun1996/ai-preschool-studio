@@ -249,7 +249,7 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
         <MarkupExample title="Text, textarea and date fields">
           <div className="stack">
             <label className="field">
-              <span className="field-label">Student name</span>
+              <span className="field-label">Learner</span>
               <input className="input" defaultValue="Aria Tan" />
             </label>
             <div className="field">
@@ -259,7 +259,7 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
                 className="input"
                 aria-invalid="true"
                 aria-describedby="catalog-error"
-                defaultValue="Aria sorted the blocks by colour."
+                defaultValue="Took turns at the block corner and handed a peer the last arch block without being asked."
               />
               <p id="catalog-error" className="sec" style={{ color: 'var(--color-danger)' }}>
                 Please add an observation date.
@@ -268,9 +268,9 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
             <div className="field">
               <label className="field-label" htmlFor="catalog-date">Observation date</label>
               <div className="input date-field">
-                <span className="num grow" aria-hidden="true">12 Jun 2025</span>
+                <span className="num grow" aria-hidden="true">20 Oct 2026</span>
                 <Icon name="calendar" size={18} />
-                <input id="catalog-date" className="date-native" type="date" defaultValue="2025-06-12" aria-label="Observation date" />
+                <input id="catalog-date" className="date-native" type="date" defaultValue="2026-10-20" aria-label="Observation date" />
               </div>
             </div>
           </div>
