@@ -152,12 +152,14 @@ describe('attendance demo adapter', () => {
     const childId = Object.keys(DEMO_CHILDREN)[0];
     const firstMark = await port.markPresent(childId, { arrivedAt: new Date(Date.parse(nowIso) - 60_000).toISOString(), method: 'staff' }, teacher);
     expect(firstMark.ok, JSON.stringify(firstMark)).toBe(true);
+    if (firstMark.ok) expect(firstMark.value.markedBy).toBe('teacher-lim');
     expect(await port.markPresent(Object.keys(DEMO_CHILDREN)[1], { arrivedAt: nowIso, method: 'face-placeholder' }, teacher)).toEqual({ ok: false, reason: 'consent-not-recorded' });
     expect(await port.markPresent(childId, { arrivedAt: nowIso, method: 'staff' }, teacher)).toEqual({ ok: false, reason: 'already-marked' });
 
     const record = DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY)!;
     const change = await port.amendAttendance(record.id, { field: 'arrivedAt', to: iso(TODAY, '08:01'), reason: 'Fictional reason private to amendment' }, admin);
     expect(change.ok).toBe(true);
+    if (change.ok) expect(change.value.by).toBe('admin-wong');
     const audit = JSON.stringify(getState().auditEvents);
     expect(audit).not.toContain('Fictional reason private to amendment');
     expect(audit).not.toContain('4821');

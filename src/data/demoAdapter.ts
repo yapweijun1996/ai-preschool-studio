@@ -59,6 +59,13 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     const klass = getState().classes.find((item) => item.id === classId);
     return (actor.name === TEACHER || actor.name === 'Fictional kiosk') && !!klass?.teacherIds.includes('teacher-lim');
   };
+  const actorId = (actor: Actor): string => {
+    if (actor.name === 'Fictional kiosk') return 'check-in-kiosk';
+    if (actor.role === 'teacher') return 'teacher-lim';
+    if (actor.role === 'reviewer') return 'reviewer-tan';
+    if (actor.role === 'admin') return 'admin-wong';
+    return 'parent-aria';
+  };
   const registerFor = (classId: string, date: string, actor: Actor): AttendanceRegister => {
     const state = getState();
     if (!canReadAttendance(classId, actor)) return { date, rows: [] };
@@ -78,13 +85,13 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
   };
   const makeRecord = (
     childId: string, status: AttendanceStatus, method: AttendanceRecord['method'],
-    atIso: string, arrivedAt?: string, absenceReason?: AttendanceRecord['absenceReason']
+    atIso: string, markedBy: string, arrivedAt?: string, absenceReason?: AttendanceRecord['absenceReason']
   ): AttendanceRecord => ({
     id: `ATT-${String(getState().nextAttendanceNumber).padStart(4, '0')}`,
     childId, classId: getState().children[childId].classId,
     date: dateInAttendanceZone(atIso), status,
     ...(arrivedAt ? { arrivedAt } : {}), ...(method ? { method } : {}),
-    ...(absenceReason ? { absenceReason } : {}), markedBy: 'demo-actor', markedAt: atIso
+    ...(absenceReason ? { absenceReason } : {}), markedBy, markedAt: atIso
   });
   const mark = (
     childId: string, status: AttendanceStatus, method: AttendanceRecord['method'],
@@ -99,7 +106,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     if (method === 'face-placeholder') return refusal('consent-not-recorded');
     const gate = canMark({ child, classId: child?.classId ?? '', date, nowIso: atIso, existing: current });
     if (gate) return refusal(gate);
-    const record = makeRecord(childId, status, method, atIso, arrivedAt, absenceReason);
+    const record = makeRecord(childId, status, method, atIso, actorId(actor), arrivedAt, absenceReason);
     const invalid = validateRecord(record, atIso);
     if (invalid) return refusal(invalid);
     dispatch({ type: 'attendanceChanged', record, audit, actor, at: atIso });
@@ -276,7 +283,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
         id: `AMEND-${String(state.nextAttendanceAmendmentNumber).padStart(4, '0')}`,
         recordId, childId: existing.childId, date: existing.date, field: input.field,
         ...(previous !== undefined ? { from: String(previous) } : {}),
-        ...(value !== undefined ? { to: value } : {}), reason: input.reason.trim(), by: actor.name, at
+        ...(value !== undefined ? { to: value } : {}), reason: input.reason.trim(), by: actorId(actor), at
       };
       dispatch({ type: 'attendanceChanged', record: amended, amendment, audit: 'amended', actor, at });
       return success(amendment);
