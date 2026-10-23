@@ -1122,10 +1122,12 @@ export function AttendanceKiosk() {
               <strong>{t('pages.attendance.credentialCard')}</strong>
               {credentials.map((credential) => (
                 <div className="credential-row" key={credential.childCode}>
-                  <span>{credential.name}</span>
-                  <code>{credential.childCode}</code>
-                  <code>{pinAttempted ? '••••' : credential.pin}</code>
-                  <code>{credential.cardId}</code>
+                    <span data-label={t('pages.attendance.credentialName')}>{credential.name}</span>
+                    <code data-label={t('pages.attendance.credentialCode')}>{credential.childCode}</code>
+                    <code data-label={t('pages.attendance.credentialPin')}>
+                      {pinAttempted ? '••••' : credential.pin}
+                    </code>
+                    <code data-label={t('pages.attendance.credentialCard')}>{credential.cardId}</code>
                 </div>
               ))}
             </div>

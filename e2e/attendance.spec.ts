@@ -232,3 +232,22 @@ test('mobile tab bar has Attendance and More contains Add observation', async ({
     page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Add observation' }),
   ).toBeVisible();
 });
+
+test('mobile attendance controls keep their targets and credential labels visible', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page);
+  const aria = row(page, 'Aria Tan');
+  const change = aria.getByRole('button', { name: 'Change attendance for Aria Tan' });
+  expect((await change.boundingBox())?.width).toBeGreaterThan(320);
+
+  await page.goto('./#/attendance/history');
+  const trail = page.locator('.amendment-details summary').first();
+  expect((await trail.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+
+  await page.goto('./#/attendance/kiosk');
+  await page.getByText('Show fictional demo credentials').click();
+  const code = page.locator('.credential-row code').first();
+  await expect
+    .poll(() => code.evaluate((element) => getComputedStyle(element, '::before').content))
+    .toBe('"Code"');
+});
