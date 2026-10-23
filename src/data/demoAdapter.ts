@@ -297,7 +297,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     async recordDeparture(childId, departedAt, actor) {
       const state = getState();
       if (!can(actor.role, 'attendance.mark')) return refusal('not-permitted');
+      const today = dateInAttendanceZone(attendanceNow());
       const date = dateInAttendanceZone(departedAt);
+      if (date !== today) return refusal('past-date');
       const record = state.attendanceRecords.find((item) => item.childId === childId && item.date === date);
       if (!record || record.status !== 'present') return refusal('not-present');
       if (!canReadAttendance(record.classId, actor)) return refusal('not-permitted');

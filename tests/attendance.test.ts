@@ -187,6 +187,12 @@ describe('attendance demo adapter', () => {
     expect(await port.recordDeparture(childId, new Date(Date.now() + 60_000).toISOString(), admin)).toEqual({ ok: false, reason: 'already-departed' });
   });
 
+  it('refuses recordDeparture for a past business date so history needs an amendment', async () => {
+    const { port } = adapterFrom();
+    const childId = Object.keys(DEMO_CHILDREN)[0];
+    expect(await port.recordDeparture(childId, iso('2026-10-21', '17:00'), admin)).toEqual({ ok: false, reason: 'past-date' });
+  });
+
   it('reports demo method availability and unknown QR cards', async () => {
     const { port } = adapterFrom();
     expect(await port.getCheckInMethods('aria')).toContainEqual({ method: 'face-placeholder', available: false, reason: 'consent-not-recorded' });
