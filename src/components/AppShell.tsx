@@ -14,7 +14,7 @@ import { ModulePanel } from './ModulePanel';
 import { DEMO_ROLES, demoRole } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { Capability } from '../roles';
-import { now, resetDemoClock } from '../utils/clock';
+import { DEMO_END, demoNow, now, resetDemoClock } from '../utils/clock';
 import { useRoutePending } from '../routes/RoutePending';
 
 export type Module = 'dashboard' | 'students' | 'observations' | 'attendance' | 'reports' | 'settings';
@@ -219,13 +219,27 @@ function DemoMenuItems({ close }: { close: () => void }) {
 
 function DemoStrip({ compact }: { compact?: boolean }) {
   const { t } = useI18n();
-  const { role } = useRole();
+  const { role, can } = useRole();
+  const { dispatch } = usePortfolio();
   const selected = demoRole(role);
+  const [dayEnded, setDayEnded] = useState(() => demoNow().getTime() >= DEMO_END);
+  useEffect(() => {
+    const update = () => setDayEnded(demoNow().getTime() >= DEMO_END);
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   return (
     <div className="demo-strip" role="note">
       <Icon name="alert" size={16} />
       <span>{compact ? t('shell.demoStripCompact') : t('shell.demoStrip')}</span>
       <span className="role-chip" role="status" aria-live="polite">{t('shell.roles.viewingAs', { role: t(selected.labelKey) })}</span>
+      {dayEnded && <>
+        <span className="demo-day-ended">{t('shell.demoDayEnded')}</span>
+        {can('demo.controls') && <button className="demo-strip-reset" type="button" onClick={() => {
+          resetDemoClock();
+          dispatch({ type: 'reset', actor: { role, name: selected.name }, at: now() });
+        }}>{t('shell.demoStripReset')}</button>}
+      </>}
     </div>
   );
 }

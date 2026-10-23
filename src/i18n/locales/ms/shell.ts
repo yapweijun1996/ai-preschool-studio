@@ -6,6 +6,8 @@ export const shell: Dict['shell'] = {
   skipToContent: 'Langkau ke kandungan',
   demoStrip: 'Mod demo — semua murid dan pemerhatian ialah data contoh rekaan',
   demoStripCompact: 'Mod demo · data contoh rekaan',
+  demoDayEnded: 'Hari persekolahan demo telah tamat. Tetapkan semula demo untuk bermula semula.',
+  demoStripReset: 'Tetapkan semula',
   routeLoad: {
     title: 'Halaman ini tidak dapat dimuatkan. Muat semula untuk mendapatkan versi terkini.',
     reload: 'Muat semula'

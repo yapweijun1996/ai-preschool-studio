@@ -10,7 +10,7 @@ import { createDemoAdapter } from '../src/data/demoAdapter';
 import type { DataPort } from '../src/data/port';
 import { initialState, reducer, type State } from '../src/store/reducer';
 import { TODAY } from '../src/data/demo';
-import { demoNow, now, resetDemoClock } from '../src/utils/clock';
+import { DEMO_END, demoNow, now, resetDemoClock } from '../src/utils/clock';
 
 const schoolClass = DEMO_CLASSES[0];
 const teacher = { role: 'teacher' as const, name: 'Ms. Lim' };
@@ -65,6 +65,14 @@ describe('attendance pure domain', () => {
       resetDemoClock();
       expect(demoNow().toISOString()).toBe('2026-10-22T01:00:00.000Z');
     } finally { vi.useRealTimers(); }
+  });
+  it('clamps the demo timeline to 23:59 on its seeded Singapore school day', () => {
+    const startedAt = Date.parse('2027-01-01T00:00:00.000Z');
+    sessionStorage.setItem('aps-demo-clock-started-at', String(startedAt));
+    expect(demoNow(() => new Date(startedAt + 20 * 60 * 60 * 1000)).getTime()).toBe(DEMO_END);
+    const clamped = demoNow(() => new Date(startedAt + 21 * 60 * 60 * 1000)).toISOString();
+    expect(localDate(clamped)).toBe(TODAY);
+    expect(localTime(clamped)).toBe('23:59');
   });
   it('derives local dates, times and late status in Singapore independent of host timezone', () => {
     expect(localDate('2026-10-22T16:45:00.000Z')).toBe('2026-10-23');
@@ -226,6 +234,17 @@ describe('attendance demo adapter', () => {
     expect(await port.checkInWithPin('missing-code', '5009')).toEqual({ ok: false, reason: 'pin-invalid' });
   });
 
+  it('expires a PIN lockout at the clamped school-day end', async () => {
+    let instant = new Date(DEMO_END - 4 * 60_000);
+    const { port } = adapterFrom(initialState(), () => instant);
+    expect(await port.checkInWithPin('FC-1019', 'wrong')).toEqual({ ok: false, reason: 'pin-invalid' });
+    expect(await port.checkInWithPin('FC-1019', 'wrong')).toEqual({ ok: false, reason: 'pin-invalid' });
+    expect(await port.checkInWithPin('FC-1019', 'wrong')).toEqual({ ok: false, reason: 'pin-locked' });
+    instant = new Date(DEMO_END);
+    const result = await port.checkInWithPin('FC-1019', '5009');
+    expect(result.ok, JSON.stringify(result)).toBe(true);
+  });
+
   it('keeps PINs and amendment reasons out of audit events and refuses duplicate marks', async () => {
     const { port, getState } = adapterFrom();
     const nowIso = '2026-10-22T09:00:00+08:00';
@@ -260,6 +279,14 @@ describe('attendance demo adapter', () => {
     const departedAt = iso(TODAY, '08:55');
     expect((await port.recordDeparture(childId, departedAt, admin)).ok).toBe(true);
     expect(await port.recordDeparture(childId, iso(TODAY, '09:00'), admin)).toEqual({ ok: false, reason: 'already-departed' });
+  });
+
+  it('allows a valid departure at the final clamped minute of the seeded day', async () => {
+    const { port } = adapterFrom(initialState(), () => new Date(DEMO_END));
+    const childId = unmarkedChildId;
+    expect((await port.markPresent(childId, { arrivedAt: iso(TODAY, '08:50'), method: 'staff' }, teacher)).ok).toBe(true);
+    const departure = await port.recordDeparture(childId, new Date(DEMO_END).toISOString(), admin);
+    expect(departure.ok, JSON.stringify(departure)).toBe(true);
   });
 
   it('refuses recordDeparture for a past business date so history needs an amendment', async () => {

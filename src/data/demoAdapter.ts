@@ -19,7 +19,7 @@ import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
-import { now, demoNow } from '../utils/clock';
+import { DEMO_END, now, demoNow } from '../utils/clock';
 import { can } from '../roles';
 import {
   approvalBlock,
@@ -327,14 +327,15 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       const credential = state.attendanceCredentials.find((item) => item.childCode === childCode);
       if (!credential) return refusal('pin-invalid');
       const lockout = state.attendancePinLockouts[childCode];
-      if (lockout?.lockedUntil && Date.parse(lockout.lockedUntil) > Date.parse(atIso)) return refusal('pin-locked');
+      const lockedUntil = lockout?.lockedUntil ? Math.min(Date.parse(lockout.lockedUntil), DEMO_END) : undefined;
+      if (lockedUntil !== undefined && lockedUntil > Date.parse(atIso)) return refusal('pin-locked');
       if (credential.pin !== pin) {
-        const attempts = lockout && lockout.lockedUntil && Date.parse(lockout.lockedUntil) <= Date.parse(atIso)
+        const attempts = lockedUntil !== undefined && lockedUntil <= Date.parse(atIso)
           ? 0 : lockout?.failedAttempts ?? 0;
         const failedAttempts = attempts + 1;
         dispatch({ type: 'attendancePinLockout', childCode, state: {
           failedAttempts,
-          ...(failedAttempts >= PIN_ATTEMPTS_BEFORE_LOCKOUT ? { lockedUntil: new Date(Date.parse(atIso) + PIN_LOCKOUT_MS).toISOString() } : {})
+          ...(failedAttempts >= PIN_ATTEMPTS_BEFORE_LOCKOUT ? { lockedUntil: new Date(Math.min(Date.parse(atIso) + PIN_LOCKOUT_MS, DEMO_END)).toISOString() } : {})
         } });
         return refusal(failedAttempts >= PIN_ATTEMPTS_BEFORE_LOCKOUT ? 'pin-locked' : 'pin-invalid');
       }

@@ -2,6 +2,7 @@ import { TODAY } from '../data/demo';
 
 const DEMO_SESSION_START_KEY = 'aps-demo-clock-started-at';
 const DEMO_START = Date.parse(`${TODAY}T09:00:00+08:00`);
+export const DEMO_END = Date.parse(`${TODAY}T23:59:00+08:00`);
 let lastElapsed = 0;
 let memorySessionStart: number | undefined;
 
@@ -33,7 +34,7 @@ export function resetDemoClock(): void {
 export function demoNow(wallClock: () => Date = () => new Date()): Date {
   const instant = wallClock();
   const startedAt = sessionStartedAt(instant.getTime());
-  const elapsed = Math.max(lastElapsed, instant.getTime() - startedAt);
+  const elapsed = Math.min(DEMO_END - DEMO_START, Math.max(lastElapsed, instant.getTime() - startedAt));
   lastElapsed = elapsed;
   return new Date(DEMO_START + elapsed);
 }

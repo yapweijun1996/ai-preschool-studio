@@ -9,7 +9,7 @@
 
 Records each child's daily presence, arrival and departure, and provides a traceable correction history. It does not own enrolment, consent, identity verification or pick-up release. Data is fictional. The demo never captures or processes faces, stores biometric data or uses national ID numbers.
 
-The demo uses one session-wide clock anchored at 09:00 Asia/Singapore on `TODAY`, advancing by real elapsed time and continuing across reloads. Resetting demo data in Settings or the demo controls also resets this clock. Studio Platform uses the real school clock.
+The demo uses one session-wide clock anchored at 09:00 Asia/Singapore on `TODAY`, advancing by real elapsed time and continuing across reloads. It clamps at 23:59 Asia/Singapore on `TODAY`; the shell then offers demo reset to staff roles with demo controls. PIN lockouts expire no later than this clamp, and departures remain valid through 23:59 on the seeded day. The clock does not roll into the next date, so reset the demo to resume attendance work. Resetting demo data in Settings or the demo controls also resets this clock and restores the audit log seed before appending the reset event. Studio Platform uses the real school clock.
 
 ## Users and permissions
 

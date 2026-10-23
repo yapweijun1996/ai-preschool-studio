@@ -9,7 +9,7 @@ import { useDataPort, usePortfolio } from '../../store/PortfolioContext';
 import { useRole } from '../../roles/RoleContext';
 import { localTime } from '../../attendance/domain';
 import { PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../../attendance/policy';
-import { now } from '../../utils/clock';
+import { DEMO_END, now } from '../../utils/clock';
 import { KIOSK_TAB_LABELS, REFUSAL_KEYS, type KioskMethod } from './shared';
 
 export function AttendanceKiosk() {
@@ -51,11 +51,13 @@ export function AttendanceKiosk() {
       const childCode = code.trim().toUpperCase();
       if (result.reason === 'pin-locked') {
         const lockout = state.attendancePinLockouts[childCode];
-        const lockedUntil =
-          lockout?.lockedUntil ?? new Date(Date.parse(attemptedAt) + PIN_LOCKOUT_MS).toISOString();
+        const lockedUntil = Math.min(
+          Date.parse(lockout?.lockedUntil ?? new Date(Date.parse(attemptedAt) + PIN_LOCKOUT_MS).toISOString()),
+          DEMO_END,
+        );
         const minutes = Math.max(
           1,
-          Math.ceil((Date.parse(lockedUntil) - Date.parse(attemptedAt)) / 60000),
+          Math.ceil((lockedUntil - Date.parse(attemptedAt)) / 60000),
         );
         setError(t('pages.attendance.pinLocked', { count: minutes }));
       } else if (result.reason === 'pin-invalid') {

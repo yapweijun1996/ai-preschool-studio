@@ -470,6 +470,9 @@ legend { padding: 0; margin-bottom: var(--space-2); }
   font-weight: 600;
   white-space: normal;
 }
+.demo-strip { flex-wrap: wrap; }
+.demo-day-ended { font-size: 12px; line-height: 16px; }
+.demo-strip-reset { min-height: 28px; padding: 2px 8px; border: 1px solid currentColor; border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
 
 /* Evidence coverage and review queue */
 .coverage-page, .reviews-page { min-width: 0; }

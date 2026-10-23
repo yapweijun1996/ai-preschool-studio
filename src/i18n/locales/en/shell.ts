@@ -4,6 +4,8 @@ export const shell = {
   skipToContent: 'Skip to content',
   demoStrip: 'Demo mode — all students and observations are fictional sample data',
   demoStripCompact: 'Demo mode · fictional sample data',
+  demoDayEnded: 'The demo school day has ended. Reset the demo to start again.',
+  demoStripReset: 'Reset',
   routeLoad: {
     title: 'This page could not load. Reload to get the latest version.',
     reload: 'Reload'
