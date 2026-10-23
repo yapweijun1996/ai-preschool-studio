@@ -202,6 +202,7 @@ test('exiting kiosk requires fictional staff PIN and locks after three failures'
     await dialog.getByLabel('Staff PIN').fill('1111');
     await dialog.getByRole('button', { name: 'Verify and exit' }).click();
     if (attempt < 2) {
+      await expect(dialog.getByLabel('Staff PIN')).toBeFocused();
       await expect(dialog.getByRole('alert')).toContainText(
         attempt === 0 ? '2 attempts left' : '1 attempt left',
       );

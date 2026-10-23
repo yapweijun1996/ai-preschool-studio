@@ -49,6 +49,7 @@ export function AttendanceKiosk() {
   const [staffError, setStaffError] = useState('');
   const [credentialsOpen, setCredentialsOpen] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
+  const staffPinRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const resetFocusRef = useRef(false);
   const resetAttempt = () => {
@@ -75,6 +76,9 @@ export function AttendanceKiosk() {
     if (method === 'pin') codeRef.current?.focus();
     else document.querySelector<HTMLElement>('.kiosk-card-list button')?.focus();
   }, [method, success]);
+  useEffect(() => {
+    if (exitOpen && staffError) staffPinRef.current?.focus();
+  }, [exitOpen, staffError]);
   const done = (record: { childId: string; arrivedAt?: string }) => {
     const child = state.children[record.childId];
     setSuccess({
@@ -379,6 +383,7 @@ export function AttendanceKiosk() {
                 {t('pages.attendance.staffPinLabel')}
                 <input
                   id="staff-pin"
+                  ref={staffPinRef}
                   className="input"
                   type="password"
                   autoComplete="off"
