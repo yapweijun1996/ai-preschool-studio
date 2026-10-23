@@ -226,7 +226,7 @@ export const shell = {
       saveFail: 'Simulate save failure',
       saveFailHint: 'Autosave and Save observation fail so you can try Retry.',
       resetHeading: 'Reset',
-      resetHint: 'Restores the fictional students, observations and reports to their starting state.',
+      resetHint: 'Restores all demo data, including the audit log, to its starting state.',
       reset: 'Reset demo data',
       resetDone: 'Demo data reset.',
       providerHeading: 'AI provider',

@@ -38,8 +38,9 @@ describe('portfolio reducer', () => {
     expect(selectReportHistory(s.auditEvents, 'meiling').some((decision) => decision.type === 'approved' && decision.version === 2)).toBe(true);
     s = reducer(s, { type: 'reset', at: '2026-10-22T12:00:00.000Z' });
     expect(s.reports.meiling.versions.map((version) => version.version)).toEqual([1]);
-    expect(selectReportHistory(s.auditEvents, 'meiling').map((decision) => decision.type)).toEqual(['approved', 'released']);
-    expect(s.auditEvents.map((event) => event.action).lastIndexOf('demo.reset')).toBeGreaterThan(0);
+    expect(selectReportHistory(s.auditEvents, 'meiling')).toEqual([]);
+    expect(s.auditEvents.slice(0, -1)).toEqual(initialState().auditEvents);
+    expect(s.auditEvents.at(-1)).toMatchObject({ action: 'demo.reset', at: '2026-10-22T12:00:00.000Z' });
   });
   it('filters audit instants using the viewer local calendar date', () => {
     const seeded = initialState().auditEvents[0];
@@ -151,13 +152,12 @@ describe('portfolio reducer', () => {
     expect(s.reports.meiling.versions[0]).toEqual(released.reports.meiling.versions[0]);
   });
 
-  it('keeps audit events append-only across reset and filters newest-first', () => {
+  it('resets the audit log to its seed and appends the reset event newest-first', () => {
     let s = reducer(initialState(), { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22', actor: { role: 'teacher', name: 'Ms. Lim' } });
-    const before = s.auditEvents;
     s = reducer(s, { type: 'reset' });
-    expect(s.auditEvents.slice(0, before.length)).toEqual(before);
-    expect(s.auditEvents.some((event) => event.action === 'demo.reset')).toBe(true);
-    const filtered = selectAuditLog(s.auditEvents, { studentId: 'aria' });
+    expect(s.auditEvents.slice(0, -1)).toEqual(initialState().auditEvents);
+    expect(s.auditEvents.at(-1)?.action).toBe('demo.reset');
+    const filtered = selectAuditLog(s.auditEvents);
     expect(filtered[0].at >= filtered.at(-1)!.at).toBe(true);
   });
 });

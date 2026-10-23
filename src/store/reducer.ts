@@ -628,8 +628,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, attendancePinLockouts: lockouts };
     }
     case 'reset': {
-      const seeded = initialState();
-      let fresh = { ...seeded, auditEvents: state.auditEvents, nextAuditNumber: state.nextAuditNumber };
+      let fresh = initialState();
       fresh = appendAudit(fresh, {
         at: asInstant(action.at ?? now()),
         actor: action.actor ?? defaultActor,
@@ -637,9 +636,6 @@ export function reducer(state: State, action: Action): State {
         target: { type: 'demo', id: 'portfolio' },
         summaryKey: 'pages.audit.summaryReset'
       });
-      for (const event of seeded.auditEvents) {
-        fresh = appendAudit(fresh, event);
-      }
       return fresh;
     }
   }

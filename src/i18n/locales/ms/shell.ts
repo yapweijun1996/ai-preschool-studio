@@ -227,7 +227,7 @@ export const shell: Dict['shell'] = {
       saveFail: 'Simulasi simpanan gagal',
       saveFailHint: 'Simpan automatik dan Simpan pemerhatian akan gagal supaya anda boleh mencuba Cuba lagi.',
       resetHeading: 'Set semula',
-      resetHint: 'Memulihkan murid, pemerhatian dan laporan rekaan kepada keadaan asal.',
+      resetHint: 'Memulihkan semua data demo, termasuk log audit, kepada keadaan asal.',
       reset: 'Set semula data demo',
       resetDone: 'Data demo telah diset semula.',
       providerHeading: 'Penyedia AI',

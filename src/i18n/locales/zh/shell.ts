@@ -227,7 +227,7 @@ export const shell: Dict['shell'] = {
       saveFail: '模拟保存失败',
       saveFailHint: '自动保存和“保存观察记录”会失败，方便你试用“重试”。',
       resetHeading: '重置',
-      resetHint: '将虚构的学生、观察记录和报告恢复到初始状态。',
+      resetHint: '将所有演示数据（包括审计日志）恢复到初始状态。',
       reset: '重置演示数据',
       resetDone: '演示数据已重置。',
       providerHeading: 'AI 服务',
