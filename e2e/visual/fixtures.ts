@@ -68,7 +68,7 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
     }
   } else if (path.includes('/coverage')) {
     await expect(page.locator('.coverage-page h1, h1.h1').first()).toBeVisible();
-  } else if (path.includes('/attendance/check-in')) {
+  } else if (path.includes('/attendance/kiosk')) {
     await expect(main.getByRole('heading', { name: 'Check-in kiosk' })).toBeVisible();
     await expect(main.locator('#kiosk-panel')).toBeVisible();
   } else if (path.includes('/attendance/history')) {

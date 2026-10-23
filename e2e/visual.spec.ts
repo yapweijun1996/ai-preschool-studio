@@ -118,9 +118,34 @@ test('attendance register · mobile light', async ({ page }) => {
 
 test('attendance kiosk · desktop light', async ({ page }) => {
   await page.setViewportSize(desktop);
-  await openVisualPage(page, './#/attendance/check-in');
+  await openVisualPage(page, './#/attendance/kiosk');
   await expect(page.locator('#main #kiosk-panel')).toBeVisible();
-  await expect(page.locator('#main')).toHaveScreenshot('attendance-check-in-desktop-light.png', { mask: [buildFooter(page)] });
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-kiosk-desktop-light.png');
+});
+
+test('attendance kiosk · mobile light', async ({ page }) => {
+  await page.setViewportSize(mobile);
+  await openVisualPage(page, './#/attendance/kiosk');
+  await expect(page.locator('#main #kiosk-panel')).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-kiosk-mobile-light.png');
+});
+
+test('attendance absence dialog · desktop overlay', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/attendance');
+  await page.locator('#main .attendance-row').filter({ hasText: 'Aiden Lee' })
+    .getByRole('button', { name: 'Mark Aiden Lee absent' }).click();
+  await expect(page.getByRole('dialog', { name: 'Mark Aiden Lee absent' })).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-absence-dialog-overlay.png');
+});
+
+test('attendance amendment dialog · desktop overlay', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/attendance');
+  await page.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' })
+    .getByRole('button', { name: 'Change attendance for Aria Tan' }).click();
+  await expect(page.getByRole('dialog', { name: 'Change attendance for Aria Tan' })).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-amend-dialog-overlay.png');
 });
 
 test('attendance history · desktop light', async ({ page }) => {

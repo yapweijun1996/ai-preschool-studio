@@ -160,15 +160,84 @@ function Tokens({ theme }: { theme: string }) {
 
 function AttendanceCatalogExamples() {
   const { t } = useI18n();
+  const [absenceOpen, setAbsenceOpen] = useState(false);
+  const [amendOpen, setAmendOpen] = useState(false);
   const names = ['Aria Tan', 'Ethan Koh', 'Mei Ling Chua', 'Rayan Iskandar'];
-  const statusKeys = ['notMarked','present','late','absent'] as const;
-  return <div className="catalog-attendance stack">
-    <div className="attendance-summary">{(['present','late','absent','notMarked'] as const).map((key,index)=><div key={key} className={`attendance-stat stat-${key}`}><span className="cap muted">{t(`pages.attendance.${key}`)}</span><strong className="h2 num">{[18,2,1,3][index]}</strong>{key==='late'&&<span className="sr-only">{t('pages.attendance.lateNote')}</span>}</div>)}</div>
-    <div className="catalog-attendance-grid">{statusKeys.map((key,index)=><article className="card attendance-row" key={key}><Avatar initials={['AT','EK','MC','RI'][index]}/><div className="attendance-child grow"><strong className="strong">{names[index]}</strong><div className="attendance-meta"><span className={`status attendance-status st-${key==='notMarked'?'notstarted':key==='late'?'present':key}`}>{t(key==='notMarked'?'pages.attendance.notMarked':`pages.attendance.${key}`)}</span>{key==='present'&&<span className="num">07:52</span>}{key==='late'&&<span className="num">08:42</span>}</div></div><button className="btn btn-secondary" type="button">{t(key==='notMarked'?'pages.attendance.markPresent':'pages.attendance.change')}</button></article>)}</div>
-    <div className="catalog-attendance-grid"><section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.absenceTitle',{name:'Sofia Fernandez'})}</h3><fieldset className="stack attendance-reasons"><legend className="sec semibold">{t('pages.attendance.absenceReason')}</legend>{(['reasonSick','reasonFamily','reasonTravel','reasonOther'] as const).map((key,i)=><label className="radio-row" key={key}><input type="radio" name="catalog-reason" checked={i===1} readOnly/>{t(`pages.attendance.${key}`)}</label>)}</fieldset><button className="btn btn-primary" type="button">{t('pages.attendance.save')}</button></section>
-    <section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.amendTitle',{name:'Ethan Koh'})}</h3><label className="stack sec">{t('pages.attendance.amendReason')}<textarea className="input" rows={3} value={t('pages.attendance.catalogReason')} readOnly/></label><p className="cap num">{t('pages.attendance.characters',{count:42})}</p><button className="btn btn-primary" type="button">{t('pages.attendance.submit')}</button></section></div>
-    <div className="catalog-attendance-grid"><section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.pinTitle')}</h3><label className="stack sec">{t('pages.attendance.childCode')}<input className="input" value="FC-1001" readOnly/></label><label className="stack sec">{t('pages.attendance.pinLabel')}<input className="input" type="password" value="" placeholder="••••" readOnly autoComplete="off" inputMode="numeric"/></label><div className="notice notice-danger" role="alert"><Icon name="lock" size={18}/><p className="sec">{t('pages.attendance.pinLocked',{minutes:5})}</p></div></section><section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.faceTab')}</h3><div className="face-placeholder" aria-hidden="true"><span className="face-card"><span className="face-card-band"/><span className="face-card-line"/><span className="face-card-slash"/></span><Icon name="lock" size={24}/></div><p className="sec">{t('pages.attendance.faceUnavailable')}</p></section></div>
-  </div>;
+  const statusKeys = ['notMarked', 'present', 'late', 'absent'] as const;
+  return (
+    <div className="catalog-attendance stack">
+      <div className="notice notice-info kiosk-demo-banner" role="note">
+        <Icon name="info" size={18} />
+        <strong>{t('pages.attendance.kioskDemoBanner')}</strong>
+        <button className="btn btn-secondary" type="button">{t('pages.attendance.exitKiosk')}</button>
+      </div>
+      <div className="attendance-kiosk-tabs" role="tablist" aria-label={t('pages.attendance.kioskTitle')}>
+        <button className="btn btn-secondary" type="button" role="tab" aria-selected="true">{t('pages.attendance.pinTab')}</button>
+        <button className="btn btn-secondary" type="button" role="tab" aria-selected="false">{t('pages.attendance.qrTab')}</button>
+        <button className="btn btn-secondary" type="button" role="tab" aria-selected="false">{t('pages.attendance.faceTab')} {t('pages.attendance.faceUnavailableTab')}</button>
+      </div>
+      <details className="card card-pad kiosk-credentials">
+        <summary>{t('pages.attendance.showDemoCredentials')}</summary>
+      </details>
+      <div className="attendance-summary" aria-label={t('pages.attendance.summaryLabel')}>
+        {(['present', 'late', 'absent', 'notMarked'] as const).map((key, index) => (
+          <div key={key} className={`attendance-stat stat-${key}`}>
+            <span className="cap muted">{t(`pages.attendance.${key}`)}</span>
+            <strong className="h2 num">{[16, 2, 1, 3][index]}</strong>
+            {key === 'present' && <span className="attendance-late-count">{t('pages.attendance.summaryLateCount', { count: 2 })}</span>}
+          </div>
+        ))}
+      </div>
+      <div className="catalog-attendance-grid">
+        {statusKeys.map((key, index) => (
+          <article className="card attendance-row" key={key}>
+            <Avatar initials={['AT', 'EK', 'MC', 'RI'][index]} />
+            <div className="attendance-child grow">
+              <strong className="strong">{names[index]}</strong>
+              <div className="attendance-meta">
+                {key === 'late' ? <>
+                  <span className="status attendance-status st-present">{t('pages.attendance.present')}</span>
+                  <span className="status attendance-late-badge">{t('pages.attendance.late')}</span>
+                </> : <span className={`status attendance-status st-${key === 'notMarked' ? 'notstarted' : key}`}>
+                  {t(key === 'notMarked' ? 'pages.attendance.notMarked' : `pages.attendance.${key}`)}
+                </span>}
+                {key === 'present' && <span className="num">07:52</span>}
+                {key === 'late' && <span className="num">08:42</span>}
+              </div>
+            </div>
+            <button className="btn btn-secondary" type="button">{t(key === 'notMarked' ? 'pages.attendance.markPresent' : 'pages.attendance.change')}</button>
+          </article>
+        ))}
+      </div>
+      <div className="row">
+        <button className="btn btn-secondary" type="button" onClick={() => setAbsenceOpen(true)}>{t('pages.attendance.catalogOpenAbsence')}</button>
+        <button className="btn btn-secondary" type="button" onClick={() => setAmendOpen(true)}>{t('pages.attendance.catalogOpenAmend')}</button>
+      </div>
+      <div className="catalog-attendance-grid">
+        <section className="card card-pad stack">
+          <h3 className="h2">{t('pages.attendance.pinTitle')}</h3>
+          <label className="stack sec">{t('pages.attendance.childCode')}<input className="input" value="FC-1001" readOnly /></label>
+          <label className="stack sec">{t('pages.attendance.pinLabel')}<input className="input" type="password" value="" placeholder="••••" readOnly autoComplete="off" inputMode="numeric" /></label>
+          <div className="notice notice-danger" role="alert"><Icon name="lock" size={18} /><p className="sec">{t('pages.attendance.pinLocked', { count: 5 })}</p></div>
+        </section>
+        <section className="card card-pad stack">
+          <h3 className="h2">{t('pages.attendance.faceTab')}</h3>
+          <div className="face-placeholder" aria-hidden="true"><Icon name="info" size={24} /></div>
+          <p className="sec">{t('pages.attendance.faceUnavailable')}</p>
+        </section>
+      </div>
+      {absenceOpen && <Modal labelledBy="catalog-absence-title" backdropClassName="dialog-backdrop" panelClassName="card card-pad stack" onClose={() => setAbsenceOpen(false)}>
+        <h2 className="h2" id="catalog-absence-title">{t('pages.attendance.absenceTitle', { name: 'Sofia Fernandez' })}</h2>
+        <p className="sec">{t('pages.attendance.absenceReason')}</p>
+        <button className="btn btn-primary" type="button" onClick={() => setAbsenceOpen(false)}>{t('pages.attendance.save')}</button>
+      </Modal>}
+      {amendOpen && <Modal labelledBy="catalog-amend-title" backdropClassName="dialog-backdrop" panelClassName="card card-pad stack" onClose={() => setAmendOpen(false)}>
+        <h2 className="h2" id="catalog-amend-title">{t('pages.attendance.amendTitle', { name: 'Ethan Koh' })}</h2>
+        <label className="stack sec">{t('pages.attendance.amendReason')}<textarea className="input" rows={3} value={t('pages.attendance.catalogReason')} readOnly /></label>
+        <button className="btn btn-primary" type="button" onClick={() => setAmendOpen(false)}>{t('pages.attendance.submit')}</button>
+      </Modal>}
+    </div>
+  );
 }
 
 function SectionExamples({ name, theme }: { name: string; theme: string }) {

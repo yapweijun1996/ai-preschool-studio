@@ -114,6 +114,7 @@ export const pages: Dict['pages'] = {
     pinTab: 'PIN',
     qrTab: 'QR',
     faceTab: 'Wajah',
+    faceUnavailableTab: '(tidak tersedia)',
     searchChildren: 'Cari kanak-kanak',
     noChildren: 'Tiada kanak-kanak sepadan dengan carian ini.',
     pinTitle: 'Daftar masuk dengan kod kanak-kanak dan PIN',
@@ -135,7 +136,7 @@ export const pages: Dict['pages'] = {
     credentialCode: 'Kod',
     credentialPin: 'PIN',
     credentialCard: 'ID kad',
-    faceUnavailable: 'Kaedah pilihan. Tidak tersedia: persetujuan padanan wajah tidak direkodkan untuk kanak-kanak ini / sekolah belum mengaktifkannya. Gunakan Kakitangan, PIN atau QR.',
+    faceUnavailable: 'Daftar masuk wajah ialah kaedah pilihan dan tidak tersedia di sini: persetujuan padanan wajah belum direkodkan dan sekolah belum mengaktifkannya. Gunakan PIN atau QR, atau minta bantuan kakitangan.',
     faceNoFace: 'Tiada data wajah dikumpul atau diproses.',
     marking: 'Menyimpan daftar masuk…',
     checkinError: 'Daftar masuk tidak dapat disimpan.',
@@ -159,6 +160,7 @@ export const pages: Dict['pages'] = {
     selectDay: 'Hari persekolahan',
     timeEmpty: 'Tidak direkodkan',
     readOnlyPast: 'Daftar hari lepas adalah baca sahaja untuk guru.',
+    historyTodayLive: 'Kehadiran hari ini berada dalam daftar langsung:',
 
     dashboardTile: 'Kehadiran hari ini',
     viewRegister: 'Lihat daftar',
@@ -167,6 +169,8 @@ export const pages: Dict['pages'] = {
     attendanceNotMarked: 'Belum ditanda',
 
     catalogReason: 'Sebab pembetulan rekaan untuk contoh ini.',
+    catalogOpenAbsence: 'Buka dialog ketidakhadiran',
+    catalogOpenAmend: 'Buka dialog pindaan',
   },
   shared: {
     addObservation: 'Tambah pemerhatian',

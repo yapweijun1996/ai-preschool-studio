@@ -143,9 +143,9 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await page.getByRole('button', { name: /QR-FIC-0014/ }).click();
   await expect(page.locator('#kiosk-panel .kiosk-success')).toContainText('checked in at');
   await page.getByRole('button', { name: 'Next family' }).click();
-  await page.getByRole('tab', { name: 'Face' }).click();
-  await expect(page.getByText(/face-match consent is not recorded for this child/)).toBeVisible();
-  await expect(page.getByText(/Use Staff, PIN or QR/)).toBeVisible();
+  await page.getByRole('tab', { name: 'Face (unavailable)' }).click();
+  await expect(page.getByText(/face-match consent is not recorded and the school has not enabled it/)).toBeVisible();
+  await expect(page.getByText(/Use PIN or QR, or ask a staff member/)).toBeVisible();
 });
 
 test('legacy check-in route redirects; reviewer sees a read-only kiosk explanation', async ({
@@ -164,7 +164,13 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
   await open(page, './#/attendance/history', 'admin');
   await expect(page.locator('#history-date')).toHaveValue(/2026-10-/);
   await expect(page.getByLabel('School day')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Attendance summary' })).toBeVisible();
+  await page.locator('#history-date').selectOption('2026-10-22');
+  await expect(page.getByText('Today’s attendance is on the live register:')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'View register' })).toBeVisible();
+  await page.locator('#history-date').selectOption('2026-10-21');
   const target = page.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' });
+  await expect(row(page, 'Ethan Koh').locator('details')).toHaveCount(0);
   await target.getByRole('button', { name: 'Amend Aria Tan' }).click();
   const dialog = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
   await expect(dialog.locator('#amend-field')).toHaveAccessibleName('Change');
@@ -251,6 +257,7 @@ test('mobile attendance controls keep their targets and credential labels visibl
   expect((await change.boundingBox())?.width).toBeGreaterThan(320);
 
   await page.goto('./#/attendance/history');
+  await page.locator('#history-date').selectOption('2026-10-12');
   const trail = page.locator('.amendment-details summary').first();
   expect((await trail.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 
@@ -260,4 +267,15 @@ test('mobile attendance controls keep their targets and credential labels visibl
   await expect
     .poll(() => code.evaluate((element) => getComputedStyle(element, '::before').content))
     .toBe('"Code"');
+});
+
+test('dashboard attendance tile is limited to teachers and admins', async ({ page }) => {
+  await open(page, './#/', 'teacher');
+  await expect(page.locator('.attendance-dashboard-tile')).toBeVisible();
+  const admin = await page.context().newPage();
+  await open(admin, './#/', 'admin');
+  await expect(admin.locator('.attendance-dashboard-tile')).toBeVisible();
+  const reviewer = await page.context().newPage();
+  await open(reviewer, './#/', 'reviewer');
+  await expect(reviewer.locator('.attendance-dashboard-tile')).toHaveCount(0);
 });

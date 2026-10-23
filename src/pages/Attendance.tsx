@@ -84,7 +84,7 @@ const FILTER_LABELS: Record<Filter, TKey> = {
 const KIOSK_TAB_LABELS: Record<KioskMethod, TKey> = {
   pin: 'pages.attendance.pinTab',
   qr: 'pages.attendance.qrTab',
-  face: 'pages.attendance.faceTab',
+  face: 'pages.attendance.faceUnavailableTab',
 };
 
 function actor(role: ReturnType<typeof useRole>['role']) {
@@ -249,7 +249,7 @@ export function Attendance() {
                   {t('pages.attendance.subtitle', { className: CLASS_NAME })} · {fmtDate(TODAY)}
                 </p>
               </div>
-              <Link className="btn btn-secondary" to="/attendance/check-in">
+              <Link className="btn btn-secondary" to="/attendance/kiosk">
                 <Icon name="scan" size={18} />
                 {t('shell.panel.attendanceKiosk')}
               </Link>
@@ -959,7 +959,7 @@ export function AttendanceKiosk() {
     else done(result.value);
   };
   return (
-    <main className="kiosk-screen">
+    <main id="main" className="kiosk-screen">
       {denied ? (
         <div className="page attendance-page kiosk-page">
           <AccessDenied title="pages.attendance.kioskTitle" />
@@ -999,7 +999,9 @@ export function AttendanceKiosk() {
                   setSuccess(null);
                 }}
               >
-                {t(KIOSK_TAB_LABELS[item])}
+                {item === 'face'
+                  ? `${t('pages.attendance.faceTab')} ${t(KIOSK_TAB_LABELS[item])}`
+                  : t(KIOSK_TAB_LABELS[item])}
               </button>
             ))}
           </div>
@@ -1121,12 +1123,7 @@ export function AttendanceKiosk() {
                   <>
                     <h2 className="h2">{t('pages.attendance.faceTab')}</h2>
                     <div className="face-placeholder" aria-hidden="true">
-                      <span className="face-card">
-                        <span className="face-card-band" />
-                        <span className="face-card-line" />
-                        <span className="face-card-slash" />
-                      </span>
-                      <Icon name="lock" size={24} />
+                        <Icon name="info" size={24} />
                     </div>
                     <div className="notice notice-info">
                       <Icon name="info" size={18} />
@@ -1233,6 +1230,7 @@ export function AttendanceHistory() {
   }, [port, role.role, rows, state]);
   const denied = !role.can('attendance.view');
   const canAmend = role.role === 'admin';
+  const counts = summary(rows);
   const fieldLabel = (field: AmendmentField) =>
     t(
       field === 'status'
@@ -1284,12 +1282,32 @@ export function AttendanceHistory() {
                   ))}
                 </select>
               </label>
-              <p className="sec muted">
-                {canAmend
-                  ? t('pages.attendance.historyReadOnly')
-                  : t('pages.attendance.readOnlyPast')}
-              </p>
+              <div className="sec muted">
+                {date === TODAY ? (
+                  <>
+                    {t('pages.attendance.historyTodayLive')}{' '}
+                    <Link to="/attendance">{t('pages.attendance.viewRegister')}</Link>
+                  </>
+                ) : canAmend ? (
+                  t('pages.attendance.historyReadOnly')
+                ) : (
+                  t('pages.attendance.readOnlyPast')
+                )}
+              </div>
             </div>
+            <section className="attendance-summary" aria-label={t('pages.attendance.summaryLabel')}>
+              {(['present', 'late', 'absent', 'notMarked'] as const).map((key) => (
+                <div key={key} className={`attendance-stat stat-${key}`}>
+                  <span className="cap muted">{t(`pages.attendance.${key}`)}</span>
+                  <strong className="h2 num">{counts[key]}</strong>
+                  {key === 'present' && counts.late > 0 && (
+                    <span className="attendance-late-count">
+                      {t('pages.attendance.summaryLateCount', { count: counts.late })}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </section>
             {error && (
               <div className="notice notice-danger" role="alert">
                 <Icon name="alertCircle" size={18} />
@@ -1384,14 +1402,11 @@ export function AttendanceHistory() {
                             </span>
                           )}
                         </div>
-                        <details className="amendment-details">
-                          <summary>
-                            {t('pages.attendance.amendmentTrail')} ·{' '}
-                            {(record ? trails[record.id]?.length : 0) ?? 0}
-                          </summary>
-                          {!record || !trails[record.id]?.length ? (
-                            <p className="cap muted">{t('pages.attendance.noAmendments')}</p>
-                          ) : (
+                        {record && (trails[record.id]?.length ?? 0) > 0 && (
+                          <details className="amendment-details">
+                            <summary>
+                              {t('pages.attendance.amendmentTrail')} · {trails[record.id].length}
+                            </summary>
                             <ol className="amendment-list">
                               {trails[record.id].map((amendment) => (
                                 <li key={amendment.id}>
@@ -1416,8 +1431,8 @@ export function AttendanceHistory() {
                                 </li>
                               ))}
                             </ol>
-                          )}
-                        </details>
+                          </details>
+                        )}
                       </div>
                       {canAmend && record && (
                         <button

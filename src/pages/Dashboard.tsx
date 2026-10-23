@@ -25,6 +25,7 @@ export function Dashboard() {
   const { state } = usePortfolio();
   const dataPort = useDataPort();
   const role = useRole();
+  const showAttendanceDashboard = role.role === 'teacher' || role.role === 'admin';
   const showStaffDashboard = role.can('observation.add') || role.can('report.review');
   const [reviewQueue, setReviewQueue] = useState<ReviewQueue>();
   useEffect(() => {
@@ -75,7 +76,7 @@ export function Dashboard() {
               <ul className="stack" style={{ paddingLeft: 24 }}>
                 {modules.map((key) => <li key={key} className="sec">{t(key)}</li>)}
               </ul>
-              {role.can('attendance.view') && <AttendanceDashboardTile records={state.attendanceRecords} children={state.children} />}
+              {showAttendanceDashboard && <AttendanceDashboardTile records={state.attendanceRecords} children={state.children} />}
               <button className="btn btn-primary" type="button" style={{ alignSelf: 'flex-start' }} onClick={() => role.setRole('teacher')}>{t('shell.roles.returnTeacher')}</button>
             </section>
           </div>
@@ -102,7 +103,7 @@ export function Dashboard() {
           </div>
           <div className="grid-main-side">
             <div className="stack" style={{ gap: 24 }}>
-              {role.can('attendance.view') && <AttendanceDashboardTile records={state.attendanceRecords} children={state.children} />}
+              {showAttendanceDashboard && <AttendanceDashboardTile records={state.attendanceRecords} children={state.children} />}
               {role.can('reviews.view') && <section className="card" aria-labelledby="review-queue-heading" style={{ overflow: 'hidden' }}>
                 <div className="card-head"><h2 id="review-queue-heading" className="h2 grow">{t('pages.reviews.title')}</h2><Link className="btn btn-ghost" to="/reviews">{t('pages.reviews.viewQueue')}</Link></div>
                 <div className="dashboard-review-list" aria-busy={!reviewQueue}>

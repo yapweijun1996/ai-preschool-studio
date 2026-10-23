@@ -25,14 +25,16 @@ Capabilities: `attendance.view` (teacher, reviewer, admin), `attendance.mark` (t
 ## Flows
 
 1. Teacher opens `/attendance`, selects their class register for today, reviews the summary strip, and marks a child Present (arrival defaults to now) or Absent (chooses a reason). Filters are All, Not marked, Present, Absent and Late. “Mark remaining present” requires confirmation.
-2. A guardian uses `/attendance/check-in` and selects Staff, PIN, QR or Face (placeholder). Demo PINs are fictional, deterministic, non-sequential values stored in clear text in session state for this demo only; lockout state and errors never contain a PIN. Studio Platform stores only salted PIN hashes. Three wrong attempts lock that code for five minutes. QR simulates a fictional card scan without camera access. Face is unavailable in the demo because no child has face-match consent recorded.
-3. Admin opens `/attendance/history`, chooses a seeded school day, reviews each record and its amendment trail, then amends a field with a required reason. Teachers can read past registers but cannot amend them.
+2. A guardian uses `/attendance/kiosk`, a full-screen PIN / QR / Face kiosk without staff navigation. `/attendance/check-in` redirects to the kiosk. The kiosk has no Staff roster action; staff marking remains at `/attendance`. Demo PINs are fictional, deterministic, non-sequential values stored in clear text in session state for this demo only; lockout state and errors never contain a PIN. Studio Platform stores only salted PIN hashes. Three wrong attempts lock that code for five minutes. QR simulates a fictional card scan without camera access. Face is unavailable in the demo because face-match consent is not recorded and the school has not enabled it.
+3. Admin opens `/attendance/history`, chooses a school day, reviews records and amendment trails, then amends a field with a required reason. Teachers can read past registers but cannot amend them. Selecting today links back to the live register.
+
+The dashboard attendance tile is shown to teachers and admins only. Reviewers can read attendance from the attendance screens but do not see the dashboard tile.
 4. Pick-up & Release calls `recordDeparture` when releasing a present child; Attendance alone owns departure time.
 
 ## Screens and states
 
 - `/attendance`: today's class register, summary strip (present, late, absent, not marked), roster, Present / Absent actions, absence-reason dialog, arrival time defaulting to now, filters and confirmed bulk action. Show default, empty, loading, error, blocked-with-reason and read-only states.
-- `/attendance/check-in`: Staff, PIN, QR and Face (placeholder) method tabs. Explain unavailable methods and PIN lockout. QR is a simulated scan; no camera permission or camera access.
+- `/attendance/kiosk`: Full-screen PIN, QR and Face (unavailable placeholder) method tabs, a demo-mode banner, staff-only exit, and a collapsed fictional credentials disclosure. QR is a simulated scan; no camera permission or camera access.
 - `/attendance/history`: date picker limited to seeded school days, read-only past view for teachers, admin amendment dialog with required reason and per-record amendment trail. Show loading, empty, error and blocked states.
 - Teacher and admin dashboard tile links to today's register. Layouts cover desktop, tablet (≤1024, bottom tabs) and mobile (390).
 

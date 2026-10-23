@@ -16,7 +16,7 @@ const routes = [
   { name: 'children-class-withdrawn-empty', path: './#/classes', role: 'teacher', state: 'withdrawn-empty' },
   { name: 'coverage', path: './#/coverage', role: 'reviewer' },
   { name: 'attendance', path: './#/attendance', role: 'teacher' },
-  { name: 'attendance-kiosk', path: './#/attendance/check-in', role: 'teacher' },
+  { name: 'attendance-kiosk', path: './#/attendance/kiosk', role: 'teacher' },
   { name: 'attendance-history', path: './#/attendance/history', role: 'admin' },
   { name: 'reviews', path: './#/reviews', role: 'reviewer' },
   { name: 'aria-profile', path: './#/students/aria' },

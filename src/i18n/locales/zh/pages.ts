@@ -114,6 +114,7 @@ export const pages: Dict['pages'] = {
     pinTab: 'PIN',
     qrTab: '二维码',
     faceTab: '人脸',
+    faceUnavailableTab: '（不可用）',
     searchChildren: '搜索儿童',
     noChildren: '没有符合搜索条件的儿童。',
     pinTitle: '使用儿童代码和 PIN 签到',
@@ -135,7 +136,7 @@ export const pages: Dict['pages'] = {
     credentialCode: '代码',
     credentialPin: 'PIN',
     credentialCard: '卡号',
-    faceUnavailable: '可选方式。不可用：未记录此儿童的人脸匹配同意／学校尚未启用。请使用员工、PIN 或二维码。',
+    faceUnavailable: '人脸签到是一种可选方式，目前不可用：尚未记录人脸匹配同意，学校也未启用此方式。请使用 PIN 或二维码，或咨询教职员。',
     faceNoFace: '不会采集或处理人脸数据。',
     marking: '正在保存签到…',
     checkinError: '无法保存签到。',
@@ -159,6 +160,7 @@ export const pages: Dict['pages'] = {
     selectDay: '上课日期',
     timeEmpty: '未记录',
     readOnlyPast: '教师只能查看过去的名册。',
+    historyTodayLive: '今日出勤记录位于实时名册：',
 
     dashboardTile: '今日出勤',
     viewRegister: '查看名册',
@@ -167,6 +169,8 @@ export const pages: Dict['pages'] = {
     attendanceNotMarked: '未标记',
 
     catalogReason: '此处填写虚构的更正原因。',
+    catalogOpenAbsence: '打开缺席对话框',
+    catalogOpenAmend: '打开修改对话框',
   },
   shared: {
     addObservation: '添加观察记录',

@@ -114,6 +114,7 @@ export const pages = {
     pinTab: 'PIN',
     qrTab: 'QR',
     faceTab: 'Face',
+    faceUnavailableTab: '(unavailable)',
     searchChildren: 'Search children',
     noChildren: 'No children match this search.',
     pinTitle: 'Check in with child code and PIN',
@@ -135,7 +136,7 @@ export const pages = {
     credentialCode: 'Code',
     credentialPin: 'PIN',
     credentialCard: 'Card ID',
-    faceUnavailable: 'Optional method. Not available: face-match consent is not recorded for this child / school has not enabled it. Use Staff, PIN or QR.',
+    faceUnavailable: 'Face check-in is an optional method and is not available here: face-match consent is not recorded and the school has not enabled it. Use PIN or QR, or ask a staff member.',
     faceNoFace: 'No face data is captured or processed.',
     marking: 'Saving check-in…',
     checkinError: 'Check-in could not be saved.',
@@ -159,6 +160,7 @@ export const pages = {
     selectDay: 'School day',
     timeEmpty: 'Not recorded',
     readOnlyPast: 'This past register is read-only for teachers.',
+    historyTodayLive: 'Today’s attendance is on the live register:',
 
     dashboardTile: 'Attendance today',
     viewRegister: 'View register',
@@ -167,6 +169,8 @@ export const pages = {
     attendanceNotMarked: 'Not marked',
 
     catalogReason: 'Fictional correction entered for this example.',
+    catalogOpenAbsence: 'Open absence dialog',
+    catalogOpenAmend: 'Open amendment dialog',
   },
   shared: {
     addObservation: 'Add observation',
