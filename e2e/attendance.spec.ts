@@ -132,7 +132,18 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await expect(page.getByRole('button', { name: 'Present', exact: true })).toHaveCount(0);
   await expect(page.getByText('Show fictional demo credentials')).toBeVisible();
   await expect(page.locator('.kiosk-credentials')).not.toHaveAttribute('open', '');
+  await expect(page.locator('.kiosk-credentials summary')).toHaveAttribute('aria-expanded', 'false');
   await page.getByRole('tab', { name: 'PIN' }).click();
+  await expect(page.getByRole('tab', { name: 'PIN' })).toHaveAttribute('tabindex', '0');
+  await expect(page.getByRole('tab', { name: 'QR' })).toHaveAttribute('tabindex', '-1');
+  await page.getByRole('tab', { name: 'PIN' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'QR' })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'QR' })).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('End');
+  await expect(page.getByRole('tab', { name: 'Face (unavailable)' })).toBeFocused();
+  await page.keyboard.press('Home');
+  await expect(page.getByRole('tab', { name: 'PIN' })).toBeFocused();
   await expect(page.getByLabel('Child code')).toHaveAttribute('inputmode', 'text');
   await expect(page.getByLabel('Child code')).toHaveAttribute('autocapitalize', 'characters');
   await expect(page.getByLabel('Child code')).toHaveAttribute('pattern', '[A-Z]{2}-[0-9]{4}');
@@ -143,6 +154,7 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
     await page.getByRole('button', { name: 'Check in', exact: true }).click();
     if (attempt < 2) {
       await expect(page.getByRole('alert')).toContainText(attempt === 0 ? '2 attempts left' : '1 attempt left');
+      await expect(page.getByRole('alert')).toContainText('Code or PIN not recognised');
     }
   }
   await expect(page.getByRole('alert')).toContainText('locked');
@@ -173,6 +185,7 @@ test('exiting kiosk requires fictional staff PIN and locks after three failures'
   await open(page, './#/attendance/kiosk');
   await page.locator('.kiosk-credentials summary').click();
   await expect(page.locator('.kiosk-credentials')).toHaveAttribute('open', '');
+  await expect(page.locator('.kiosk-credentials summary')).toHaveAttribute('aria-expanded', 'true');
   await expect(page.getByText(/Fictional demo staff PIN: 8642/)).toBeVisible();
   await page.getByRole('button', { name: 'Exit kiosk' }).click();
   const dialog = page.getByRole('dialog', { name: 'Staff verification required' });

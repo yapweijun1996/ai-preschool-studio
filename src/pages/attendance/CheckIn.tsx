@@ -30,6 +30,7 @@ export function AttendanceKiosk() {
   const [staffFailures, setStaffFailures] = useState(0);
   const [staffLockedUntil, setStaffLockedUntil] = useState(0);
   const [staffError, setStaffError] = useState('');
+  const [credentialsOpen, setCredentialsOpen] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const resetFocusRef = useRef(false);
@@ -147,6 +148,7 @@ export function AttendanceKiosk() {
                 id={`kiosk-tab-${item}`}
                 role="tab"
                 aria-selected={method === item}
+                tabIndex={method === item ? 0 : -1}
                 aria-controls="kiosk-panel"
                 aria-label={
                   item === 'face'
@@ -154,6 +156,26 @@ export function AttendanceKiosk() {
                     : t(KIOSK_TAB_LABELS[item])
                 }
                 data-unavailable={item === 'face' || undefined}
+                onKeyDown={(event) => {
+                  const methods: KioskMethod[] = ['pin', 'qr', 'face'];
+                  const current = methods.indexOf(item);
+                  const nextIndex = event.key === 'ArrowRight'
+                    ? (current + 1) % methods.length
+                    : event.key === 'ArrowLeft'
+                      ? (current + methods.length - 1) % methods.length
+                      : event.key === 'Home'
+                        ? 0
+                        : event.key === 'End'
+                          ? methods.length - 1
+                          : -1;
+                  if (nextIndex < 0) return;
+                  event.preventDefault();
+                  const next = methods[nextIndex];
+                  setMethod(next);
+                  setError('');
+                  setSuccess(null);
+                  document.getElementById(`kiosk-tab-${next}`)?.focus();
+                }}
                 onClick={() => {
                   setMethod(item);
                   setError('');
@@ -174,6 +196,7 @@ export function AttendanceKiosk() {
             className="card card-pad stack kiosk-panel"
             role="tabpanel"
             aria-labelledby={`kiosk-tab-${method}`}
+            tabIndex={0}
           >
             {success ? (
               <div className="kiosk-success" role="status" aria-live="polite">
@@ -295,8 +318,13 @@ export function AttendanceKiosk() {
               </>
             )}
           </section>
-          <details className="card card-pad stack kiosk-credentials">
-            <summary>{t('pages.attendance.showDemoCredentials')}</summary>
+          <details
+            className="card card-pad stack kiosk-credentials"
+            onToggle={(event) => setCredentialsOpen(event.currentTarget.open)}
+          >
+            <summary aria-expanded={credentialsOpen}>
+              {t('pages.attendance.showDemoCredentials')}
+            </summary>
             <div className="credential-grid" aria-labelledby="demo-credential-title">
               <h2 className="sr-only" id="demo-credential-title">
                 {t('pages.attendance.demoCredentials')}
