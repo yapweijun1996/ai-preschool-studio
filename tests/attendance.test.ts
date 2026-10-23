@@ -171,8 +171,12 @@ describe('attendance demo adapter', () => {
   it('records each field cleared when amending present to absent', async () => {
     const { port, getState } = adapterFrom();
     const present = DEMO_ATTENDANCE_RECORDS.find((item) => item.date < TODAY && item.status === 'present')!;
-    await port.amendAttendance(present.id, { field: 'status', to: 'absent', reason: 'Fictional correction' }, admin);
+    const auditBefore = getState().auditEvents.length;
+    const result = await port.amendAttendance(present.id, { field: 'status', to: 'absent', reason: 'Fictional correction' }, admin);
+    expect(result.ok && result.value.map((row) => row.field)).toEqual(['status', 'arrivedAt', 'absenceReason']);
     expect(getState().attendanceAmendments.filter((item) => item.recordId === present.id).map((item) => item.field)).toEqual(['status', 'arrivedAt', 'absenceReason']);
+    expect(getState().auditEvents).toHaveLength(auditBefore + 1);
+    expect(getState().auditEvents.at(-1)).toMatchObject({ action: 'attendance.amended', summaryKey: 'pages.audit.summaryAttendanceAmended' });
   });
 
   it('enforces PIN lockout for three failures and clears it after five minutes', async () => {
@@ -207,7 +211,7 @@ describe('attendance demo adapter', () => {
     const record = DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY)!;
     const change = await port.amendAttendance(record.id, { field: 'arrivedAt', to: iso(TODAY, '08:01'), reason: 'Fictional reason private to amendment' }, admin);
     expect(change.ok).toBe(true);
-    if (change.ok) expect(change.value.by).toBe('admin-wong');
+    if (change.ok) expect(change.value[0].by).toBe('admin-wong');
     const audit = JSON.stringify(getState().auditEvents);
     expect(audit).not.toContain('Fictional reason private to amendment');
     expect(audit).not.toContain('2467');

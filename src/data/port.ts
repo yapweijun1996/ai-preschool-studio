@@ -128,7 +128,7 @@ export interface DataPort {
   markPresent(childId: string, input: AttendanceMarkPresentInput, actor: Actor): Promise<PortResult<AttendanceRecord>>;
   markAbsent(childId: string, input: AttendanceMarkAbsentInput, actor: Actor): Promise<PortResult<AttendanceRecord>>;
   markRemainingPresent(classId: string, actor: Actor): Promise<PortResult<AttendanceRecord[]>>;
-  amendAttendance(recordId: string, input: AttendanceAmendInput, actor: Actor): Promise<PortResult<AttendanceAmendment>>;
+  amendAttendance(recordId: string, input: AttendanceAmendInput, actor: Actor): Promise<PortResult<AttendanceAmendment[]>>;
   getAmendments(recordId: string, actor: Actor): Promise<AttendanceAmendment[]>;
   recordDeparture(childId: string, departedAt: string, actor: Actor): Promise<PortResult<AttendanceRecord>>;
   checkInWithPin(childCode: string, pin: string): Promise<PortResult<AttendanceRecord>>;

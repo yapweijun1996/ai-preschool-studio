@@ -297,8 +297,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
         recordId, childId: existing.childId, date: existing.date, ...change,
         reason: input.reason.trim(), by: actorId(actor), at
       }));
-      amendments.forEach((amendment) => dispatch({ type: 'attendanceChanged', record: amended, amendment, audit: 'amended', actor, at }));
-      return success(amendments[0]);
+      dispatch({ type: 'attendanceChanged', record: amended, amendments, audit: 'amended', actor, at });
+      return success(amendments);
     },
     async getAmendments(recordId, actor) {
       const record = getState().attendanceRecords.find((item) => item.id === recordId);

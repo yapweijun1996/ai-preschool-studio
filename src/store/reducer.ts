@@ -127,7 +127,7 @@ export type Action =
   | { type: 'upsertCollector'; collector: AuthorisedCollector; actor?: Actor; at?: string }
   | { type: 'removeCollector'; collectorId: string; actor?: Actor; at?: string }
   | { type: 'withdrawChild'; childId: string; actor?: Actor; at?: string }
-  | { type: 'attendanceChanged'; record: AttendanceRecord; amendment?: AttendanceAmendment; audit: 'marked' | 'amended' | 'departed' | 'checkin'; actor: Actor; auditActor?: AuditEvent['actor']; at: string }
+  | { type: 'attendanceChanged'; record: AttendanceRecord; amendments?: AttendanceAmendment[]; audit: 'marked' | 'amended' | 'departed' | 'checkin'; actor: Actor; auditActor?: AuditEvent['actor']; at: string }
   | { type: 'attendancePinLockout'; childCode: string; state?: PinLockoutState }
   | { type: 'reset'; actor?: Actor; at?: string };
 
@@ -599,8 +599,8 @@ export function reducer(state: State, action: Action): State {
       const records = state.attendanceRecords.some((item) => item.id === action.record.id)
         ? state.attendanceRecords.map((item) => item.id === action.record.id ? action.record : item)
         : [...state.attendanceRecords, action.record];
-      const amendments = action.amendment
-        ? [...state.attendanceAmendments, action.amendment]
+      const amendments = action.amendments?.length
+        ? [...state.attendanceAmendments, ...action.amendments]
         : state.attendanceAmendments;
       const actionName = `attendance.${action.audit}` as AuditAction;
       const summaryKey = ({
@@ -612,7 +612,7 @@ export function reducer(state: State, action: Action): State {
         attendanceRecords: records,
         attendanceAmendments: amendments,
         nextAttendanceNumber: Math.max(state.nextAttendanceNumber, Number(action.record.id.split('-').at(-1)) + 1 || 1),
-        nextAttendanceAmendmentNumber: Math.max(state.nextAttendanceAmendmentNumber, action.amendment ? Number(action.amendment.id.split('-').at(-1)) + 1 || 1 : state.nextAttendanceAmendmentNumber)
+        nextAttendanceAmendmentNumber: Math.max(state.nextAttendanceAmendmentNumber, action.amendments?.length ? Number(action.amendments.at(-1)!.id.split('-').at(-1)) + 1 || 1 : state.nextAttendanceAmendmentNumber)
       }, {
         at: action.at,
         actor: action.auditActor ?? { role: action.actor.role, name: action.actor.name },
