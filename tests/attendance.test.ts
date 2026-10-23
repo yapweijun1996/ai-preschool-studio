@@ -41,6 +41,23 @@ describe('attendance pure domain', () => {
     expect(now(() => new Date('2026-10-22T01:00:00.000Z'))).toBe('2026-10-22T01:00:00.000Z');
   });
 
+  it('keeps advancing from an in-memory session start when session storage throws', () => {
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('blocked'); });
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });
+    const startedAt = Date.parse('2027-01-01T00:00:00.000Z');
+    try {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(startedAt));
+      resetDemoClock();
+      expect(demoNow(() => new Date(startedAt)).toISOString()).toBe('2026-10-22T01:00:00.000Z');
+      expect(demoNow(() => new Date(startedAt + 60_000)).toISOString()).toBe('2026-10-22T01:01:00.000Z');
+    } finally {
+      getItem.mockRestore();
+      setItem.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
   it('resets the session demo clock back to the 09:00 Singapore anchor', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2027-01-01T00:00:00.000Z'));
