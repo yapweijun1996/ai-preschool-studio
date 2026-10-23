@@ -30,7 +30,7 @@ Status values: **done**, **in progress**, **planned**, **deferred by owner**.
 
 | Module | Status |
 |---|---|
-| Attendance (staff tick / PIN / QR; optional face-match placeholder; amendments with reason) | in progress |
+| Attendance (staff tick / PIN / QR; optional face-match placeholder; amendments with reason) | done (v0.11.0) |
 | Daily Health Check (configurable fever threshold, symptoms, return clearance) | planned |
 | Pick-up & Release (authorised collector, identity check, wrong-release incident) | planned |
 

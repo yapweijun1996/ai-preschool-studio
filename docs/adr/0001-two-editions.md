@@ -32,7 +32,10 @@ Name two editions and give every module one status per edition.
 Rules:
 
 1. Studio Demo keeps its brief. Operations, Communication and Administration modules are
-   **out of scope by brief** here, not "missing". Adding one is a scope change that needs a new ADR.
+   **out of scope by brief** here, not "missing", unless explicitly added through an approved scope
+   change. Attendance is the approved Operations exception for Studio Demo (2026-10-23); the demo
+   implementation remains fictional, uses no camera or biometric processing, and labels face-match
+   unavailable.
 2. Shared concepts keep one definition in both editions: learning areas and milestone scale
    (Learning Framework), the report lifecycle (Draft → In review → Changes requested → Approved,
    "blocked with a reason"), role names, and the rule that every narrative claim cites an
@@ -54,7 +57,7 @@ Status: **exists**, **partial**, **missing**, **out of scope** (by brief), **pla
 | Core | Portfolio Studio | Draft, paragraph, sentence, source link, reflection | exists | in progress |
 | Core | Report Review & Release | Report version, review decision, comment | exists (v0.9.0; release/history) | in progress |
 | Core | Evidence Coverage & Review Queue | derived view | partial | to decide |
-| Operations | Attendance (+ optional face-match adapter) | Attendance record, amendment | in progress | planned |
+| Operations | Attendance (+ optional face-match adapter) | Attendance record, amendment | done (v0.11.0) | planned |
 | Operations | Daily Health Check | Health check, return clearance | out of scope | planned |
 | Operations | Pick-up & Release | Release record | out of scope | planned |
 | Communication | Notices | Notice, acknowledgement | out of scope | planned |
@@ -73,8 +76,10 @@ Centre only. Other modules reference, never redefine.
 
 ## Consequences
 
-- Studio Demo's next modules stay inside its brief: **Learning Framework**, **Evidence Coverage &
-  Review Queue**, **Report Release & History** (with a minimal audit trail).
+- Attendance is included in Studio Demo by the approved 2026-10-23 scope change; all sample data
+  stays fictional and face-match remains an unavailable placeholder.
+- Studio Demo's next modules stay inside its brief: **Daily Health Check** and **Pick-up & Release**
+  remain out of scope unless separately approved.
 - Learning areas get stable keys mapped to the Nurturing Early Learners (NEL) framework, so both
   editions can align later without renaming stored data.
 - Reviews and coding agents can tell "out of scope" from "missing" by reading this table.

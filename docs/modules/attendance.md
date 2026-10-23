@@ -3,7 +3,7 @@
 - Tier: Operations
 - Owns: AttendanceRecord, AttendanceAmendment and check-in method configuration
 - Reads: Child, Class and AuthorisedCollector (Children & Classes); consent (Privacy Centre, planned; demo placeholder: face-match consent is not recorded for any child)
-- Status: in progress (stage 1: spec, domain and demo port)
+- Status: done (v0.11.0)
 
 ## Purpose
 
