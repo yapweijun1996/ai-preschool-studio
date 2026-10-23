@@ -5,6 +5,9 @@ implement this contract over its REST or RPC API. The demo implementation wraps 
 reducer and selectors; pages still use the current context directly in this phase. They migrate
 to `useDataPort()` in roadmap Phase 0 step 2.
 
+The demo uses a session-wide monotonic clock anchored at 09:00 Asia/Singapore on `TODAY`; Studio
+Platform uses the real school clock.
+
 The method names follow the Data port sections in `docs/modules/*.md`. Duplicate proposals are
 listed once. `PortResult<T>` represents guarded writes as either `{ ok: true, value }` or
 `{ ok: false, reason }`.

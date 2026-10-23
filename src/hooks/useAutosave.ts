@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TODAY } from '../data/demo';
 import { useI18n } from '../i18n';
+import { now } from '../utils/clock';
 
 /** `at` is the save time already formatted for the current language (HH:MM). */
 /** `idle`: nothing has been saved yet in this session, so no save time is shown. */
@@ -37,7 +38,7 @@ export function useAutosave<T>(value: T, persist: (v: T) => void, shouldFail: bo
           setInner({ kind: 'failed' });
         } else {
           persist(latest.current);
-          setInner({ kind: 'saved', at: new Date() });
+          setInner({ kind: 'saved', at: new Date(now()) });
         }
       }, 700)
     );

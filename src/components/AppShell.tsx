@@ -14,7 +14,7 @@ import { ModulePanel } from './ModulePanel';
 import { DEMO_ROLES, demoRole } from '../roles';
 import { useRole } from '../roles/RoleContext';
 import type { Capability } from '../roles';
-import { now } from '../utils/clock';
+import { now, resetDemoClock } from '../utils/clock';
 import { useRoutePending } from '../routes/RoutePending';
 
 export type Module = 'dashboard' | 'students' | 'observations' | 'attendance' | 'reports' | 'settings';
@@ -210,7 +210,7 @@ function DemoMenuItems({ close }: { close: () => void }) {
       <button className="menu-item" type="button" role="menuitemcheckbox" aria-checked={state.sim.saveFail} onClick={() => dispatch({ type: 'setSim', key: 'saveFail', value: !state.sim.saveFail })}>
         <Icon name="alertCircle" size={18} /><span className="grow">{t('shell.demo.saveFail')}</span>{state.sim.saveFail && <Icon name="check" size={18} className="ic-primary" />}
       </button>
-      <button className="menu-item" type="button" role="menuitem" onClick={() => { dispatch({ type: 'reset', actor: { role, name: account.name }, at: now() }); close(); }}>
+      <button className="menu-item" type="button" role="menuitem" onClick={() => { dispatch({ type: 'reset', actor: { role, name: account.name }, at: now() }); resetDemoClock(); close(); }}>
         <Icon name="undo" size={18} />{t('shell.demo.reset')}
       </button>
     </>

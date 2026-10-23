@@ -14,7 +14,7 @@ import { usePortfolio } from '../store/PortfolioContext';
 import { useRole } from '../roles/RoleContext';
 import { demoRole } from '../roles';
 import { NotFound } from './NotFound';
-import { now } from '../utils/clock';
+import { now, resetDemoClock } from '../utils/clock';
 
 const isSection = (s: string | undefined): s is SettingsSection => SETTINGS_SECTIONS.some((x) => x.key === s);
 
@@ -278,7 +278,7 @@ function DemoData() {
       <Section title={t('shell.settings.demo.resetHeading')}>
         <p className="sec muted">{t('shell.settings.demo.resetHint')}</p>
         <div className="row">
-          <button className="btn btn-secondary" type="button" onClick={() => { dispatch({ type: 'reset', actor: { role, name: account.name }, at: now() }); setDone(true); }}>
+          <button className="btn btn-secondary" type="button" onClick={() => { dispatch({ type: 'reset', actor: { role, name: account.name }, at: now() }); resetDemoClock(); setDone(true); }}>
             <Icon name="undo" size={18} />
             {t('shell.settings.demo.reset')}
           </button>

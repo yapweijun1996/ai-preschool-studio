@@ -9,7 +9,7 @@
 
 Records each child's daily presence, arrival and departure, and provides a traceable correction history. It does not own enrolment, consent, identity verification or pick-up release. Data is fictional. The demo never captures or processes faces, stores biometric data or uses national ID numbers.
 
-The demo attendance register uses the seeded business date (`TODAY`) with the current Asia/Singapore time of day. Studio Platform uses the real school-local clock.
+The demo uses one session-wide clock anchored at 09:00 Asia/Singapore on `TODAY`, advancing by real elapsed time and continuing across reloads. Resetting demo data in Settings or the demo controls also resets this clock. Studio Platform uses the real school clock.
 
 ## Users and permissions
 

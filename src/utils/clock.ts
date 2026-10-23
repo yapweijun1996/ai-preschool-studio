@@ -1,19 +1,38 @@
 import { TODAY } from '../data/demo';
 
-/** Current instant for persisted events; injectable so callers can make time deterministic. */
-export function now(clock: () => Date = () => new Date()): string {
-  return clock().toISOString();
+const DEMO_SESSION_START_KEY = 'aps-demo-clock-started-at';
+const DEMO_START = Date.parse(`${TODAY}T09:00:00+08:00`);
+let lastElapsed = 0;
+
+function sessionStartedAt(fallback: number): number {
+  try {
+    const stored = window.sessionStorage.getItem(DEMO_SESSION_START_KEY);
+    const parsed = stored === null ? NaN : Number(stored);
+    if (Number.isFinite(parsed)) return parsed;
+    window.sessionStorage.setItem(DEMO_SESSION_START_KEY, String(fallback));
+  } catch { /* Storage can be unavailable in privacy-restricted contexts. */ }
+  return fallback;
 }
 
-/** Demo attendance follows the seeded business date and Singapore wall-clock time of day. */
+/** Resets the shared demo timeline to start at the next clock read. */
+export function resetDemoClock(): void {
+  try { window.sessionStorage.setItem(DEMO_SESSION_START_KEY, String(Date.now())); }
+  catch { /* The clock remains usable when storage is unavailable. */ }
+  lastElapsed = 0;
+}
+
+/** Demo time is one session-wide timeline, anchored at 09:00 Singapore time. */
 export function demoNow(wallClock: () => Date = () => new Date()): Date {
   const instant = wallClock();
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
-  }).formatToParts(instant);
-  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
-  return new Date(`${TODAY}T${values.hour}:${values.minute}:${values.second}.${String(instant.getMilliseconds()).padStart(3, '0')}+08:00`);
+  const startedAt = sessionStartedAt(instant.getTime());
+  const elapsed = Math.max(lastElapsed, instant.getTime() - startedAt);
+  lastElapsed = elapsed;
+  return new Date(DEMO_START + elapsed);
+}
+
+/** Current instant for persisted events; injectable so callers can make time deterministic. */
+export function now(clock: () => Date = demoNow): string {
+  return clock().toISOString();
 }
 
 export function asInstant(value: string): string {

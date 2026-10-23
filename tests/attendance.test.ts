@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEMO_CLASSES, DEMO_CHILDREN } from '../src/children/demo';
 import {
   canAmend, canMark, checkInMethods, dailySummary, isLate,
@@ -10,7 +10,7 @@ import { createDemoAdapter } from '../src/data/demoAdapter';
 import type { DataPort } from '../src/data/port';
 import { initialState, reducer, type State } from '../src/store/reducer';
 import { TODAY } from '../src/data/demo';
-import { demoNow } from '../src/utils/clock';
+import { demoNow, now, resetDemoClock } from '../src/utils/clock';
 
 const schoolClass = DEMO_CLASSES[0];
 const teacher = { role: 'teacher' as const, name: 'Ms. Lim' };
@@ -27,8 +27,20 @@ function adapterFrom(seed = initialState(), clock: () => Date = () => new Date('
 }
 
 describe('attendance pure domain', () => {
-  it('anchors demoNow to the seeded business date and Singapore wall-clock time', () => {
-    expect(demoNow(() => new Date('2027-01-01T00:15:30.123Z')).toISOString()).toBe('2026-10-22T00:15:30.123Z');
+  it('uses one session-persisted elapsed demo timeline from 09:00 Singapore time', () => {
+    const startedAt = Date.parse('2027-01-01T00:00:00.000Z');
+    sessionStorage.setItem('aps-demo-clock-started-at', String(startedAt));
+    expect(demoNow(() => new Date(startedAt + 3 * 60 * 60 * 1000 + 123)).toISOString()).toBe('2026-10-22T04:00:00.123Z');
+    expect(now(() => new Date('2026-10-22T01:00:00.000Z'))).toBe('2026-10-22T01:00:00.000Z');
+  });
+
+  it('resets the session demo clock back to the 09:00 Singapore anchor', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2027-01-01T00:00:00.000Z'));
+    try {
+      resetDemoClock();
+      expect(demoNow().toISOString()).toBe('2026-10-22T01:00:00.000Z');
+    } finally { vi.useRealTimers(); }
   });
   it('derives local dates, times and late status in Singapore independent of host timezone', () => {
     expect(localDate('2026-10-22T16:45:00.000Z')).toBe('2026-10-23');
