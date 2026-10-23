@@ -8,12 +8,13 @@ type Props = {
   backdropClassName: string;
   panelClassName: string;
   fallbackFocusRef?: RefObject<HTMLElement | null>;
+  ariaBusy?: boolean;
 };
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Accessible modal shell shared by form, confirmation, and report dialogs. */
-export function Modal({ labelledBy, describedBy, onClose, children, backdropClassName, panelClassName, fallbackFocusRef }: Props) {
+export function Modal({ labelledBy, describedBy, onClose, children, backdropClassName, panelClassName, fallbackFocusRef, ariaBusy }: Props) {
   const panel = useRef<HTMLElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -67,6 +68,7 @@ export function Modal({ labelledBy, describedBy, onClose, children, backdropClas
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
+        aria-busy={ariaBusy || undefined}
         tabIndex={-1}
         onKeyDown={trapTab}
       >

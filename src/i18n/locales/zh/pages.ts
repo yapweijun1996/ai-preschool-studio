@@ -60,6 +60,7 @@ export const pages: Dict['pages'] = {
     submit: '保存更改',
     save: '保存',
     errorReason: '请输入 5 至 200 个字符的原因。',
+    noOpAmendment: '请选择与当前值不同的值。',
     saved: '出勤记录已保存。',
     refusalUnknownStudent: '找不到该学生。',
     refusalWrongChildObservation: '此记录属于另一名儿童。',

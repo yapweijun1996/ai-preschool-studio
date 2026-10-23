@@ -516,9 +516,11 @@ export function Attendance() {
             {dialog?.kind === 'amend' && dialog.row.record && (
               <AmendDialog
                 row={dialog.row}
+                saveError={error}
                 fallbackFocusRef={fallbackFocusRef}
                 onClose={() => setDialog(null)}
                 onSave={async (field, to, reason, absenceReason) => {
+                  setError('');
                   const result = await port.amendAttendance(
                     dialog.row.record!.id,
                     {
@@ -531,7 +533,6 @@ export function Attendance() {
                   );
                   if (!result.ok) {
                     saveRefusal(result.reason);
-                    setDialog(null);
                     return false;
                   }
                   setMessage(t('pages.attendance.saved'));
@@ -629,6 +630,7 @@ function AmendDialog({
   onClose,
   onSave,
   fallbackFocusRef,
+  saveError,
 }: {
   row: AttendanceRow;
   onClose: () => void;
@@ -639,6 +641,7 @@ function AmendDialog({
     absenceReason?: AbsenceReason,
   ) => Promise<boolean>;
   fallbackFocusRef?: RefObject<HTMLElement | null>;
+  saveError?: string;
 }) {
   const { t } = useI18n();
   const record = row.record!;
@@ -647,6 +650,7 @@ function AmendDialog({
   const [absenceReason, setAbsenceReason] = useState<AbsenceReason | ''>('');
   const [reason, setReason] = useState('');
   const [error, setError] = useState(false);
+  const [saving, setSaving] = useState(false);
   const label =
     field === 'status'
       ? 'pages.attendance.fieldStatus'
@@ -657,6 +661,13 @@ function AmendDialog({
           : 'pages.attendance.fieldAbsence';
   const timeField = field === 'arrivedAt' || field === 'departedAt';
   const statusToAbsent = field === 'status' && to === 'absent';
+  const fromValue =
+    field === 'arrivedAt'
+      ? timeValue(record.arrivedAt)
+      : field === 'departedAt'
+        ? timeValue(record.departedAt)
+        : record[field] ?? '';
+  const noChange = to === fromValue;
   return (
     <Modal
       labelledBy="amend-title"
@@ -664,12 +675,13 @@ function AmendDialog({
       backdropClassName="dialog-backdrop"
       panelClassName="card card-pad stack"
       fallbackFocusRef={fallbackFocusRef}
+      ariaBusy={saving}
     >
       <h2 className="h2" id="amend-title">
         {t('pages.attendance.amendTitle', { name: row.child.name })}
       </h2>
       <label className="stack sec" htmlFor="amend-field">
-        {t('pages.attendance.fieldStatus')}
+        {t('pages.attendance.change')}
         <select
           className="input"
           id="amend-field"
@@ -677,6 +689,7 @@ function AmendDialog({
           onChange={(e) => {
             const next = e.target.value as AmendmentField;
             setField(next);
+            setError(false);
             setTo(
               next === 'status'
                 ? record.status
@@ -709,6 +722,7 @@ function AmendDialog({
             value={to}
             onChange={(e) => {
               setTo(e.target.value);
+              setError(false);
               if (e.target.value === 'absent') setAbsenceReason('');
             }}
           >
@@ -780,13 +794,20 @@ function AmendDialog({
           {t('pages.attendance.errorReason')}
         </p>
       )}
+      {noChange && (
+        <p role="status" className="field-error">
+          {t('pages.attendance.noOpAmendment')}
+        </p>
+      )}
+      {saveError && <p role="alert" className="field-error">{saveError}</p>}
       <div className="row">
-        <button className="btn btn-ghost" type="button" onClick={onClose}>
+        <button className="btn btn-ghost" type="button" disabled={saving} onClick={onClose}>
           {t('pages.attendance.cancel')}
         </button>
         <button
           className="btn btn-primary"
           type="button"
+          disabled={saving || noChange}
           onClick={async () => {
             if (
               reason.trim().length < 5 ||
@@ -797,15 +818,17 @@ function AmendDialog({
               return;
             }
             const value = timeField ? atTime(to, record.date) : to;
-            if (
-              await onSave(
+            setSaving(true);
+            if (await onSave(
                 field,
                 value,
                 reason,
                 statusToAbsent ? (absenceReason as AbsenceReason) : undefined,
-              )
-            )
+              )) {
               onClose();
+            } else {
+              setSaving(false);
+            }
           }}
         >
           {t('pages.attendance.submit')}
@@ -1322,9 +1345,11 @@ export function AttendanceHistory() {
             {dialog && (
               <AmendDialog
                 row={dialog}
+                saveError={error}
                 onClose={() => setDialog(null)}
                 fallbackFocusRef={fallbackFocusRef}
                 onSave={async (field, to, reason, absenceReason) => {
+                  setError('');
                   const result = await port.amendAttendance(
                     dialog.record!.id,
                     {
@@ -1337,7 +1362,6 @@ export function AttendanceHistory() {
                   );
                   if (!result.ok) {
                     setError(t(REFUSAL_KEYS[result.reason]));
-                    setDialog(null);
                     return false;
                   }
                   setMessage(t('pages.attendance.historySaved'));

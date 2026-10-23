@@ -60,6 +60,7 @@ export const pages = {
     submit: 'Save change',
     save: 'Save',
     errorReason: 'Enter a reason between 5 and 200 characters.',
+    noOpAmendment: 'Choose a value that differs from the current value.',
     saved: 'Attendance saved.',
     refusalUnknownStudent: 'The student could not be found.',
     refusalWrongChildObservation: 'This record belongs to another child.',

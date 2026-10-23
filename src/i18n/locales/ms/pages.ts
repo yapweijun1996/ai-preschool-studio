@@ -60,6 +60,7 @@ export const pages: Dict['pages'] = {
     submit: 'Simpan perubahan',
     save: 'Simpan',
     errorReason: 'Masukkan sebab antara 5 hingga 200 aksara.',
+    noOpAmendment: 'Pilih nilai yang berbeza daripada nilai semasa.',
     saved: 'Rekod kehadiran disimpan.',
     refusalUnknownStudent: 'Murid tidak ditemui.',
     refusalWrongChildObservation: 'Rekod ini milik kanak-kanak lain.',

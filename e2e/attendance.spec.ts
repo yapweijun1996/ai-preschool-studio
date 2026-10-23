@@ -39,9 +39,23 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   const aria = row(page, 'Aria Tan');
   await aria.getByRole('button', { name: 'Change attendance for Aria Tan' }).click();
   const amend = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
+  await expect(amend.locator('#amend-field')).toHaveAccessibleName('Change');
+  await expect(amend.locator('#amend-field')).toHaveValue('status');
+  await expect(amend.getByRole('button', { name: 'Save change' })).toBeDisabled();
+  await expect(amend.getByRole('status')).toContainText('differs from the current value');
+  await amend.locator('#amend-field').selectOption('arrivedAt');
+  await expect(amend.locator('#amend-value')).toHaveAccessibleName('Arrival time');
+  await amend.locator('#amend-value').fill('23:59');
   await amend
     .getByLabel('Reason for this change')
     .fill('Corrected against the fictional paper register.');
+  await amend.getByRole('button', { name: 'Save change' }).click();
+  await expect(amend).toBeVisible();
+  await expect(amend.getByLabel('Reason for this change')).toHaveValue(
+    'Corrected against the fictional paper register.',
+  );
+  await expect(amend.getByRole('alert')).toContainText('not in the future');
+  await amend.locator('#amend-value').fill('08:00');
   await amend.getByRole('button', { name: 'Save change' }).click();
   await expect(aria.locator('.attendance-child > strong')).toBeFocused();
   await page.getByRole('link', { name: 'History' }).click();
@@ -133,6 +147,10 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
   const target = page.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' });
   await target.getByRole('button', { name: 'Amend Aria Tan' }).click();
   const dialog = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
+  await expect(dialog.locator('#amend-field')).toHaveAccessibleName('Change');
+  await dialog.locator('#amend-field').selectOption('arrivedAt');
+  await expect(dialog.locator('#amend-value')).toHaveAccessibleName('Arrival time');
+  await dialog.locator('#amend-value').fill('08:00');
   await dialog
     .getByLabel('Reason for this change')
     .fill('Fictional historical correction for acceptance.');
