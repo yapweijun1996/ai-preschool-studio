@@ -11,6 +11,7 @@ import { asInstant, now } from '../utils/clock';
 import { auditEventForDecision } from './audit';
 import { DEMO_CHILDREN, DEMO_CLASSES, DEMO_COLLECTORS, DEMO_GUARDIANS } from '../children/demo';
 import type { AttendanceAmendment, AttendanceRecord, DemoCheckInCredential, PinLockoutState } from '../attendance/domain';
+import { DEMO_ATTENDANCE_AMENDMENTS, DEMO_ATTENDANCE_RECORDS, DEMO_CHECK_IN_CREDENTIALS } from '../attendance/demo';
 import {
   hasPrimaryGuardian, validateChild, validateCollector, validateGuardian, withdrawRefusal,
   type AuthorisedCollector, type Child, type Class, type Guardian
@@ -213,8 +214,10 @@ export function initialState(): State {
     nextGuardianNumber: DEMO_GUARDIANS.length + 1,
     nextCollectorNumber: DEMO_COLLECTORS.length + 1,
     classes: DEMO_CLASSES, children: DEMO_CHILDREN, guardians: DEMO_GUARDIANS, collectors: DEMO_COLLECTORS,
-    attendanceRecords: [], attendanceAmendments: [], attendanceCredentials: [], attendancePinLockouts: {},
-    nextAttendanceNumber: 1, nextAttendanceAmendmentNumber: 1
+    attendanceRecords: DEMO_ATTENDANCE_RECORDS, attendanceAmendments: DEMO_ATTENDANCE_AMENDMENTS,
+    attendanceCredentials: DEMO_CHECK_IN_CREDENTIALS, attendancePinLockouts: {},
+    nextAttendanceNumber: DEMO_ATTENDANCE_RECORDS.length + 1,
+    nextAttendanceAmendmentNumber: DEMO_ATTENDANCE_AMENDMENTS.length + 1
   };
 }
 
