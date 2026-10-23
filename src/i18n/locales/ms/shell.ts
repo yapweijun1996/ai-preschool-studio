@@ -84,7 +84,7 @@ export const shell: Dict['shell'] = {
     attendanceKiosk: 'Kiosk daftar masuk',
     attendanceHistory: 'Sejarah',
     attendanceSummary: 'Kehadiran hari ini',
-    attendanceCounts: 'Hadir {present} · Tidak hadir {absent} · Belum ditanda {notMarked}',
+    attendanceCounts: 'Hadir {present} · Tidak hadir {absent} · Belum ditandakan {notMarked}',
     latest: 'Terkini',
     reportQueue: 'Baris gilir laporan · {term}',
     studentReport: '{name} · laporan',

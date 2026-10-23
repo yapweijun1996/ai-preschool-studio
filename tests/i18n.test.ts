@@ -54,6 +54,15 @@ describe('English dictionary', () => {
   });
 });
 
+it('uses the reviewed attendance labels in all three locales', () => {
+  expect(makeT('en')('pages.attendance.absenceReason')).toBe('Absence reason (required)');
+  expect(makeT('zh')('pages.attendance.kioskTitle')).toBe('自助签到');
+  expect(makeT('zh')('pages.attendance.methodStaff')).toBe('教职员');
+  expect(makeT('zh')('pages.attendance.absenceReason')).toBe('缺席原因（必填）');
+  expect(makeT('ms')('pages.attendance.demoCredentials')).toBe('Butiran log masuk demo rekaan');
+  expect(makeT('ms')('pages.attendance.notMarked')).toBe('Belum ditandakan');
+});
+
 describe('makeT', () => {
   it('translates audit summary keys without interpolating role text', () => {
     const enSummary = makeT('en')('pages.audit.summaryRoleSwitched');

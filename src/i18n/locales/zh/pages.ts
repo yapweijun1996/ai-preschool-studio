@@ -3,7 +3,7 @@ import type { Dict } from '../en';
 // 简体中文（页面）。教师与 AI 内容（观察记录、叙述、反思、审核意见、姓名）属于数据，不翻译。
 export const pages: Dict['pages'] = {
   attendance: {
-    methodStaff: '员工',
+    methodStaff: '教职员',
     methodPin: 'PIN',
     methodQr: '二维码',
     fieldStatus: '状态',
@@ -55,7 +55,7 @@ export const pages: Dict['pages'] = {
     confirm: '确认',
     cancel: '取消',
     absenceTitle: '将 {name} 标记为缺席',
-    absenceReason: '必选缺席原因',
+    absenceReason: '缺席原因（必填）',
     reasonSick: '生病',
     reasonFamily: '家庭原因',
     reasonTravel: '出行',
@@ -105,12 +105,12 @@ export const pages: Dict['pages'] = {
     refusalConsentNotRecorded: '未记录人脸匹配同意。',
     refusalUnknownCard: '无法识别此卡。',
     refusalUnknownRecord: '找不到此出勤记录。',
-    kioskTitle: '签到亭',
+    kioskTitle: '自助签到',
     actorKiosk: '自助签到',
     kioskDemoBanner: '自助签到（演示）',
     exitKiosk: '退出自助签到',
     showDemoCredentials: '显示虚构的演示登录资料',
-    staff: '员工',
+    staff: '教职员',
     pinTab: 'PIN',
     qrTab: '二维码',
     faceTab: '人脸',

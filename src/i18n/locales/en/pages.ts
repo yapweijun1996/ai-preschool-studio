@@ -55,7 +55,7 @@ export const pages = {
     confirm: 'Confirm',
     cancel: 'Cancel',
     absenceTitle: 'Mark {name} absent',
-    absenceReason: 'Required absence reason',
+    absenceReason: 'Absence reason (required)',
     reasonSick: 'Sick',
     reasonFamily: 'Family reason',
     reasonTravel: 'Travel',
