@@ -222,4 +222,11 @@ describe('attendance demo adapter', () => {
     expect(await port.getCheckInMethods('aria')).toContainEqual({ method: 'face-placeholder', available: false, reason: 'consent-not-recorded' });
     expect(await port.checkInWithQr('unknown-card')).toEqual({ ok: false, reason: 'unknown-card' });
   });
+
+  it('does not treat a caller claiming the kiosk name as a teacher', async () => {
+    const { port } = adapterFrom();
+    const fictionalKiosk = { role: 'teacher' as const, name: 'Fictional kiosk' };
+    expect((await port.getAttendanceRegister(schoolClass.id, TODAY, fictionalKiosk)).rows).toHaveLength(0);
+    expect(await port.markPresent('aria', { arrivedAt: iso(TODAY, '09:00'), method: 'staff' }, fictionalKiosk)).toEqual({ ok: false, reason: 'not-permitted' });
+  });
 });

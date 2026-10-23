@@ -58,7 +58,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     if (!can(actor.role, 'attendance.view')) return false;
     if (actor.role !== 'teacher') return true;
     const klass = getState().classes.find((item) => item.id === classId);
-    return (actor.name === TEACHER || actor.name === 'Fictional kiosk') && !!klass?.teacherIds.includes('teacher-lim');
+    return actor.name === TEACHER && !!klass?.teacherIds.includes('teacher-lim');
   };
   const actorId = (actor: Actor): string => {
     if (actor.name === 'Fictional kiosk') return 'check-in-kiosk';
@@ -97,17 +97,17 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
   const mark = (
     childId: string, status: AttendanceStatus, method: AttendanceRecord['method'],
     atIso: string, arrivedAt?: string, absenceReason?: AttendanceRecord['absenceReason'],
-    actor: Actor = { role: 'teacher', name: TEACHER }, audit: 'marked' | 'checkin' = 'marked'
+    actor: Actor = { role: 'teacher', name: TEACHER }, audit: 'marked' | 'checkin' = 'marked', kiosk = false
   ): PortResult<AttendanceRecord> => {
     const state = getState();
     const child = state.children[childId];
     const date = dateInAttendanceZone(atIso);
     const current = state.attendanceRecords.find((record) => record.childId === childId && record.date === date);
-    if (!can(actor.role, 'attendance.mark') || !child || !canReadAttendance(child.classId, actor)) return refusal('not-permitted');
+    if (!child || (kiosk ? child.status !== 'active' : (!can(actor.role, 'attendance.mark') || !canReadAttendance(child.classId, actor)))) return refusal('not-permitted');
     if (method === 'face-placeholder') return refusal('consent-not-recorded');
     const gate = canMark({ child, classId: child?.classId ?? '', date, nowIso: atIso, existing: current });
     if (gate) return refusal(gate);
-    const record = makeRecord(childId, status, method, atIso, actorId(actor), arrivedAt, absenceReason);
+    const record = makeRecord(childId, status, method, atIso, kiosk ? 'kiosk' : actorId(actor), arrivedAt, absenceReason);
     const invalid = validateRecord(record, atIso);
     if (invalid) return refusal(invalid);
     dispatch({ type: 'attendanceChanged', record, audit, actor, at: atIso });
@@ -340,13 +340,13 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       dispatch({ type: 'attendancePinLockout', childCode });
       const child = state.children[credential.childId];
       if (!child) return refusal('unknown-child');
-      return mark(child.id, 'present', 'pin', atIso, atIso, undefined, { role: 'teacher', name: 'Fictional kiosk' }, 'checkin');
+      return mark(child.id, 'present', 'pin', atIso, atIso, undefined, { role: 'teacher', name: TEACHER }, 'checkin', true);
     },
     async checkInWithQr(cardId) {
       const atIso = attendanceNow();
       const credential = getState().attendanceCredentials.find((item) => item.cardId === cardId);
       if (!credential) return refusal('unknown-card');
-      return mark(credential.childId, 'present', 'qr', atIso, atIso, undefined, { role: 'teacher', name: 'Fictional kiosk' }, 'checkin');
+      return mark(credential.childId, 'present', 'qr', atIso, atIso, undefined, { role: 'teacher', name: TEACHER }, 'checkin', true);
     },
     async getCheckInMethods(childId) {
       if (!getState().children[childId]) return checkInMethods(false);
