@@ -153,6 +153,14 @@ describe('attendance demo adapter', () => {
     expect(await port.markAbsent('aria', {} as never, teacher)).toEqual({ ok: false, reason: 'reason-required' });
   });
 
+  it('records each field cleared when amending present to absent', async () => {
+    const { port, getState } = adapterFrom();
+    const present = DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY && item.status === 'present')!;
+    await port.amendAttendance(present.id, { field: 'absenceReason', to: 'sick', reason: 'Fictional correction' }, admin);
+    await port.amendAttendance(present.id, { field: 'status', to: 'absent', reason: 'Fictional correction' }, admin);
+    expect(getState().attendanceAmendments.filter((item) => item.recordId === present.id).map((item) => item.field)).toEqual(['absenceReason', 'status', 'arrivedAt']);
+  });
+
   it('enforces PIN lockout for three failures and clears it after five minutes', async () => {
     let instant = new Date('2026-10-22T09:00:00+08:00');
     const { port } = adapterFrom(initialState(), () => instant);

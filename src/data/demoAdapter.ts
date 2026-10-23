@@ -283,14 +283,21 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       const invalid = validateRecord(amended, attendanceNow());
       if (invalid) return refusal(invalid);
       const at = attendanceNow();
-      const amendment: AttendanceAmendment = {
-        id: `AMEND-${String(state.nextAttendanceAmendmentNumber).padStart(4, '0')}`,
-        recordId, childId: existing.childId, date: existing.date, field: input.field,
-        ...(previous !== undefined ? { from: String(previous) } : {}),
-        ...(value !== undefined ? { to: value } : {}), reason: input.reason.trim(), by: actorId(actor), at
-      };
-      dispatch({ type: 'attendanceChanged', record: amended, amendment, audit: 'amended', actor, at });
-      return success(amendment);
+      const changes: Array<{ field: AttendanceAmendment['field']; from?: string; to?: string }> = [{
+        field: input.field, ...(previous !== undefined ? { from: String(previous) } : {}), ...(value !== undefined ? { to: value } : {})
+      }];
+      if (input.field === 'status') {
+        for (const field of ['arrivedAt', 'departedAt'] as const) {
+          if (existing[field] !== amended[field]) changes.push({ field, ...(existing[field] !== undefined ? { from: existing[field] } : {}), ...(amended[field] !== undefined ? { to: amended[field] } : {}) });
+        }
+      }
+      const amendments = changes.map((change, index): AttendanceAmendment => ({
+        id: `AMEND-${String(state.nextAttendanceAmendmentNumber + index).padStart(4, '0')}`,
+        recordId, childId: existing.childId, date: existing.date, ...change,
+        reason: input.reason.trim(), by: actorId(actor), at
+      }));
+      amendments.forEach((amendment) => dispatch({ type: 'attendanceChanged', record: amended, amendment, audit: 'amended', actor, at }));
+      return success(amendments[0]);
     },
     async getAmendments(recordId, actor) {
       const record = getState().attendanceRecords.find((item) => item.id === recordId);
