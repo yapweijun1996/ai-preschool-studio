@@ -13,6 +13,24 @@ import { PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../../attendance/po
 import { DEMO_END, now } from '../../utils/clock';
 import { KIOSK_TAB_LABELS, REFUSAL_KEYS, type KioskMethod } from './shared';
 
+const STAFF_LOCKOUT_KEY = 'aps-attendance-staff-lockout';
+type StaffLockout = { failedAttempts: number; lockedUntil: number };
+
+function readStaffLockout(): StaffLockout {
+  try {
+    const value = JSON.parse(localStorage.getItem(STAFF_LOCKOUT_KEY) ?? '{}') as Partial<StaffLockout>;
+    if (typeof value.failedAttempts !== 'number' || typeof value.lockedUntil !== 'number') {
+      return { failedAttempts: 0, lockedUntil: 0 };
+    }
+    if (value.lockedUntil && Date.now() >= value.lockedUntil) {
+      return { failedAttempts: 0, lockedUntil: 0 };
+    }
+    return { failedAttempts: value.failedAttempts, lockedUntil: value.lockedUntil };
+  } catch {
+    return { failedAttempts: 0, lockedUntil: 0 };
+  }
+}
+
 export function AttendanceKiosk() {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -27,8 +45,7 @@ export function AttendanceKiosk() {
   const [success, setSuccess] = useState<{ name: string; at: string } | null>(null);
   const [exitOpen, setExitOpen] = useState(false);
   const [staffPin, setStaffPin] = useState('');
-  const [staffFailures, setStaffFailures] = useState(0);
-  const [staffLockedUntil, setStaffLockedUntil] = useState(0);
+  const [staffLockedUntil, setStaffLockedUntil] = useState(() => readStaffLockout().lockedUntil);
   const [staffError, setStaffError] = useState('');
   const [credentialsOpen, setCredentialsOpen] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
@@ -392,12 +409,21 @@ export function AttendanceKiosk() {
                     if (Date.now() < staffLockedUntil) {
                       setStaffError(t('pages.attendance.staffPinLocked'));
                     } else if (staffPin === '8642') {
+                      localStorage.removeItem(STAFF_LOCKOUT_KEY);
                       setStaffPin('');
                       setExitOpen(false);
                       navigate('/attendance');
                     } else {
-                      const failures = staffFailures + 1;
-                      setStaffFailures(failures);
+                      const previous = readStaffLockout();
+                      const failures = previous.failedAttempts + 1;
+                      const lockedUntil = failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT
+                        ? Date.now() + PIN_LOCKOUT_MS
+                        : 0;
+                      setStaffLockedUntil(lockedUntil);
+                      localStorage.setItem(
+                        STAFF_LOCKOUT_KEY,
+                        JSON.stringify({ failedAttempts: failures, lockedUntil }),
+                      );
                       setStaffPin('');
                       setStaffError(
                         failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT
@@ -406,9 +432,6 @@ export function AttendanceKiosk() {
                               count: PIN_ATTEMPTS_BEFORE_LOCKOUT - failures,
                             }),
                       );
-                      if (failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT) {
-                        setStaffLockedUntil(Date.now() + PIN_LOCKOUT_MS);
-                      }
                     }
                   }}
                 >

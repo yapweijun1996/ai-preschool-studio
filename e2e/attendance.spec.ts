@@ -209,6 +209,16 @@ test('exiting kiosk requires fictional staff PIN and locks after three failures'
   }
   await expect(dialog.getByRole('alert')).toContainText('locked after 3 failed attempts');
   await expect(page).toHaveURL(/#\/attendance\/kiosk$/);
+  const lockout = await page.evaluate(() =>
+    localStorage.getItem('aps-attendance-staff-lockout'),
+  );
+  expect(lockout).not.toContain('8642');
+  await page.reload();
+  await page.getByRole('button', { name: 'Exit kiosk' }).click();
+  await page.getByLabel('Staff PIN').fill('8642');
+  await page.getByRole('button', { name: 'Verify and exit' }).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('locked');
+  await page.evaluate(() => localStorage.removeItem('aps-attendance-staff-lockout'));
   await page.reload();
   await page.getByRole('button', { name: 'Exit kiosk' }).click();
   await page.getByLabel('Staff PIN').fill('8642');
