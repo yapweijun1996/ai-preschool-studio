@@ -116,6 +116,9 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await page.getByLabel('4-digit PIN').fill('9999');
     await page.getByRole('button', { name: 'Check in', exact: true }).click();
+    if (attempt < 2) {
+      await expect(page.getByRole('alert')).toContainText(attempt === 0 ? '2 attempts left' : '1 attempt left');
+    }
   }
   await expect(page.getByRole('alert')).toContainText('locked');
   await expect(page.getByRole('alert')).toContainText('5 minutes');

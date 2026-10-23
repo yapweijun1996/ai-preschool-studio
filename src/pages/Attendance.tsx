@@ -7,6 +7,7 @@ import { Modal } from '../components/Modal';
 import { Avatar } from '../components/ui';
 import { DEMO_CHECK_IN_CREDENTIALS } from '../attendance/demo';
 import { formatAttendanceDateTime } from '../attendance/domain';
+import { PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../attendance/policy';
 import { CLASS_NAME, TODAY } from '../data/demo';
 import type {
   AbsenceReason,
@@ -878,18 +879,28 @@ export function AttendanceKiosk() {
   const denied = !role.can('attendance.mark');
   const tryPin = async () => {
     setPinAttempted(true);
+    const attemptedAt = now();
     const result = await port.checkInWithPin(code.trim().toUpperCase(), pin);
     setPin('');
     if (!result.ok) {
-      const lockedUntil = state.attendancePinLockouts[code.trim().toUpperCase()]?.lockedUntil;
-      const minutes = lockedUntil
-        ? Math.max(1, Math.ceil((Date.parse(lockedUntil) - Date.parse(now())) / 60000))
-        : 5;
-      setError(
-        result.reason === 'pin-locked'
-          ? t('pages.attendance.pinLocked', { minutes })
-          : t(REFUSAL_KEYS[result.reason]),
-      );
+      const childCode = code.trim().toUpperCase();
+      if (result.reason === 'pin-locked') {
+        const lockout = state.attendancePinLockouts[childCode];
+        const lockedUntil = lockout?.lockedUntil ?? new Date(
+          Date.parse(attemptedAt) + PIN_LOCKOUT_MS,
+        ).toISOString();
+        const minutes = Math.max(1, Math.ceil((Date.parse(lockedUntil) - Date.parse(attemptedAt)) / 60000));
+        setError(t('pages.attendance.pinLocked', { count: minutes }));
+      } else if (result.reason === 'pin-invalid') {
+        const failedAttempts = (state.attendancePinLockouts[childCode]?.failedAttempts ?? 0) + 1;
+        if (failedAttempts < PIN_ATTEMPTS_BEFORE_LOCKOUT) {
+          setError(t('pages.attendance.pinAttemptsLeft', {
+            count: PIN_ATTEMPTS_BEFORE_LOCKOUT - failedAttempts,
+          }));
+        } else {
+          setError(t(REFUSAL_KEYS[result.reason]));
+        }
+      } else setError(t(REFUSAL_KEYS[result.reason]));
       return;
     }
     done(result.value);
