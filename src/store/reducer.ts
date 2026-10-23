@@ -129,7 +129,8 @@ export type Action =
   | { type: 'withdrawChild'; childId: string; actor?: Actor; at?: string }
   | { type: 'attendanceChanged'; record: AttendanceRecord; amendments?: AttendanceAmendment[]; audit: 'marked' | 'amended' | 'departed' | 'checkin'; actor: Actor; auditActor?: AuditEvent['actor']; at: string }
   | { type: 'attendancePinLockout'; childCode: string; state?: PinLockoutState }
-  | { type: 'reset'; actor?: Actor; at?: string };
+  | { type: 'reset' }
+  | { type: 'demoResetAudit'; actor?: Actor; at?: string };
 
 export function initialState(): State {
   const reports: Record<string, ReportState> = {};
@@ -627,17 +628,16 @@ export function reducer(state: State, action: Action): State {
       else delete lockouts[action.childCode];
       return { ...state, attendancePinLockouts: lockouts };
     }
-    case 'reset': {
-      let fresh = initialState();
-      fresh = appendAudit(fresh, {
+    case 'reset':
+      return initialState();
+    case 'demoResetAudit':
+      return appendAudit(state, {
         at: asInstant(action.at ?? now()),
         actor: action.actor ?? defaultActor,
         action: 'demo.reset',
         target: { type: 'demo', id: 'portfolio' },
         summaryKey: 'pages.audit.summaryReset'
       });
-      return fresh;
-    }
   }
 }
 

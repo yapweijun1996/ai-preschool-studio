@@ -278,7 +278,12 @@ function DemoData() {
       <Section title={t('shell.settings.demo.resetHeading')}>
         <p className="sec muted">{t('shell.settings.demo.resetHint')}</p>
         <div className="row">
-          <button className="btn btn-secondary" type="button" onClick={() => { resetDemoClock(); dispatch({ type: 'reset', actor: { role, name: account.name }, at: now() }); setDone(true); }}>
+          <button className="btn btn-secondary" type="button" onClick={() => {
+            dispatch({ type: 'reset' });
+            resetDemoClock();
+            dispatch({ type: 'demoResetAudit', actor: { role, name: account.name }, at: now() });
+            setDone(true);
+          }}>
             <Icon name="undo" size={18} />
             {t('shell.settings.demo.reset')}
           </button>

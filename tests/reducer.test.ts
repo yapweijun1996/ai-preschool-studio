@@ -36,7 +36,9 @@ describe('portfolio reducer', () => {
     s = reducer(s, { type: 'submitForReview', studentId: 'meiling', submittedAt: '2026-10-22T10:30:00.000Z' });
     s = reducer(s, { type: 'approve', studentId: 'meiling', at: '2026-10-22T11:00:00.000Z' });
     expect(selectReportHistory(s.auditEvents, 'meiling').some((decision) => decision.type === 'approved' && decision.version === 2)).toBe(true);
-    s = reducer(s, { type: 'reset', at: '2026-10-22T12:00:00.000Z' });
+    s = reducer(s, { type: 'reset' });
+    expect(s).toEqual(initialState());
+    s = reducer(s, { type: 'demoResetAudit', at: '2026-10-22T12:00:00.000Z' });
     expect(s.reports.meiling.versions.map((version) => version.version)).toEqual([1]);
     expect(selectReportHistory(s.auditEvents, 'meiling')).toEqual([]);
     expect(s.auditEvents.slice(0, -1)).toEqual(initialState().auditEvents);
@@ -155,8 +157,11 @@ describe('portfolio reducer', () => {
   it('resets the audit log to its seed and appends the reset event newest-first', () => {
     let s = reducer(initialState(), { type: 'submitForReview', studentId: 'aria', submittedAt: '2026-10-22', actor: { role: 'teacher', name: 'Ms. Lim' } });
     s = reducer(s, { type: 'reset' });
+    expect(s.auditEvents).toEqual(initialState().auditEvents);
+    s = reducer(s, { type: 'demoResetAudit', at: '2026-10-22T09:00:00.000Z' });
     expect(s.auditEvents.slice(0, -1)).toEqual(initialState().auditEvents);
     expect(s.auditEvents.at(-1)?.action).toBe('demo.reset');
+    expect(s.auditEvents.at(-1)?.at).toBe('2026-10-22T09:00:00.000Z');
     const filtered = selectAuditLog(s.auditEvents);
     expect(filtered[0].at >= filtered.at(-1)!.at).toBe(true);
   });
