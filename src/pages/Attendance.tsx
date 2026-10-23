@@ -5,6 +5,7 @@ import { AppShell } from '../components/AppShell';
 import { Icon } from '../components/Icon';
 import { Modal } from '../components/Modal';
 import { Avatar } from '../components/ui';
+import { DEMO_CHECK_IN_CREDENTIALS } from '../attendance/demo';
 import { CLASS_NAME, TODAY } from '../data/demo';
 import type { AbsenceReason, AmendmentField, AttendanceRow, AttendanceSummary } from '../attendance/domain';
 import type { PortRefusal } from '../data/port';
@@ -119,3 +120,48 @@ function AmendDialog({ row, onClose, onSave }: { row: AttendanceRow; onClose: ()
   const label = field === 'status' ? 'pages.attendance.fieldStatus' : field === 'arrivedAt' ? 'pages.attendance.fieldArrival' : 'pages.attendance.fieldAbsence';
   return <Modal labelledBy="amend-title" onClose={onClose} backdropClassName="modal-backdrop" panelClassName="modal card card-pad stack"><h2 className="h2" id="amend-title">{t('pages.attendance.amendTitle', { name: row.child.name })}</h2><label className="stack sec" htmlFor="amend-field">{t('pages.attendance.fieldStatus')}<select className="input" id="amend-field" value={field} onChange={(e) => { const next = e.target.value as AmendmentField; setField(next); setTo(next === 'status' ? record.status : next === 'arrivedAt' ? (record.arrivedAt ?? atTime(timeValue(record.arrivedAt))) : record.absenceReason ?? 'other'); }}><option value="status">{t('pages.attendance.fieldStatus')}</option><option value="arrivedAt">{t('pages.attendance.fieldArrival')}</option>{record.status === 'absent' && <option value="absenceReason">{t('pages.attendance.fieldAbsence')}</option>}</select></label><label className="stack sec" htmlFor="amend-value">{t(label)}{field === 'status' ? <select id="amend-value" className="input" value={to} onChange={(e) => setTo(e.target.value)}><option value="present">{t('pages.attendance.valuePresent')}</option><option value="absent">{t('pages.attendance.valueAbsent')}</option></select> : field === 'arrivedAt' ? <input id="amend-value" className="input" type="time" value={to} onChange={(e) => setTo(atTime(e.target.value))} /> : <select id="amend-value" className="input" value={to} onChange={(e) => setTo(e.target.value)}>{(['sick','family','travel','other'] as AbsenceReason[]).map((r) => <option key={r} value={r}>{t(REASON_KEYS[r])}</option>)}</select>}</label><label className="stack sec" htmlFor="amend-reason">{t('pages.attendance.amendReason')}<textarea id="amend-reason" className="input" rows={4} minLength={5} maxLength={200} value={reason} onChange={(e) => { setReason(e.target.value); setError(false); }} /></label><p className="cap muted">{t('pages.attendance.amendHelp')}</p><p className="cap num" aria-live="polite">{t('pages.attendance.characters', { count: reason.length })}</p>{error && <p role="alert" className="field-error">{t('pages.attendance.errorReason')}</p>}<div className="row"><button className="btn btn-ghost" type="button" onClick={onClose}>{t('pages.attendance.cancel')}</button><button className="btn btn-primary" type="button" onClick={async () => { if (reason.trim().length < 5 || reason.length > 200) { setError(true); return; } const value = field === 'arrivedAt' ? to : to; if (await onSave(field, value, reason)) onClose(); }}>{t('pages.attendance.submit')}</button></div></Modal>;
 }
+
+type KioskMethod = 'staff' | 'pin' | 'qr' | 'face';
+export function AttendanceKiosk() {
+  const { t } = useI18n(); const { state } = usePortfolio(); const port = useDataPort(); const role = useRole();
+  const [method, setMethod] = useState<KioskMethod>('staff'); const [query, setQuery] = useState(''); const [code, setCode] = useState(''); const [pin, setPin] = useState(''); const [pinAttempted, setPinAttempted] = useState(false); const [error, setError] = useState(''); const [success, setSuccess] = useState<{name:string;at:string} | null>(null);
+  const children = Object.values(state.children).filter((child) => child.status === 'active');
+  const credentials = DEMO_CHECK_IN_CREDENTIALS.slice(0,3).map((credential) => ({ ...credential, name: state.children[credential.childId]?.name ?? '' }));
+  useEffect(() => { if (!success) return; const timer = window.setTimeout(() => setSuccess(null), 5000); return () => window.clearTimeout(timer); }, [success]);
+  const done = (record: { childId: string; arrivedAt?: string }) => { const child = state.children[record.childId]; setSuccess({ name: child?.name ?? '', at: record.arrivedAt ? localTime(record.arrivedAt) ?? '' : '' }); setError(''); setPin(''); };
+  const denied = !role.can('attendance.view');
+  const tryPin = async () => {
+    setPinAttempted(true);
+    const result = await port.checkInWithPin(code.trim().toUpperCase(), pin);
+    setPin('');
+    if (!result.ok) { const lockedUntil = state.attendancePinLockouts[code.trim().toUpperCase()]?.lockedUntil; const minutes = lockedUntil ? Math.max(1, Math.ceil((Date.parse(lockedUntil) - Date.now()) / 60000)) : 5; setError(result.reason === 'pin-locked' ? t('pages.attendance.pinLocked', { minutes }) : t(REFUSAL_KEYS[result.reason])); return; }
+    done(result.value);
+  };
+  const tryQr = async (cardId: string) => { const result = await port.checkInWithQr(cardId); if (!result.ok) setError(t(REFUSAL_KEYS[result.reason])); else done(result.value); };
+  const tryStaff = async (childId: string) => { const result = await port.markPresent(childId, { arrivedAt: atTime(timeValue()), method: 'staff' }, actor(role.role)); if (!result.ok) setError(t(REFUSAL_KEYS[result.reason])); else done(result.value); };
+  return <AppShell module="attendance" mobileTitle={t('pages.attendance.kioskTitle')}>
+    {() => denied ? <AccessDenied title="pages.attendance.kioskTitle" /> : <div className="page attendance-page kiosk-page">
+      <div className="page-title-row"><div className="grow"><h1 className="h1">{t('pages.attendance.kioskTitle')}</h1><p className="sec muted">{CLASS_NAME}</p></div><Link className="btn btn-ghost" to="/attendance">{t('pages.attendance.title')}</Link></div>
+      <div className="attendance-kiosk-tabs" role="tablist" aria-label={t('pages.attendance.kioskTitle')}>
+        {(['staff','pin','qr','face'] as KioskMethod[]).map((item) => <button key={item} className="btn btn-secondary" id={`kiosk-tab-${item}`} role="tab" aria-selected={method === item} aria-controls="kiosk-panel" aria-disabled={item === 'face' || undefined} onClick={() => { setMethod(item); setError(''); setSuccess(null); }}>{t(`pages.attendance.${item === 'staff' ? 'staff' : item === 'pin' ? 'pinTab' : item === 'qr' ? 'qrTab' : 'faceTab'}`)}</button>)}
+      </div>
+      <section id="kiosk-panel" className="card card-pad stack kiosk-panel" role="tabpanel" aria-labelledby={`kiosk-tab-${method}`}>
+        {success ? <div className="kiosk-success" role="status" aria-live="polite"><span className="kiosk-success-mark"><Icon name="check" size={24}/></span><h2 className="h2">{t('pages.attendance.pinSuccess', { name: success.name, time: success.at })}</h2><button type="button" className="btn btn-primary" onClick={() => { setSuccess(null); setCode(''); setPin(''); setQuery(''); setPinAttempted(false); }}>{t('pages.attendance.nextFamily')}</button></div> : <>
+          {error && <div role="alert" className="notice notice-danger"><Icon name="alertCircle" size={18}/><p className="sec">{error}</p></div>}
+          {method === 'staff' && <>
+            <h2 className="h2">{t('pages.attendance.staff')}</h2><label className="search-wrap" htmlFor="kiosk-search"><Icon name="search"/><input id="kiosk-search" className="input" type="search" value={query} placeholder={t('pages.attendance.searchChildren')} onChange={(e) => setQuery(e.target.value)}/></label>
+            <div className="kiosk-child-list">{children.filter((child) => child.name.toLowerCase().includes(query.trim().toLowerCase())).map((child) => <div className="row-link" key={child.id}><Avatar initials={child.initials}/><span className="grow strong">{child.name}</span><button className="btn btn-primary" type="button" onClick={() => void tryStaff(child.id)}>{t('pages.attendance.markPresent')}</button></div>)}{children.filter((child) => child.name.toLowerCase().includes(query.trim().toLowerCase())).length === 0 && <p className="sec muted">{t('pages.attendance.noChildren')}</p>}</div>
+          </>}
+          {method === 'pin' && <>
+            <h2 className="h2">{t('pages.attendance.pinTitle')}</h2><form className="kiosk-pin-form" onSubmit={(e) => { e.preventDefault(); void tryPin(); }}><label className="stack sec" htmlFor="child-code">{t('pages.attendance.childCode')}<input id="child-code" className="input" autoComplete="off" inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}/></label><label className="stack sec" htmlFor="child-pin">{t('pages.attendance.pinLabel')}<input id="child-pin" className="input" type="password" autoComplete="off" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g,'').slice(0,4))}/></label><button type="submit" className="btn btn-primary" disabled={code.length < 1 || pin.length !== 4}>{t('pages.attendance.submitPin')}</button></form>
+          </>}
+          {method === 'qr' && <><h2 className="h2">{t('pages.attendance.qrTitle')}</h2><p className="sec muted">{t('pages.attendance.qrIntro')}</p><div className="qr-scan-panel"><Icon name="scan" size={24}/><strong>{t('pages.attendance.scanCard')}</strong></div><div className="kiosk-card-list">{credentials.map((credential) => <button key={credential.cardId} className="btn btn-secondary" type="button" onClick={() => void tryQr(credential.cardId)}>{credential.cardId} · {credential.name}</button>)}</div></>}
+          {method === 'face' && <><h2 className="h2">{t('pages.attendance.faceTab')}</h2><div className="face-placeholder" aria-hidden="true"><span className="face-card"><span className="face-card-band"/><span className="face-card-line"/><span className="face-card-slash"/></span><Icon name="lock" size={24}/></div><div className="notice notice-info"><Icon name="info" size={18}/><p className="sec">{t('pages.attendance.faceUnavailable')}</p></div><p className="cap muted">{t('pages.attendance.faceNoFace')}</p></>}
+        </>}
+      </section>
+      <section className="card card-pad stack" aria-labelledby="demo-credential-title"><h2 className="h2" id="demo-credential-title">{t('pages.attendance.demoCredentials')}</h2><div className="credential-grid"><strong>{t('pages.attendance.credentialName')}</strong><strong>{t('pages.attendance.credentialCode')}</strong><strong>{t('pages.attendance.credentialPin')}</strong><strong>{t('pages.attendance.credentialCard')}</strong>{credentials.map((credential) => <div className="credential-row" key={credential.childCode}><span>{credential.name}</span><code>{credential.childCode}</code><code>{pinAttempted ? '••••' : credential.pin}</code><code>{credential.cardId}</code></div>)}</div></section>
+    </div>}
+  </AppShell>;
+}
+
+export function AttendanceHistory() { return <Attendance />; }

@@ -41,3 +41,22 @@
  .attendance-actions .btn { min-width: 0; justify-content: center; }
  .attendance-actions .time-input { width: 100%; }
 }
+.attendance-kiosk-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.attendance-kiosk-tabs [aria-selected="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.kiosk-panel { min-height: 360px; align-content: start; }
+.kiosk-child-list { display: grid; }
+.kiosk-child-list .row-link { min-height: 64px; }
+.kiosk-pin-form { display: grid; gap: 16px; max-width: 460px; }
+.qr-scan-panel { min-height: 150px; display: grid; place-items: center; align-content: center; gap: 10px; border: 2px dashed var(--color-border-strong); border-radius: var(--radius-lg); color: var(--color-text-muted); }
+.kiosk-card-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.kiosk-success { min-height: 300px; display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; }
+.kiosk-success-mark { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; color: var(--color-primary); background: var(--color-primary-soft); }
+.face-placeholder { min-height: 140px; display: flex; justify-content: center; align-items: center; gap: 18px; color: var(--color-text-muted); }
+.face-card { width: 110px; height: 76px; border: 2px solid var(--color-border-strong); border-radius: 12px; position: relative; overflow: hidden; background: var(--color-surface-muted); }
+.face-card-band { position: absolute; height: 12px; inset: 0 0 auto; background: var(--color-primary-soft); }
+.face-card-line { position: absolute; height: 6px; width: 44px; left: 15px; bottom: 18px; border-radius: 4px; background: var(--color-border-strong); }
+.face-card-slash { position: absolute; height: 3px; width: 90px; left: 8px; top: 38px; transform: rotate(-32deg); background: var(--color-danger); }
+.credential-grid { display: grid; grid-template-columns: 1.2fr .8fr .6fr 1fr; align-items: center; gap: 8px; }
+.credential-row { display: contents; }
+.credential-row > * { padding: 8px 0; border-top: 1px solid var(--color-border); }
+@media(max-width:600px) { .attendance-kiosk-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); } .attendance-kiosk-tabs button { padding-inline: 6px; } .credential-grid { grid-template-columns: 1fr 1fr; } .credential-grid > strong:nth-child(3), .credential-grid > strong:nth-child(4) { display:none; } .credential-row { display:grid; grid-template-columns:1fr 1fr; grid-column:1/-1; border-top:1px solid var(--color-border); padding:8px 0; } .credential-row > * { border:0; padding:2px 0; } }

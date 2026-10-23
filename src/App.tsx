@@ -6,7 +6,7 @@ import { useTheme } from './hooks/useTheme';
 import { I18nProvider, useI18n, type Lang } from './i18n';
 import type { Dict } from './i18n/locales/en';
 import { Dashboard } from './pages/Dashboard';
-import { AddObservation, AuditLog, Catalog, Classes, Coverage, FamilyReport, LearningProgress, NotFound, Attendance, pageKindForPath, PortfolioStudio, ReportPreview, Reviews, RouteChunkSuccess, RouteFallback, RoutePreloadHints, Settings, StudentProfile, Students } from './routes/lazyPages';
+import { AddObservation, AuditLog, Catalog, Classes, Coverage, FamilyReport, LearningProgress, NotFound, Attendance, AttendanceKiosk, AttendanceHistory, pageKindForPath, PortfolioStudio, ReportPreview, Reviews, RouteChunkSuccess, RouteFallback, RoutePreloadHints, Settings, StudentProfile, Students } from './routes/lazyPages';
 import { PwaProvider } from './pwa';
 import { PortfolioProvider } from './store/PortfolioContext';
 import { RoleProvider } from './roles/RoleContext';
@@ -31,8 +31,8 @@ function RoutedPages() {
         <Route path="/" element={<RouteChunkSuccess><Dashboard /></RouteChunkSuccess>} />
         <Route path="/students" element={<RouteChunkSuccess><Students /></RouteChunkSuccess>} />
         <Route path="/classes" element={<RouteChunkSuccess><Classes /></RouteChunkSuccess>} />
-        <Route path="/attendance/check-in" element={<RouteChunkSuccess><Attendance /></RouteChunkSuccess>} />
-        <Route path="/attendance/history" element={<RouteChunkSuccess><Attendance /></RouteChunkSuccess>} />
+        <Route path="/attendance/check-in" element={<RouteChunkSuccess><AttendanceKiosk /></RouteChunkSuccess>} />
+        <Route path="/attendance/history" element={<RouteChunkSuccess><AttendanceHistory /></RouteChunkSuccess>} />
         <Route path="/attendance" element={<RouteChunkSuccess><Attendance /></RouteChunkSuccess>} />
         <Route path="/coverage" element={<RouteChunkSuccess><Coverage /></RouteChunkSuccess>} />
         <Route path="/reviews" element={<RouteChunkSuccess><Reviews /></RouteChunkSuccess>} />
