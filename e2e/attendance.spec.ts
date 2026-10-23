@@ -266,9 +266,10 @@ test('mobile attendance controls keep their targets and credential labels visibl
   await page.goto('./#/attendance/kiosk');
   await page.getByText('Show fictional demo credentials').click();
   const code = page.locator('.credential-row code').first();
+  await expect(code).toHaveAttribute('data-label', 'Code');
   await expect
     .poll(() => code.evaluate((element) => getComputedStyle(element, '::before').content))
-    .toBe('"Code"');
+    .toMatch(/"Code"|attr\(data-label\)/);
 });
 
 test('dashboard attendance tile is limited to teachers and admins', async ({ page }) => {
