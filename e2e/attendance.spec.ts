@@ -294,6 +294,12 @@ test('mobile attendance chips stay centered and summary counts align in Malay', 
     chipText.button.top + chipText.button.height / 2 + 2,
   );
   expect(await notMarked.evaluate((button) => button.scrollWidth <= button.clientWidth)).toBe(true);
+  await notMarked.click();
+  await page.locator('.attendance-row').first().getByRole('button').nth(1).click();
+  await expect(page.getByRole('dialog').locator('legend')).toHaveText(
+    'Sebab ketidakhadiran (wajib)',
+  );
+  await page.getByRole('dialog').getByRole('button', { name: 'Batal' }).click();
   for (const path of ['./#/attendance', './#/attendance/history']) {
     if (path.endsWith('/history')) await page.goto(path);
     const tops = await page.locator('.attendance-stat strong').evaluateAll((items) =>

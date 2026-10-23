@@ -56,7 +56,7 @@ export const pages: Dict['pages'] = {
     confirm: 'Sahkan',
     cancel: 'Batal',
     absenceTitle: 'Tandakan {name} tidak hadir',
-    absenceReason: 'Sebab ketidakhadiran wajib',
+    absenceReason: 'Sebab ketidakhadiran (wajib)',
     reasonSick: 'Sakit',
     reasonFamily: 'Hal keluarga',
     reasonTravel: 'Perjalanan',
