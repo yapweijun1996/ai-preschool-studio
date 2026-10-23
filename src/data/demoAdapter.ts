@@ -9,7 +9,7 @@ import {
 import type { Child } from '../children/domain';
 import {
   canAmend, canMark, checkInMethods, dailySummary, dateInAttendanceZone, isLate,
-  validateAmendmentReason, validateRecord,
+  validateAmendmentReason, validateAmendmentValue, validateRecord,
   type AttendanceAmendment, type AttendanceRecord, type AttendanceRow, type AttendanceStatus
 } from '../attendance/domain';
 import type { AttendanceMarkAbsentInput, AttendanceMarkPresentInput, AttendanceRegister, AttendanceAmendInput } from './port';
@@ -265,8 +265,10 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
         recordClassId: existing.classId
       });
       if (permitted) return refusal(permitted);
-      const previous = existing[input.field];
       const value = input.to === undefined || input.to === '' ? undefined : input.to;
+      const invalidValue = validateAmendmentValue(input.field, value, existing, attendanceNow());
+      if (invalidValue) return refusal(invalidValue);
+      const previous = existing[input.field];
       const amended = { ...existing, [input.field]: value } as AttendanceRecord;
       if (input.field === 'status' && amended.status === 'present') {
         delete amended.absenceReason;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEMO_CLASSES, DEMO_CHILDREN } from '../src/children/demo';
 import {
   canAmend, canMark, checkInMethods, dailySummary, dateInAttendanceZone, isLate,
-  localDate, localTime, validateAmendmentReason, validateRecord,
+  localDate, localTime, validateAmendmentReason, validateAmendmentValue, validateRecord,
   type AttendanceRow
 } from '../src/attendance/domain';
 import { DEMO_ATTENDANCE_RECORDS } from '../src/attendance/demo';
@@ -70,6 +70,13 @@ describe('attendance pure domain', () => {
     expect(canAmend({ role: 'teacher', date: '2026-10-23', today: '2026-10-23', actorClassIds: [], recordClassId: schoolClass.id })).toBe('not-permitted');
     expect(canAmend({ role: 'reviewer', date: '2026-10-23', today: '2026-10-23', recordClassId: schoolClass.id })).toBe('not-permitted');
     expect(canAmend({ role: 'admin', date: '2020-01-01', today: '2026-10-23', recordClassId: schoolClass.id })).toBeUndefined();
+  });
+
+  it('validates amendment enum values and timestamp date/order', () => {
+    const record = { ...DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY && item.status === 'present')! };
+    expect(validateAmendmentValue('status', 'banana', record, '2026-10-22T10:00:00+08:00')).toBe('invalid-time');
+    expect(validateAmendmentValue('absenceReason', 'xyz', record, '2026-10-22T10:00:00+08:00')).toBe('invalid-time');
+    expect(validateAmendmentValue('arrivedAt', '2026-10-21T08:00:00+08:00', record, '2026-10-22T10:00:00+08:00')).toBe('invalid-time');
   });
 
   it('keeps face method consent-gated and disabled by school policy', () => {
