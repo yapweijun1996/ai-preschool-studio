@@ -14,6 +14,9 @@ const PAGES: { key: string; label: TKey; to: string; icon: IconName }[] = [
   { key: 'students', label: 'shell.nav.students', to: '/students', icon: 'users' },
   { key: 'classes', label: 'pages.children.classesTitle', to: '/classes', icon: 'users' },
   { key: 'coverage', label: 'pages.coverage.title', to: '/coverage', icon: 'layers' },
+  { key: 'attendance', label: 'shell.nav.attendance', to: '/attendance', icon: 'calendarCheck' },
+  { key: 'attendanceKiosk', label: 'shell.panel.attendanceKiosk', to: '/attendance/check-in', icon: 'scan' },
+  { key: 'attendanceHistory', label: 'shell.panel.attendanceHistory', to: '/attendance/history', icon: 'calendar' },
   { key: 'reviews', label: 'pages.reviews.title', to: '/reviews', icon: 'fileText' },
   { key: 'audit', label: 'pages.audit.title', to: '/audit', icon: 'fileText' },
   { key: 'settings', label: 'shell.more.settings', to: '/settings', icon: 'settings' }
@@ -75,6 +78,7 @@ export function GlobalSearch() {
       if (p.key === 'students') return role.can('students.view');
       if (p.key === 'classes') return role.can('students.view');
       if (p.key === 'coverage') return role.can('coverage.view');
+      if (p.key.startsWith('attendance')) return role.can('attendance.view');
       if (p.key === 'reviews') return role.can('reviews.view') || role.can('reviews.changes');
       if (p.key === 'audit') return role.can('audit.view');
       return role.can('settings.view');

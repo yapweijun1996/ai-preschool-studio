@@ -55,6 +55,7 @@ export const shell: Dict['shell'] = {
     dashboard: 'Utama',
     students: 'Murid',
     observations: 'Pemerhatian',
+    attendance: 'Kehadiran',
     reports: 'Laporan',
     more: 'Lagi'
   },
@@ -62,6 +63,7 @@ export const shell: Dict['shell'] = {
     dashboard: 'Utama',
     students: 'Murid',
     observations: 'Pemerhatian',
+    attendance: 'Kehadiran',
     reports: 'Laporan',
     settings: 'Tetapan'
   },
@@ -77,6 +79,11 @@ export const shell: Dict['shell'] = {
     overview: 'Gambaran keseluruhan',
     designReference: 'Rujukan reka bentuk',
     addObservation: 'Tambah pemerhatian',
+    attendanceToday: 'Hari ini',
+    attendanceKiosk: 'Kiosk daftar masuk',
+    attendanceHistory: 'Sejarah',
+    attendanceSummary: 'Kehadiran hari ini',
+    attendanceCounts: 'Hadir {present} · Tidak hadir {absent} · Belum ditanda {notMarked}',
     latest: 'Terkini',
     reportQueue: 'Baris gilir laporan · {term}',
     studentReport: '{name} · laporan',

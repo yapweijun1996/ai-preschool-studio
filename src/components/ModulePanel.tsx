@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CLASS_NAME, STUDENTS, type ReportStatus } from '../data/demo';
+import { CLASS_NAME, STUDENTS, TODAY, type ReportStatus } from '../data/demo';
 import { useNavMemory } from '../hooks/useNavMemory';
 import { useI18n } from '../i18n';
 import { useLabels } from '../i18n/labels';
@@ -63,6 +63,8 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
   const status = new URLSearchParams(location.search).get('status');
   const matches = role.can('students.view') && query.trim() ? STUDENTS.filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase())) : [];
   const recentShown = recent.filter((id) => !pinned.includes(id)).slice(0, 5);
+  const attendanceRecords = state.attendanceRecords.filter((record) => record.classId === 'k2-sunflower-2026' && record.date === TODAY);
+  const attendanceCounts = { present: attendanceRecords.filter((record) => record.status === 'present').length, absent: attendanceRecords.filter((record) => record.status === 'absent').length, notMarked: Object.values(state.children).filter((child) => child.status === 'active').length - attendanceRecords.length };
   const counts = (st: ReportStatus) => Object.values(state.reports).filter((r) => r.status === st).length;
   const latestObs = [...state.observations].filter((o) => o.term === 4).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   const studentId = currentStudentId ?? 'aria';
@@ -105,6 +107,14 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
           <>
             <Link className="nav-link" to="/students" aria-current={path === '/students' && !status ? 'page' : undefined}><Icon name="users" size={18} />{CLASS_NAME}<span className="cap muted nav-meta">{STUDENTS.length}</span></Link>
             {role.can('coverage.view') && <Link className="nav-link" to="/coverage" aria-current={path === '/coverage' ? 'page' : undefined}><Icon name="layers" size={18} />{t('pages.coverage.title')}</Link>}
+          </>
+        )}
+        {module === 'attendance' && role.can('attendance.view') && (
+          <>
+            <Link className="nav-link" to="/attendance" aria-current={path === '/attendance' ? 'page' : undefined}><Icon name="calendarCheck" size={18} />{t('shell.panel.attendanceToday')}</Link>
+            <Link className="nav-link" to="/attendance/check-in" aria-current={path === '/attendance/check-in' ? 'page' : undefined}><Icon name="scan" size={18} />{t('shell.panel.attendanceKiosk')}</Link>
+            <Link className="nav-link" to="/attendance/history" aria-current={path === '/attendance/history' ? 'page' : undefined}><Icon name="calendar" size={18} />{t('shell.panel.attendanceHistory')}</Link>
+            <div className="notice notice-info" style={{ margin: '8px 4px' }}><p className="cap">{t('shell.panel.attendanceSummary')}</p><p className="sec">{t('shell.panel.attendanceCounts', attendanceCounts)}</p></div>
           </>
         )}
         {module === 'observations' && role.can('observation.add') && (

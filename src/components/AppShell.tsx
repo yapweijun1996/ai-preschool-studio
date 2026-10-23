@@ -17,7 +17,7 @@ import type { Capability } from '../roles';
 import { now } from '../utils/clock';
 import { useRoutePending } from '../routes/RoutePending';
 
-export type Module = 'dashboard' | 'students' | 'observations' | 'reports' | 'settings';
+export type Module = 'dashboard' | 'students' | 'observations' | 'attendance' | 'reports' | 'settings';
 
 export const ThemeContext = createContext<{ pref: ThemePref; theme: Theme; setPref: (p: ThemePref) => void }>({
   pref: 'light',
@@ -37,6 +37,7 @@ const NAV: { key: NavModule; to: string; icon: IconName; capability: Capability 
   { key: 'dashboard', to: '/', icon: 'home', capability: 'dashboard.view' },
   { key: 'students', to: '/students', icon: 'users', capability: 'students.view' },
   { key: 'observations', to: '/students/aria/observe', icon: 'clipboard', capability: 'observation.add' },
+  { key: 'attendance', to: '/attendance', icon: 'calendarCheck', capability: 'attendance.view' },
   { key: 'reports', to: '/students?status=review', icon: 'fileText', capability: 'report.view' }
 ];
 
@@ -45,6 +46,8 @@ const visibleNav = (hasCapability: (capability: Capability) => boolean) => NAV.f
     ? hasCapability('report.view') || hasCapability('reviews.view') || hasCapability('reviews.changes')
     : hasCapability(item.capability)
 );
+
+const visibleTabNav = (hasCapability: (capability: Capability) => boolean) => visibleNav(hasCapability).filter((item) => item.key !== 'observations');
 
 export const PANEL_KEY = 'aps-panel-open';
 
@@ -335,7 +338,7 @@ function TabBar({ active }: { active: Module }) {
   const roleContext = useRole();
   return (
     <nav className="tabbar" aria-label={t('shell.nav.main')}>
-      {visibleNav(roleContext.can).map((n) => (
+      {visibleTabNav(roleContext.can).map((n) => (
         <Link key={n.key} className="tabbar-item" to={n.to} aria-current={active === n.key ? 'page' : undefined}>
           <span className="tab-pill"><Icon name={n.icon} /></span>
           <span className="tab-label">{t(`shell.nav.${n.key}`)}</span>
@@ -354,6 +357,7 @@ function TabBar({ active }: { active: Module }) {
         {(close) => (
           <>
             {roleContext.can('settings.view') && <SettingsLink close={close} labelKey="shell.more.settings" />}
+            {roleContext.can('observation.add') && <Link className="menu-item" role="menuitem" to="/students/aria/observe" onClick={close}><Icon name="plus" size={18} />{t('shell.panel.addObservation')}</Link>}
             {roleContext.can('catalog.view') && <Link className="menu-item" role="menuitem" to="/catalog" onClick={close}><Icon name="layers" size={18} />{t('shell.panel.designReference')}</Link>}
             <RoleItems role={roleContext.role} setRole={roleContext.setRole} close={close} />
             <p className="cap muted menu-head">{t('shell.more.language')}</p>

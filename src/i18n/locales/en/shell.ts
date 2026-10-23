@@ -53,6 +53,7 @@ export const shell = {
     dashboard: 'Home',
     students: 'Students',
     observations: 'Observations',
+    attendance: 'Attendance',
     reports: 'Reports',
     more: 'More'
   },
@@ -61,6 +62,7 @@ export const shell = {
     dashboard: 'Home',
     students: 'Students',
     observations: 'Observations',
+    attendance: 'Attendance',
     reports: 'Reports',
     settings: 'Settings'
   },
@@ -76,6 +78,11 @@ export const shell = {
     overview: 'Overview',
     designReference: 'Design reference',
     addObservation: 'Add observation',
+    attendanceToday: 'Today',
+    attendanceKiosk: 'Check-in kiosk',
+    attendanceHistory: 'History',
+    attendanceSummary: 'Today’s attendance',
+    attendanceCounts: 'Present {present} · Absent {absent} · Not marked {notMarked}',
     latest: 'Latest',
     reportQueue: 'Report queue · {term}',
     studentReport: '{name} · report',

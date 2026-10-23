@@ -55,6 +55,7 @@ export const shell: Dict['shell'] = {
     dashboard: '首页',
     students: '学生',
     observations: '观察记录',
+    attendance: '出勤',
     reports: '报告',
     more: '更多'
   },
@@ -62,6 +63,7 @@ export const shell: Dict['shell'] = {
     dashboard: '首页',
     students: '学生',
     observations: '观察记录',
+    attendance: '出勤',
     reports: '报告',
     settings: '设置'
   },
@@ -77,6 +79,11 @@ export const shell: Dict['shell'] = {
     overview: '概览',
     designReference: '设计参考',
     addObservation: '添加观察记录',
+    attendanceToday: '今日',
+    attendanceKiosk: '签到亭',
+    attendanceHistory: '历史记录',
+    attendanceSummary: '今日出勤',
+    attendanceCounts: '出席 {present} · 缺席 {absent} · 未标记 {notMarked}',
     latest: '最新',
     reportQueue: '报告队列 · {term}',
     studentReport: '{name} · 报告',
