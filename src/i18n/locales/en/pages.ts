@@ -37,7 +37,7 @@ export const pages = {
     change: 'Change',
     changeFor: 'Change attendance for {name}',
     setTime: 'Set time',
-    setTimeFor: 'Set arrival time for {name}',
+    setTimeFor: 'Set time — Set arrival time for {name}',
     amendFor: 'Amend {name}',
     summaryLabel: 'Attendance summary',
     registerLabel: 'Today’s attendance register',

@@ -37,7 +37,7 @@ export const pages: Dict['pages'] = {
     change: 'Ubah',
     changeFor: 'Ubah rekod kehadiran {name}',
     setTime: 'Tetapkan masa',
-    setTimeFor: 'Tetapkan masa tiba {name}',
+    setTimeFor: 'Tetapkan masa, tetapkan masa tiba untuk {name}',
     amendFor: 'Pinda rekod {name}',
     summaryLabel: 'Ringkasan kehadiran',
     registerLabel: 'Daftar kehadiran hari ini',

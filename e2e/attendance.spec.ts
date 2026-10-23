@@ -22,7 +22,9 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(page.getByRole('region', { name: 'Today’s attendance register' })).toBeVisible();
   await expect(aiden.getByRole('button', { name: 'Mark Aiden Lee present' })).toBeVisible();
   await expect(aiden.getByRole('button', { name: 'Mark Aiden Lee absent' })).toBeVisible();
-  await expect(aiden.getByRole('button', { name: 'Set arrival time for Aiden Lee' })).toBeVisible();
+  await expect(
+    aiden.getByRole('button', { name: 'Set time — Set arrival time for Aiden Lee' }),
+  ).toBeVisible();
   await aiden.getByRole('button', { name: 'Mark Aiden Lee present' }).click();
   await expect(aiden).toContainText('Present');
   await expect(aiden.locator('.attendance-child > strong')).toBeFocused();
@@ -67,7 +69,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await page.getByRole('link', { name: 'Today' }).click();
   await page.getByRole('button', { name: /Not marked/ }).click();
   const timeRow = page.locator('#main .attendance-row').first();
-  await timeRow.getByRole('button', { name: /^Set arrival time for/ }).click();
+  await timeRow.getByRole('button', { name: /^Set time — Set arrival time for/ }).click();
   await expect(timeRow.getByRole('button', { name: 'Cancel' })).toBeVisible();
   await timeRow.getByRole('button', { name: 'Cancel' }).click();
   await page.getByRole('button', { name: 'Mark remaining present' }).click();
