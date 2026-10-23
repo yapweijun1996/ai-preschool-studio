@@ -127,6 +127,14 @@ Lighthouse route is now Catalog at 138,513 B; its script budget remains
 20,145 B lower than before, and the heaviest configured page is 17,975 B lower.
 No budget increase is needed.
 
+### Route-lazy CSS ownership
+
+CSS imported by a route-lazy module is loaded with that route. Components that
+can render outside that route must not rely on those styles. Put shared component
+styles in a stylesheet imported by the components that use them (or in the
+global stylesheet), and keep route-only styles with the route. Cold-load browser
+checks should cover every shared component that uses route-lazy CSS.
+
 ## Route and language load recovery (2026-10-23)
 
 If a route chunk fails to preload or import, the app retries once by reloading
