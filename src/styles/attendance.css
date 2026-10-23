@@ -60,3 +60,13 @@
 .credential-row { display: contents; }
 .credential-row > * { padding: 8px 0; border-top: 1px solid var(--color-border); }
 @media(max-width:600px) { .attendance-kiosk-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); } .attendance-kiosk-tabs button { padding-inline: 6px; } .credential-grid { grid-template-columns: 1fr 1fr; } .credential-grid > strong:nth-child(3), .credential-grid > strong:nth-child(4) { display:none; } .credential-row { display:grid; grid-template-columns:1fr 1fr; grid-column:1/-1; border-top:1px solid var(--color-border); padding:8px 0; } .credential-row > * { border:0; padding:2px 0; } }
+.history-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.history-toolbar label { min-width: 220px; }
+.history-row { align-items: start; }
+.history-row .attendance-child { align-self: center; }
+.amendment-details { margin-top: 4px; }
+.amendment-details summary { min-height: 36px; display: flex; align-items: center; color: var(--color-primary); cursor: pointer; font-size: 13px; font-weight: 600; }
+.amendment-list { margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; }
+.amendment-list li { display: grid; gap: 4px; color: var(--color-text-muted); font-size: 13px; }
+.amendment-list strong { color: var(--color-text); }
+@media(max-width:600px) { .history-toolbar { align-items: stretch; } .history-toolbar label { width: 100%; } .history-row > .btn { grid-column: 1 / -1; width:100%; justify-content:center; } }

@@ -118,6 +118,23 @@ export const pages = {
     methodUnavailable: 'This method is unavailable.',
 
     historyTitle: 'Attendance history',
+    historyDate: 'School day',
+    historyReadOnly: 'Past registers are read-only for teachers. Admins can amend a record with a reason.',
+    historyLoading: 'Loading attendance history…',
+    historyEmpty: 'No attendance history is available.',
+    amendmentTrail: 'Amendment trail',
+    noAmendments: 'No amendments recorded.',
+    amendmentWhoWhen: '{by} · {when}',
+    amendmentChange: '{field}: {from} → {to}',
+    amendmentReason: 'Reason: {reason}',
+    withdrawn: 'Withdrawn',
+    adminAmend: 'Amend',
+    fieldDeparted: 'Departure time',
+    historySaved: 'Attendance amendment saved.',
+    selectDay: 'Select a seeded school day',
+    timeEmpty: 'Not recorded',
+    readOnlyPast: 'This past register is read-only for teachers.',
+
   },
   shared: {
     addObservation: 'Add observation',

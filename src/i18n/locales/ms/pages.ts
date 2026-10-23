@@ -118,6 +118,23 @@ export const pages: Dict['pages'] = {
     methodUnavailable: 'Kaedah ini tidak tersedia.',
 
     historyTitle: 'Sejarah kehadiran',
+    historyDate: 'Hari persekolahan',
+    historyReadOnly: 'Daftar hari lepas adalah baca sahaja untuk guru. Pentadbir boleh meminda rekod dengan sebab.',
+    historyLoading: 'Memuatkan sejarah kehadiran…',
+    historyEmpty: 'Tiada sejarah kehadiran tersedia.',
+    amendmentTrail: 'Jejak pindaan',
+    noAmendments: 'Tiada pindaan direkodkan.',
+    amendmentWhoWhen: '{by} · {when}',
+    amendmentChange: '{field}: {from} → {to}',
+    amendmentReason: 'Sebab: {reason}',
+    withdrawn: 'Berhenti',
+    adminAmend: 'Pinda',
+    fieldDeparted: 'Masa keluar',
+    historySaved: 'Pindaan kehadiran disimpan.',
+    selectDay: 'Pilih hari persekolahan yang disemai',
+    timeEmpty: 'Tidak direkodkan',
+    readOnlyPast: 'Daftar hari lepas adalah baca sahaja untuk guru.',
+
   },
   shared: {
     addObservation: 'Tambah pemerhatian',

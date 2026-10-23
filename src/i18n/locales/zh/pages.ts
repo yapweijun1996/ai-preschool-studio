@@ -118,6 +118,23 @@ export const pages: Dict['pages'] = {
     methodUnavailable: '此方式不可用。',
 
     historyTitle: '出勤历史',
+    historyDate: '上课日期',
+    historyReadOnly: '教师只能查看过去的名册。管理员可以填写原因后修改记录。',
+    historyLoading: '正在加载出勤历史…',
+    historyEmpty: '没有可用的出勤历史。',
+    amendmentTrail: '修改记录',
+    noAmendments: '没有修改记录。',
+    amendmentWhoWhen: '{by} · {when}',
+    amendmentChange: '{field}：{from} → {to}',
+    amendmentReason: '原因：{reason}',
+    withdrawn: '已退园',
+    adminAmend: '修改',
+    fieldDeparted: '离园时间',
+    historySaved: '出勤修改已保存。',
+    selectDay: '选择已载入的上课日',
+    timeEmpty: '未记录',
+    readOnlyPast: '教师只能查看过去的名册。',
+
   },
   shared: {
     addObservation: '添加观察记录',
