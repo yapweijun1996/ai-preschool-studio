@@ -49,6 +49,7 @@ export function AttendanceKiosk() {
   const [staffError, setStaffError] = useState('');
   const [credentialsOpen, setCredentialsOpen] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
+  const pinRef = useRef<HTMLInputElement>(null);
   const staffPinRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const resetFocusRef = useRef(false);
@@ -79,6 +80,9 @@ export function AttendanceKiosk() {
   useEffect(() => {
     if (exitOpen && staffError) staffPinRef.current?.focus();
   }, [exitOpen, staffError]);
+  useEffect(() => {
+    if (!success && method === 'pin' && error) pinRef.current?.focus();
+  }, [error, method, success]);
   const done = (record: { childId: string; arrivedAt?: string }) => {
     const child = state.children[record.childId];
     setSuccess({
@@ -275,6 +279,7 @@ export function AttendanceKiosk() {
                         {t('pages.attendance.pinLabel')}
                         <input
                           id="child-pin"
+                          ref={pinRef}
                           className="input"
                           type="password"
                           autoComplete="off"
@@ -417,7 +422,7 @@ export function AttendanceKiosk() {
                       localStorage.removeItem(STAFF_LOCKOUT_KEY);
                       setStaffPin('');
                       setExitOpen(false);
-                      navigate('/attendance');
+                      navigate('/attendance', { state: { focusAttendanceHeading: true } });
                     } else {
                       const previous = readStaffLockout();
                       const failures = previous.failedAttempts + 1;

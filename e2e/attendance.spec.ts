@@ -79,6 +79,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(timeRow.getByRole('button', { name: 'Cancel' })).toBeVisible();
   await expect(timeRow.getByRole('button', { name: /^Save arrival time for/ })).toHaveText('Save');
   await timeRow.getByRole('button', { name: 'Cancel' }).click();
+  await expect(timeRow.getByRole('button', { name: /^Set time — Set arrival time for/ })).toBeFocused();
   await page.getByRole('button', { name: 'Mark remaining present' }).click();
   const bulk = page.getByRole('dialog', { name: 'Mark remaining children present?' });
   await expect(bulk).toContainText('remaining children present');
@@ -153,6 +154,7 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
     await page.getByLabel('4-digit PIN').fill('9999');
     await page.getByRole('button', { name: 'Check in', exact: true }).click();
     if (attempt < 2) {
+      await expect(page.getByLabel('4-digit PIN')).toBeFocused();
       await expect(page.getByRole('alert')).toContainText(attempt === 0 ? '2 attempts left' : '1 attempt left');
       await expect(page.getByRole('alert')).toContainText('Code or PIN not recognised');
     }
@@ -225,6 +227,7 @@ test('exiting kiosk requires fictional staff PIN and locks after three failures'
   await page.getByLabel('Staff PIN').fill('8642');
   await page.getByRole('button', { name: 'Verify and exit' }).click();
   await expect(page).toHaveURL(/#\/attendance$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Attendance' })).toBeFocused();
 });
 
 test('kiosk method tabs fit at mobile width in all supported languages', async ({ page }) => {

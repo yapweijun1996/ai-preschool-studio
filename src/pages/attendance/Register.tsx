@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { AccessDenied } from '../../components/AccessDenied';
 import { AppShell } from '../../components/AppShell';
 import { Icon } from '../../components/Icon';
@@ -29,6 +29,7 @@ import { AmendDialog } from './dialogs/AmendDialog';
 
 export function Attendance() {
   const { t, fmtDate } = useI18n();
+  const location = useLocation();
   const { rows, loading, loadFailed, retry, port, role, refresh } = useRegister();
   const [filter, setFilter] = useState<Filter>('all');
   const [dialog, setDialog] = useState<Dialog>(null);
@@ -37,10 +38,15 @@ export function Attendance() {
   const [timeFor, setTimeFor] = useState<string | null>(null);
   const [arrival, setArrival] = useState(timeValue());
   const trigger = useRef<HTMLButtonElement>(null);
+  const timeTrigger = useRef<HTMLButtonElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
   const fallbackFocusRef = useRef<HTMLElement>(null);
   const fallbackFocusId = useRef<string | null>(null);
   const rowHeadings = useRef(new Map<string, HTMLElement>());
+  useEffect(() => {
+    if (location.state?.focusAttendanceHeading) headingRef.current?.focus();
+  }, [location.state]);
   const focusRow = (childId: string) => {
     focusAttendanceChildWhenReady(childId);
   };
@@ -96,7 +102,9 @@ export function Attendance() {
           <div className="page attendance-page">
             <div className="page-title-row">
               <div className="grow">
-                <h1 className="h1">{t('pages.attendance.title')}</h1>
+                <h1 className="h1" ref={headingRef} tabIndex={-1}>
+                  {t('pages.attendance.title')}
+                </h1>
                 <p className="sec muted">
                   {t('pages.attendance.subtitle', { className: CLASS_NAME })} · {fmtDate(TODAY)}
                 </p>
@@ -288,7 +296,10 @@ export function Attendance() {
                                   <button
                                     className="btn btn-ghost"
                                     type="button"
-                                    onClick={() => setTimeFor(null)}
+                                    onClick={() => {
+                                      setTimeFor(null);
+                                      window.requestAnimationFrame(() => timeTrigger.current?.focus());
+                                    }}
                                   >
                                     {t('pages.attendance.cancel')}
                                   </button>
@@ -328,6 +339,7 @@ export function Attendance() {
                                     aria-label={t('pages.attendance.setTimeFor', {
                                       name: row.child.name,
                                     })}
+                                    ref={timeTrigger}
                                     onClick={() => {
                                       setTimeFor(row.child.id);
                                       setArrival(timeValue());
