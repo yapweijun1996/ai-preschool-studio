@@ -57,7 +57,7 @@ export type AuditSummaryKey =
 export interface AuditEvent {
   id: string;
   at: string;
-  actor: { role: Role; name: string };
+  actor: { role: Role | 'kiosk'; name: string };
   action: AuditAction;
   target: { type: 'student' | 'child' | 'demo'; id: string };
   summaryKey: AuditSummaryKey;
@@ -127,7 +127,7 @@ export type Action =
   | { type: 'upsertCollector'; collector: AuthorisedCollector; actor?: Actor; at?: string }
   | { type: 'removeCollector'; collectorId: string; actor?: Actor; at?: string }
   | { type: 'withdrawChild'; childId: string; actor?: Actor; at?: string }
-  | { type: 'attendanceChanged'; record: AttendanceRecord; amendment?: AttendanceAmendment; audit: 'marked' | 'amended' | 'departed' | 'checkin'; actor: Actor; at: string }
+  | { type: 'attendanceChanged'; record: AttendanceRecord; amendment?: AttendanceAmendment; audit: 'marked' | 'amended' | 'departed' | 'checkin'; actor: Actor; auditActor?: AuditEvent['actor']; at: string }
   | { type: 'attendancePinLockout'; childCode: string; state?: PinLockoutState }
   | { type: 'reset'; actor?: Actor; at?: string };
 
@@ -615,7 +615,7 @@ export function reducer(state: State, action: Action): State {
         nextAttendanceAmendmentNumber: Math.max(state.nextAttendanceAmendmentNumber, action.amendment ? Number(action.amendment.id.split('-').at(-1)) + 1 || 1 : state.nextAttendanceAmendmentNumber)
       }, {
         at: action.at,
-        actor: { role: action.actor.role, name: action.actor.name },
+        actor: action.auditActor ?? { role: action.actor.role, name: action.actor.name },
         action: actionName,
         target: { type: 'child', id: action.record.childId },
         summaryKey

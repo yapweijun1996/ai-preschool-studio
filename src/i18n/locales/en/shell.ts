@@ -14,6 +14,7 @@ export const shell = {
     reviewer: 'Reviewer / Principal',
     admin: 'School admin',
     parent: 'Parent',
+    kiosk: 'Kiosk',
     viewingAs: 'Viewing as: {role} (demo role — not access control)',
     plannedTitle: '{role} view planned',
     planned: 'Planned role view',

@@ -77,7 +77,7 @@ export function AuditLog() {
       </div>
       <p className="sec">{summary(event)}</p>
       <div className="audit-mobile-meta">
-        <span className="audit-mobile-actor"><strong>{event.actor.name}</strong><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></span>
+        <span className="audit-mobile-actor"><strong>{event.actor.role === 'kiosk' ? t('pages.attendance.kioskTitle') : event.actor.name}</strong><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></span>
         <span className="cap muted">{t('pages.audit.child')}: {event.target.type !== 'demo' ? childName(event.target.id) : '—'}</span>
       </div>
     </article>
@@ -159,7 +159,7 @@ export function AuditLog() {
                           <td>{t(auditActionLabel[event.action])}</td>
                           <td>{event.target.type !== 'demo' ? childName(event.target.id) : '—'}</td>
                           <td>
-                            <span className="audit-actor"><strong>{event.actor.name}</strong><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></span>
+                            <span className="audit-actor"><strong>{event.actor.role === 'kiosk' ? t('pages.attendance.kioskTitle') : event.actor.name}</strong><span className="cap muted">{t(`shell.roles.${event.actor.role}`)}</span></span>
                           </td>
                           <td>{summary(event)}</td>
                           <td className="audit-timestamp"><time dateTime={event.at}>{fmtDate(event.at)} · {fmtTime(new Date(event.at))}</time></td>

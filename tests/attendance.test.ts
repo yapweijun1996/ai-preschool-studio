@@ -189,6 +189,7 @@ describe('attendance demo adapter', () => {
     const unlocked = await port.checkInWithPin('FC-1019', '5009');
     expect(unlocked.ok, JSON.stringify(unlocked)).toBe(true);
     if (unlocked.ok) expect(unlocked.value.markedBy).toBe('kiosk');
+    expect(getState().auditEvents.at(-1)?.actor).toEqual({ role: 'kiosk', name: 'check-in-kiosk' });
     expect(await port.checkInWithPin('missing-code', '5009')).toEqual({ ok: false, reason: 'pin-invalid' });
   });
 

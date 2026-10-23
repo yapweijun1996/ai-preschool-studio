@@ -16,6 +16,7 @@ export const shell: Dict['shell'] = {
     reviewer: 'Penyemak / Pengetua',
     admin: 'Pentadbir sekolah',
     parent: 'Ibu bapa',
+    kiosk: 'Kiosk',
     viewingAs: 'Melihat sebagai: {role} (peranan demo — bukan kawalan akses)',
     plannedTitle: 'Paparan {role} dirancang',
     planned: 'Paparan peranan dirancang',

@@ -16,6 +16,7 @@ export const shell: Dict['shell'] = {
     reviewer: '审核人／园长',
     admin: '学校管理员',
     parent: '家长',
+    kiosk: '签到亭',
     viewingAs: '当前角色：{role}（演示角色，不是权限控制）',
     plannedTitle: '{role}界面计划中',
     planned: '角色界面计划中',

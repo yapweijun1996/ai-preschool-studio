@@ -110,7 +110,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     const record = makeRecord(childId, status, method, atIso, kiosk ? 'kiosk' : actorId(actor), arrivedAt, absenceReason);
     const invalid = validateRecord(record, atIso);
     if (invalid) return refusal(invalid);
-    dispatch({ type: 'attendanceChanged', record, audit, actor, at: atIso });
+    dispatch({ type: 'attendanceChanged', record, audit, actor, ...(kiosk ? { auditActor: { role: 'kiosk', name: 'check-in-kiosk' } } : {}), at: atIso });
     return success(record);
   };
 
