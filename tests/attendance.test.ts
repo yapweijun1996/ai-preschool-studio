@@ -53,7 +53,8 @@ describe('attendance pure domain', () => {
 
   it('validates absent and present time invariants', () => {
     const nowIso = '2026-10-23T02:00:00.000Z';
-    expect(validateRecord({ status: 'absent' }, nowIso)).toBeUndefined();
+    expect(validateRecord({ status: 'absent' }, nowIso)).toBe('reason-required');
+    expect(validateRecord({ status: 'absent', absenceReason: 'sick' }, nowIso)).toBeUndefined();
     expect(validateRecord({ status: 'absent', arrivedAt: nowIso }, nowIso)).toBe('invalid-time');
     expect(validateRecord({ status: 'present' }, nowIso)).toBe('invalid-time');
     expect(validateRecord({ status: 'present', arrivedAt: '2026-10-23T03:00:00.000Z' }, nowIso)).toBe('invalid-time');
@@ -145,6 +146,11 @@ describe('attendance demo adapter', () => {
     expect(getState().attendanceRecords.find((record) => record.id === absent.id)).toMatchObject({
       status: 'present', arrivedAt: absent.markedAt
     });
+  });
+
+  it('requires an absence reason when marking absent', async () => {
+    const { port } = adapterFrom();
+    expect(await port.markAbsent('aria', {} as never, teacher)).toEqual({ ok: false, reason: 'reason-required' });
   });
 
   it('enforces PIN lockout for three failures and clears it after five minutes', async () => {

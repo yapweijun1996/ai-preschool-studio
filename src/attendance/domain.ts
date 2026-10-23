@@ -112,6 +112,8 @@ export function validateRecord(
   if (!Number.isFinite(nowMs)) return 'invalid-time';
   if (value.status === 'absent') {
     if (value.arrivedAt || value.departedAt) return 'invalid-time';
+    if (!value.absenceReason) return 'reason-required';
+    if (!(['sick', 'family', 'travel', 'other'] as string[]).includes(value.absenceReason)) return 'invalid-time';
     return undefined;
   }
   if (!value.arrivedAt || !Number.isFinite(Date.parse(value.arrivedAt))) return 'invalid-time';
