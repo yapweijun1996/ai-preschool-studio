@@ -228,6 +228,46 @@ test('kiosk method tabs fit at mobile width in all supported languages', async (
   }
 });
 
+test('mobile attendance chips stay centered and summary counts align in Malay', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page);
+  await page.evaluate(() => localStorage.setItem('aps-lang', 'ms'));
+  await page.reload();
+  const notMarked = page.getByRole('button', { name: /Belum ditandakan/ });
+  await expect(notMarked).toBeVisible();
+  const chipText = await notMarked.evaluate((button) => {
+    const rect = button.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(button);
+    const text = range.getBoundingClientRect();
+    return { button: rect, text };
+  });
+  expect(chipText.text.top + chipText.text.height / 2).toBeGreaterThanOrEqual(
+    chipText.button.top + chipText.button.height / 2 - 2,
+  );
+  expect(chipText.text.top + chipText.text.height / 2).toBeLessThanOrEqual(
+    chipText.button.top + chipText.button.height / 2 + 2,
+  );
+  expect(await notMarked.evaluate((button) => button.scrollWidth <= button.clientWidth)).toBe(true);
+  for (const path of ['./#/attendance', './#/attendance/history']) {
+    if (path.endsWith('/history')) await page.goto(path);
+    const tops = await page.locator('.attendance-stat strong').evaluateAll((items) =>
+      items.map((item) => item.getBoundingClientRect().top),
+    );
+    expect(tops).toHaveLength(4);
+    expect(Math.abs(tops[0] - tops[1])).toBeLessThanOrEqual(1);
+    expect(Math.abs(tops[2] - tops[3])).toBeLessThanOrEqual(1);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const path of ['./#/attendance', './#/attendance/history']) {
+    await page.goto(path);
+    const tops = await page.locator('.attendance-stat strong').evaluateAll((items) =>
+      items.map((item) => item.getBoundingClientRect().top),
+    );
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
+  }
+});
+
 test('legacy check-in route redirects; reviewer sees a read-only kiosk explanation', async ({
   page,
 }) => {
