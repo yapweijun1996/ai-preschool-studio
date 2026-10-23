@@ -31,6 +31,10 @@ Capabilities: `attendance.view` (teacher, reviewer, admin), `attendance.mark` (t
 The dashboard attendance tile is shown to teachers and admins only. Reviewers can read attendance from the attendance screens but do not see the dashboard tile.
 4. Pick-up & Release calls `recordDeparture` when releasing a present child; Attendance alone owns departure time.
 
+## Demo-only credentials
+
+The fictional staff exit PIN and guardian PINs are shown in the kiosk's demo credentials disclosure and stored client-side only for this demo. Studio Platform must use real staff authentication, enforce lockout server-side, and store hashed PINs. Demo credentials must never ship with Studio Platform.
+
 ## Screens and states
 
 - `/attendance`: today's class register, summary strip (present, late, absent, not marked), roster, Present / Absent actions, absence-reason dialog, arrival time defaulting to now, filters and confirmed bulk action. Show default, empty, loading, error, blocked-with-reason and read-only states.
