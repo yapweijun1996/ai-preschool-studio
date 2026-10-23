@@ -11,7 +11,7 @@ Status reflects the Studio Demo code and current roadmap. Links are provided for
 | Core | Portfolio Studio | done (v0.4.0) | [Portfolio Studio](portfolio-studio.md) |
 | Core | Report Release & History | done (v0.9.0) | [Report Release](report-release.md) |
 | Core | Evidence Coverage & Review Queue | done (v0.8.0) | [Evidence Coverage & Review Queue](evidence-coverage.md) |
-| Operations | Attendance (+ optional face-match adapter) | planned | — |
+| Operations | Attendance (+ optional face-match adapter) | in progress | [Attendance](attendance.md) |
 | Operations | Daily Health Check | planned | — |
 | Operations | Pick-up & Release | planned | — |
 | Communication | Notices | planned | — |

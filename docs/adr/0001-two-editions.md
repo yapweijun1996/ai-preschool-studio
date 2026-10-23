@@ -54,7 +54,7 @@ Status: **exists**, **partial**, **missing**, **out of scope** (by brief), **pla
 | Core | Portfolio Studio | Draft, paragraph, sentence, source link, reflection | exists | in progress |
 | Core | Report Review & Release | Report version, review decision, comment | exists (v0.9.0; release/history) | in progress |
 | Core | Evidence Coverage & Review Queue | derived view | partial | to decide |
-| Operations | Attendance (+ optional face-match adapter) | Attendance record, amendment | out of scope | planned |
+| Operations | Attendance (+ optional face-match adapter) | Attendance record, amendment | in progress | planned |
 | Operations | Daily Health Check | Health check, return clearance | out of scope | planned |
 | Operations | Pick-up & Release | Release record | out of scope | planned |
 | Communication | Notices | Notice, acknowledgement | out of scope | planned |
