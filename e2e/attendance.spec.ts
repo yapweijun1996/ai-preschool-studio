@@ -126,6 +126,7 @@ test('filters and summary counts update after marking; reviewer is read-only; pa
 test('kiosk PIN locks after three failures, QR scan works, and Face is unavailable', async ({
   page,
 }) => {
+  await page.clock.install();
   await open(page, './#/attendance/kiosk');
   await expect(page.getByRole('navigation')).toHaveCount(0);
   await expect(page.getByRole('search')).toHaveCount(0);
@@ -162,6 +163,10 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await expect(page.getByRole('alert')).toContainText('locked');
   await expect(page.getByRole('alert')).toContainText('5 minutes');
   await expect(page.getByLabel('4-digit PIN')).toHaveValue('');
+  await page.clock.fastForward(60_000);
+  await page.getByLabel('4-digit PIN').fill('9999');
+  await page.getByRole('button', { name: 'Check in', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('4 minutes');
   await page.getByRole('tab', { name: 'QR' }).click();
   const qrCard = page.locator('.kiosk-card-list').getByRole('button', {
     name: 'QR-FIC-0014',
@@ -192,6 +197,7 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
 });
 
 test('exiting kiosk requires fictional staff PIN and locks after three failures', async ({ page }) => {
+  await page.clock.install();
   await open(page, './#/attendance/kiosk');
   await page.locator('.kiosk-credentials summary').click();
   await expect(page.locator('.kiosk-credentials')).toHaveAttribute('open', '');
@@ -220,7 +226,11 @@ test('exiting kiosk requires fictional staff PIN and locks after three failures'
   await page.getByRole('button', { name: 'Exit kiosk' }).click();
   await page.getByLabel('Staff PIN').fill('8642');
   await page.getByRole('button', { name: 'Verify and exit' }).click();
-  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('locked');
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('5 minutes');
+  await page.clock.fastForward(60_000);
+  await page.getByLabel('Staff PIN').fill('8642');
+  await page.getByRole('button', { name: 'Verify and exit' }).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('4 minutes');
   await page.evaluate(() => localStorage.removeItem('aps-attendance-staff-lockout'));
   await page.reload();
   await page.getByRole('button', { name: 'Exit kiosk' }).click();

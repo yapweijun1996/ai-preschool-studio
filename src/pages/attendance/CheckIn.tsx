@@ -22,13 +22,17 @@ function readStaffLockout(): StaffLockout {
     if (typeof value.failedAttempts !== 'number' || typeof value.lockedUntil !== 'number') {
       return { failedAttempts: 0, lockedUntil: 0 };
     }
-    if (value.lockedUntil && Date.now() >= value.lockedUntil) {
+    if (value.lockedUntil && Date.parse(now()) >= value.lockedUntil) {
       return { failedAttempts: 0, lockedUntil: 0 };
     }
     return { failedAttempts: value.failedAttempts, lockedUntil: value.lockedUntil };
   } catch {
     return { failedAttempts: 0, lockedUntil: 0 };
   }
+}
+
+function remainingMinutes(lockedUntil: number, currentTime: number): number {
+  return Math.max(1, Math.ceil((lockedUntil - currentTime) / 60000));
 }
 
 export function AttendanceKiosk() {
@@ -106,10 +110,7 @@ export function AttendanceKiosk() {
           Date.parse(lockout?.lockedUntil ?? new Date(Date.parse(attemptedAt) + PIN_LOCKOUT_MS).toISOString()),
           DEMO_END,
         );
-        const minutes = Math.max(
-          1,
-          Math.ceil((lockedUntil - Date.parse(attemptedAt)) / 60000),
-        );
+        const minutes = remainingMinutes(lockedUntil, Date.parse(attemptedAt));
         setError(t('pages.attendance.pinLocked', { count: minutes }));
       } else if (result.reason === 'pin-invalid') {
         const failedAttempts = (state.attendancePinLockouts[childCode]?.failedAttempts ?? 0) + 1;
@@ -416,8 +417,13 @@ export function AttendanceKiosk() {
                   type="button"
                   disabled={staffPin.length !== 4}
                   onClick={() => {
-                    if (Date.now() < staffLockedUntil) {
-                      setStaffError(t('pages.attendance.staffPinLocked'));
+                    const attemptedAt = Date.parse(now());
+                    if (attemptedAt < staffLockedUntil) {
+                      setStaffError(
+                        t('pages.attendance.staffPinLocked', {
+                          count: remainingMinutes(staffLockedUntil, attemptedAt),
+                        }),
+                      );
                     } else if (staffPin === '8642') {
                       localStorage.removeItem(STAFF_LOCKOUT_KEY);
                       setStaffPin('');
@@ -427,7 +433,7 @@ export function AttendanceKiosk() {
                       const previous = readStaffLockout();
                       const failures = previous.failedAttempts + 1;
                       const lockedUntil = failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT
-                        ? Date.now() + PIN_LOCKOUT_MS
+                        ? Math.min(attemptedAt + PIN_LOCKOUT_MS, DEMO_END)
                         : 0;
                       setStaffLockedUntil(lockedUntil);
                       localStorage.setItem(
@@ -435,13 +441,13 @@ export function AttendanceKiosk() {
                         JSON.stringify({ failedAttempts: failures, lockedUntil }),
                       );
                       setStaffPin('');
-                      setStaffError(
-                        failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT
-                          ? t('pages.attendance.staffPinLocked')
-                          : t('pages.attendance.staffPinInvalid', {
-                              count: PIN_ATTEMPTS_BEFORE_LOCKOUT - failures,
-                            }),
-                      );
+                      setStaffError(failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT
+                        ? t('pages.attendance.staffPinLocked', {
+                            count: remainingMinutes(lockedUntil, attemptedAt),
+                          })
+                        : t('pages.attendance.staffPinInvalid', {
+                            count: PIN_ATTEMPTS_BEFORE_LOCKOUT - failures,
+                          }));
                     }
                   }}
                 >
