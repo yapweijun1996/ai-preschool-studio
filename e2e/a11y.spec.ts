@@ -16,7 +16,9 @@ const routes = [
   { name: 'children-class-withdrawn-empty', path: './#/classes', role: 'teacher', state: 'withdrawn-empty' },
   { name: 'coverage', path: './#/coverage', role: 'reviewer' },
   { name: 'attendance', path: './#/attendance', role: 'teacher' },
+  { name: 'attendance-set-time', path: './#/attendance', role: 'teacher', state: 'set-time' },
   { name: 'attendance-kiosk', path: './#/attendance/kiosk', role: 'teacher' },
+  { name: 'attendance-exit-dialog', path: './#/attendance/kiosk', role: 'teacher', state: 'exit-dialog' },
   { name: 'attendance-history', path: './#/attendance/history', role: 'admin' },
   { name: 'reviews', path: './#/reviews', role: 'reviewer' },
   { name: 'aria-profile', path: './#/students/aria' },
@@ -75,6 +77,17 @@ for (const route of routes) {
         if (route.state === 'withdraw-refused') {
           await page.locator('.family-section .danger-text').click();
           await page.locator('.family-dialog .btn-primary').click();
+        }
+        if (route.state === 'set-time') {
+          await page
+            .locator('.attendance-row')
+            .filter({ hasText: 'Aiden Lee' })
+            .locator('.attendance-actions button')
+            .nth(2)
+            .click();
+        }
+        if (route.state === 'exit-dialog') {
+          await page.locator('.kiosk-demo-banner button').click();
         }
       }
       await page.waitForTimeout(600);
