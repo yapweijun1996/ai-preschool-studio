@@ -1008,8 +1008,11 @@ export function AttendanceKiosk() {
                         <input
                           id="child-code"
                           className="input"
+                            type="text"
                           autoComplete="off"
-                          inputMode="numeric"
+                            autoCapitalize="characters"
+                            inputMode="text"
+                            pattern="[A-Z]{2}-[0-9]{4}"
                           value={code}
                           onChange={(e) => setCode(e.target.value.toUpperCase())}
                         />

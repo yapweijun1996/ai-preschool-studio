@@ -112,6 +112,10 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await expect(page.getByText('Show fictional demo credentials')).toBeVisible();
   await expect(page.locator('.kiosk-credentials')).not.toHaveAttribute('open', '');
   await page.getByRole('tab', { name: 'PIN' }).click();
+  await expect(page.getByLabel('Child code')).toHaveAttribute('inputmode', 'text');
+  await expect(page.getByLabel('Child code')).toHaveAttribute('autocapitalize', 'characters');
+  await expect(page.getByLabel('Child code')).toHaveAttribute('pattern', '[A-Z]{2}-[0-9]{4}');
+  await expect(page.getByLabel('4-digit PIN')).toHaveAttribute('inputmode', 'numeric');
   await page.getByLabel('Child code').fill('FC-1001');
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await page.getByLabel('4-digit PIN').fill('9999');
