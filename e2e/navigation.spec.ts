@@ -29,7 +29,8 @@ test.describe('breadcrumb, search and domain links · desktop 1440', () => {
     const dialog = page.getByRole('dialog', { name: 'Search' });
     const box = dialog.getByRole('combobox', { name: 'Search' });
     await expect(box).toBeFocused();
-    await expect(dialog.getByRole('option')).toHaveCount(26);
+    // Three Attendance destinations (register, kiosk, history) are now searchable pages.
+    await expect(dialog.getByRole('option')).toHaveCount(29);
     await box.fill('mei');
     await expect(dialog.getByRole('option')).toHaveCount(1);
     await expect(dialog.getByRole('option', { name: /Mei Ling Chua/ })).toHaveAttribute('aria-selected', 'true');
