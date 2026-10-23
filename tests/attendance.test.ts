@@ -133,6 +133,7 @@ describe('attendance demo adapter', () => {
     expect(await port.amendAttendance(record.id, { field: 'arrivedAt', to: iso(TODAY, '08:01'), reason: 'Fictional correction' }, teacher)).toEqual({ ok: false, reason: 'past-date' });
     expect(await port.markAbsent('aria', { reason: 'sick' }, reviewer)).toEqual({ ok: false, reason: 'not-permitted' });
     expect(await port.markAbsent('aria', { reason: 'sick' }, parent)).toEqual({ ok: false, reason: 'not-permitted' });
+    expect(await port.amendAttendance('missing', { field: 'status', to: 'banana', reason: '' } as never, reviewer)).toEqual({ ok: false, reason: 'not-permitted' });
   });
 
   it('requires amendment reasons and supports a reasoned absence-to-present correction', async () => {

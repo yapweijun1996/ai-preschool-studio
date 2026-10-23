@@ -253,6 +253,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       return success(created);
     },
     async amendAttendance(recordId, input: AttendanceAmendInput, actor) {
+      if (!can(actor.role, 'attendance.amend')) return refusal('not-permitted');
       const state = getState();
       const existing = state.attendanceRecords.find((record) => record.id === recordId);
       if (!existing) return refusal('unknown-record');
