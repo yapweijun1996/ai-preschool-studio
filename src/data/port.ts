@@ -131,8 +131,8 @@ export interface DataPort {
   amendAttendance(recordId: string, input: AttendanceAmendInput, actor: Actor): Promise<PortResult<AttendanceAmendment>>;
   getAmendments(recordId: string, actor: Actor): Promise<AttendanceAmendment[]>;
   recordDeparture(childId: string, departedAt: string, actor: Actor): Promise<PortResult<AttendanceRecord>>;
-  checkInWithPin(childCode: string, pin: string, atIso: string): Promise<PortResult<AttendanceRecord>>;
-  checkInWithQr(cardId: string, atIso: string): Promise<PortResult<AttendanceRecord>>;
+  checkInWithPin(childCode: string, pin: string): Promise<PortResult<AttendanceRecord>>;
+  checkInWithQr(cardId: string): Promise<PortResult<AttendanceRecord>>;
   getCheckInMethods(childId: string): Promise<CheckInMethodAvailability[]>;
 
   // Evidence coverage and review queue (derived reads)

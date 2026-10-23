@@ -308,7 +308,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       dispatch({ type: 'attendanceChanged', record: updated, audit: 'departed', actor, at: attendanceNow() });
       return success(updated);
     },
-    async checkInWithPin(childCode, pin, atIso) {
+    async checkInWithPin(childCode, pin) {
+      const atIso = attendanceNow();
       const state = getState();
       const credential = state.attendanceCredentials.find((item) => item.childCode === childCode);
       if (!credential) return refusal('pin-invalid');
@@ -329,7 +330,8 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (!child) return refusal('unknown-child');
       return mark(child.id, 'present', 'pin', atIso, atIso, undefined, { role: 'teacher', name: 'Fictional kiosk' }, 'checkin');
     },
-    async checkInWithQr(cardId, atIso) {
+    async checkInWithQr(cardId) {
+      const atIso = attendanceNow();
       const credential = getState().attendanceCredentials.find((item) => item.cardId === cardId);
       if (!credential) return refusal('unknown-card');
       return mark(credential.childId, 'present', 'qr', atIso, atIso, undefined, { role: 'teacher', name: 'Fictional kiosk' }, 'checkin');
