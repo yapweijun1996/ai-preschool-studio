@@ -79,7 +79,7 @@ export const NotFound = routePage('notFound');
 
 export function pageKindForPath(pathname: string): PageKind | undefined {
   const path = pathname.split('?')[0];
-  return path === '/attendance/check-in' ? 'checkin' : path === '/attendance/history' ? 'attendanceHistory' : path === '/attendance' ? 'attendance'
+  return path === '/attendance/check-in' || path === '/attendance/kiosk' ? 'checkin' : path === '/attendance/history' ? 'attendanceHistory' : path === '/attendance' ? 'attendance'
     : path === '/students' ? 'students'
     : path === '/classes' ? 'classes'
     : path === '/coverage' ? 'coverage'

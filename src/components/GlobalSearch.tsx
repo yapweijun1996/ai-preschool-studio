@@ -15,7 +15,7 @@ const PAGES: { key: string; label: TKey; to: string; icon: IconName }[] = [
   { key: 'classes', label: 'pages.children.classesTitle', to: '/classes', icon: 'users' },
   { key: 'coverage', label: 'pages.coverage.title', to: '/coverage', icon: 'layers' },
   { key: 'attendance', label: 'shell.nav.attendance', to: '/attendance', icon: 'calendarCheck' },
-  { key: 'attendanceKiosk', label: 'shell.panel.attendanceKiosk', to: '/attendance/check-in', icon: 'scan' },
+  { key: 'attendanceKiosk', label: 'shell.panel.attendanceKiosk', to: '/attendance/kiosk', icon: 'scan' },
   { key: 'attendanceHistory', label: 'shell.panel.attendanceHistory', to: '/attendance/history', icon: 'calendar' },
   { key: 'reviews', label: 'pages.reviews.title', to: '/reviews', icon: 'fileText' },
   { key: 'audit', label: 'pages.audit.title', to: '/audit', icon: 'fileText' },

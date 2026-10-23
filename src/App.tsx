@@ -31,7 +31,8 @@ function RoutedPages() {
         <Route path="/" element={<RouteChunkSuccess><Dashboard /></RouteChunkSuccess>} />
         <Route path="/students" element={<RouteChunkSuccess><Students /></RouteChunkSuccess>} />
         <Route path="/classes" element={<RouteChunkSuccess><Classes /></RouteChunkSuccess>} />
-        <Route path="/attendance/check-in" element={<RouteChunkSuccess><AttendanceKiosk /></RouteChunkSuccess>} />
+        <Route path="/attendance/check-in" element={<Navigate to="/attendance/kiosk" replace />} />
+        <Route path="/attendance/kiosk" element={<RouteChunkSuccess><AttendanceKiosk /></RouteChunkSuccess>} />
         <Route path="/attendance/history" element={<RouteChunkSuccess><AttendanceHistory /></RouteChunkSuccess>} />
         <Route path="/attendance" element={<RouteChunkSuccess><Attendance /></RouteChunkSuccess>} />
         <Route path="/coverage" element={<RouteChunkSuccess><Coverage /></RouteChunkSuccess>} />

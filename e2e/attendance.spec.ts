@@ -1,13 +1,21 @@
 import { expect, test } from '@playwright/test';
 
-const open = async (page: import('@playwright/test').Page, path = './#/attendance', role?: string) => {
-  if (role) await page.addInitScript((value) => sessionStorage.setItem('aps-demo-role', value), role);
+const open = async (
+  page: import('@playwright/test').Page,
+  path = './#/attendance',
+  role?: string,
+) => {
+  if (role)
+    await page.addInitScript((value) => sessionStorage.setItem('aps-demo-role', value), role);
   await page.goto(path);
 };
 
-const row = (page: import('@playwright/test').Page, name: string) => page.locator('#main .attendance-row').filter({ hasText: name });
+const row = (page: import('@playwright/test').Page, name: string) =>
+  page.locator('#main .attendance-row').filter({ hasText: name });
 
-test('teacher marks present, absent with required reason, changes a mark, and confirms bulk mark', async ({ page }) => {
+test('teacher marks present, absent with required reason, changes a mark, and confirms bulk mark', async ({
+  page,
+}) => {
   await open(page);
   const aiden = row(page, 'Aiden Lee');
   await aiden.getByRole('button', { name: 'Present', exact: true }).click();
@@ -24,7 +32,9 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   const aria = row(page, 'Aria Tan');
   await aria.getByRole('button', { name: 'Change' }).click();
   const amend = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
-  await amend.getByLabel('Reason for this change').fill('Corrected against the fictional paper register.');
+  await amend
+    .getByLabel('Reason for this change')
+    .fill('Corrected against the fictional paper register.');
   await amend.getByRole('button', { name: 'Save change' }).click();
   await page.getByRole('link', { name: 'History' }).click();
   await page.locator('#history-date').selectOption('2026-10-22');
@@ -41,10 +51,14 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(page.locator('.attendance-stat.stat-notMarked strong')).toHaveText('0');
 });
 
-test('filters and summary counts update after marking; reviewer is read-only; parent is denied', async ({ page }) => {
+test('filters and summary counts update after marking; reviewer is read-only; parent is denied', async ({
+  page,
+}) => {
   await open(page);
   await expect(page.locator('#main .attendance-list[aria-busy="false"]')).toBeVisible();
-  const initialNotMarked = Number(await page.locator('.attendance-stat.stat-notMarked strong').innerText());
+  const initialNotMarked = Number(
+    await page.locator('.attendance-stat.stat-notMarked strong').innerText(),
+  );
   await row(page, 'Aiden Lee').getByRole('button', { name: 'Present', exact: true }).click();
   await expect(page.locator('.attendance-stat.stat-present strong')).toHaveText('13');
   await page.getByRole('button', { name: /Late/ }).click();
@@ -56,14 +70,24 @@ test('filters and summary counts update after marking; reviewer is read-only; pa
   await open(reviewer, './#/attendance', 'reviewer');
   await expect(reviewer.getByText('Read-only: this role can view attendance')).toBeVisible();
   await expect(reviewer.getByRole('button', { name: 'Mark remaining present' })).toHaveCount(0);
-  await expect(reviewer.locator('.attendance-row').getByRole('button', { name: 'Present', exact: true })).toHaveCount(0);
+  await expect(
+    reviewer.locator('.attendance-row').getByRole('button', { name: 'Present', exact: true }),
+  ).toHaveCount(0);
   const parent = await page.context().newPage();
   await open(parent, './#/attendance', 'parent');
   await expect(parent.getByText('This role cannot access this page.')).toBeVisible();
 });
 
-test('kiosk PIN locks after three failures, QR scan works, and Face is unavailable', async ({ page }) => {
-  await open(page, './#/attendance/check-in');
+test('kiosk PIN locks after three failures, QR scan works, and Face is unavailable', async ({
+  page,
+}) => {
+  await open(page, './#/attendance/kiosk');
+  await expect(page.getByRole('navigation')).toHaveCount(0);
+  await expect(page.getByRole('search')).toHaveCount(0);
+  await expect(page.getByText('Kiosk mode (demo)')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Present', exact: true })).toHaveCount(0);
+  await expect(page.getByText('Show fictional demo credentials')).toBeVisible();
+  await expect(page.locator('.kiosk-credentials')).not.toHaveAttribute('open', '');
   await page.getByRole('tab', { name: 'PIN' }).click();
   await page.getByLabel('Child code').fill('FC-1001');
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -82,13 +106,27 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await expect(page.getByText(/Use Staff, PIN or QR/)).toBeVisible();
 });
 
+test('legacy check-in route redirects; reviewer sees a read-only kiosk explanation', async ({
+  page,
+}) => {
+  await open(page, './#/attendance/check-in');
+  await expect(page).toHaveURL(/#\/attendance\/kiosk$/);
+  const reviewer = await page.context().newPage();
+  await open(reviewer, './#/attendance/kiosk', 'reviewer');
+  await expect(reviewer.getByText('This role cannot access this page.')).toBeVisible();
+  await expect(reviewer.getByRole('tab')).toHaveCount(0);
+  await expect(reviewer.getByRole('button', { name: /check in|present/i })).toHaveCount(0);
+});
+
 test('admin can amend a past day; teacher cannot amend a past day', async ({ page }) => {
   await open(page, './#/attendance/history', 'admin');
   await expect(page.locator('#history-date')).toHaveValue(/2026-10-/);
   const target = page.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' });
   await target.getByRole('button', { name: 'Amend' }).click();
   const dialog = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
-  await dialog.getByLabel('Reason for this change').fill('Fictional historical correction for acceptance.');
+  await dialog
+    .getByLabel('Reason for this change')
+    .fill('Fictional historical correction for acceptance.');
   await dialog.getByRole('button', { name: 'Save change' }).click();
   await expect(page.getByRole('status').last()).toContainText('amendment saved');
   await target.locator('details summary').click();
@@ -96,10 +134,17 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
 
   const teacher = await page.context().newPage();
   await open(teacher, './#/attendance/history', 'teacher');
-  await expect(teacher.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' }).getByRole('button', { name: 'Amend' })).toHaveCount(0);
+  await expect(
+    teacher
+      .locator('#main .attendance-row')
+      .filter({ hasText: 'Aria Tan' })
+      .getByRole('button', { name: 'Amend' }),
+  ).toHaveCount(0);
 });
 
-test('keyboard absence dialog traps focus, Escape closes it, and focus returns to trigger', async ({ page }) => {
+test('keyboard absence dialog traps focus, Escape closes it, and focus returns to trigger', async ({
+  page,
+}) => {
   await open(page);
   const target = row(page, 'Aiden Lee');
   const trigger = target.getByRole('button', { name: 'Absent' });
@@ -130,7 +175,9 @@ test('attendance dialogs are centered overlays that block page actions', async (
 
   await expect(target.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
   await expect(
-    target.getByRole('button', { name: 'Present', exact: true }).click({ trial: true, timeout: 500 }),
+    target
+      .getByRole('button', { name: 'Present', exact: true })
+      .click({ trial: true, timeout: 500 }),
   ).rejects.toThrow();
   await expect(target.getByText('Not marked', { exact: true })).toBeVisible();
   await expect(dialog).toBeVisible();
@@ -142,5 +189,7 @@ test('mobile tab bar has Attendance and More contains Add observation', async ({
   const nav = page.getByRole('navigation', { name: 'Main' });
   await expect(nav.getByRole('link', { name: 'Attendance' })).toBeVisible();
   await nav.getByRole('button', { name: 'More' }).click();
-  await expect(page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Add observation' })).toBeVisible();
+  await expect(
+    page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Add observation' }),
+  ).toBeVisible();
 });

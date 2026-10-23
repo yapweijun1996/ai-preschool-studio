@@ -112,7 +112,7 @@ export function ModulePanel({ module, currentStudentId, onToggle, searchOpen, se
         {module === 'attendance' && role.can('attendance.view') && (
           <>
             <Link className="nav-link" to="/attendance" aria-current={path === '/attendance' ? 'page' : undefined}><Icon name="calendarCheck" size={18} />{t('shell.panel.attendanceToday')}</Link>
-            <Link className="nav-link" to="/attendance/check-in" aria-current={path === '/attendance/check-in' ? 'page' : undefined}><Icon name="scan" size={18} />{t('shell.panel.attendanceKiosk')}</Link>
+            <Link className="nav-link" to="/attendance/kiosk" aria-current={path === '/attendance/kiosk' ? 'page' : undefined}><Icon name="scan" size={18} />{t('shell.panel.attendanceKiosk')}</Link>
             <Link className="nav-link" to="/attendance/history" aria-current={path === '/attendance/history' ? 'page' : undefined}><Icon name="calendar" size={18} />{t('shell.panel.attendanceHistory')}</Link>
             <div className="notice notice-info" style={{ margin: '8px 4px' }}><p className="cap">{t('shell.panel.attendanceSummary')}</p><p className="sec">{t('shell.panel.attendanceCounts', attendanceCounts)}</p></div>
           </>
