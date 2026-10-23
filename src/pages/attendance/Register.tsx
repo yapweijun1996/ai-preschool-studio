@@ -278,7 +278,7 @@ export function Attendance() {
                                   <button
                                     className="btn btn-primary"
                                     type="button"
-                                    aria-label={t('pages.attendance.markPresentFor', {
+                                    aria-label={t('pages.attendance.saveArrivalTimeFor', {
                                       name: row.child.name,
                                     })}
                                     onClick={() => void markPresent(row, arrival)}

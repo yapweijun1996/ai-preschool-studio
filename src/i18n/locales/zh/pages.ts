@@ -38,6 +38,7 @@ export const pages: Dict['pages'] = {
     changeFor: '更改 {name} 的出勤记录',
     setTime: '设置时间',
     setTimeFor: '设置时间，设置 {name} 的到达时间',
+    saveArrivalTimeFor: '保存 {name} 的到达时间',
     amendFor: '修改 {name} 的记录',
     summaryLabel: '出勤摘要',
     registerLabel: '今日出勤名册',

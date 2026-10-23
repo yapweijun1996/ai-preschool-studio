@@ -71,6 +71,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   const timeRow = page.locator('#main .attendance-row').first();
   await timeRow.getByRole('button', { name: /^Set time — Set arrival time for/ }).click();
   await expect(timeRow.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  await expect(timeRow.getByRole('button', { name: /^Save arrival time for/ })).toHaveText('Save');
   await timeRow.getByRole('button', { name: 'Cancel' }).click();
   await page.getByRole('button', { name: 'Mark remaining present' }).click();
   const bulk = page.getByRole('dialog', { name: 'Mark remaining children present?' });
