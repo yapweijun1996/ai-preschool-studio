@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import '../styles/catalog.css';
+import '../styles/attendance.css';
 import { Icon } from '../components/Icon';
 import { EmptyIllustration } from '../components/EmptyIllustration';
 import { PhotoIllustration } from '../components/EmptyIllustration';

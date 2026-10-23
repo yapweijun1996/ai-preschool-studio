@@ -87,3 +87,4 @@
 @media(max-width:600px) { .catalog-attendance-grid { grid-template-columns: 1fr; } }
 .filter-chip.is-active, .attendance-status.st-present { color: #105b4b; }
 :root[data-theme="dark"] .filter-chip.is-active, :root[data-theme="dark"] .attendance-status.st-present { color: #34b894; }
+.catalog-attendance .radio-row input { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
