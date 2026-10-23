@@ -14,7 +14,7 @@
         "total-blocking-time": ["warn", { "maxNumericValue": 200, "aggregationMethod": "median-run" }],
         "interactive": ["warn", { "maxNumericValue": 3500, "aggregationMethod": "median-run" }],
         "resource-summary:script:size": ["error", { "maxNumericValue": 159923, "aggregationMethod": "pessimistic" }],
-        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 10978, "aggregationMethod": "pessimistic" }],
+        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 13312, "aggregationMethod": "pessimistic" }],
         "resource-summary:total:size": ["error", { "maxNumericValue": 274597, "aggregationMethod": "pessimistic" }]
       }
     },

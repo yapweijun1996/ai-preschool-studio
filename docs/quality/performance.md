@@ -23,7 +23,7 @@ the heaviest page and worst run are checked despite that grouping.
 | Assertion | Threshold | Severity |
 |---|---:|---|
 | Script resource size | ≤ 159,923 bytes (156.2 KiB) | Error |
-| Stylesheet resource size | ≤ 10,978 bytes (10.7 KiB) | Error |
+| Stylesheet resource size | ≤ 13,312 bytes (13 KiB) | Error |
 | Total resource size | ≤ 274,597 bytes (268.2 KiB) | Error |
 | Accessibility score | ≥ 0.95 | Error |
 | Best Practices score | ≥ 0.90 | Error |
@@ -170,6 +170,18 @@ The stylesheet budget is 10,978 B, 15% above the catalog's 9,546 B. The total
 resource budget remains 274,597 B, 15% above the largest observed route total
 (244,309 B, rounded up). The 159,923 B script limit remains above the current
 largest measured page, Catalog at 138,513 B.
+
+## Live CI stylesheet measurement (2026-10-23)
+
+The v0.11.0 deploy's three-run LHCI collection (run 39905778300) measured
+stylesheet sizes of 9,765, 9,766, 9,766, 9,750, 9,956, 9,764, 9,766, 9,764,
+and 9,763 B across the dashboard, report, and coverage pages; the catalog
+measured 12,921, 12,942, and 12,933 B. The catalog legitimately loads
+`attendance.css` to display the new attendance components. Since LHCI groups
+hash routes as one URL, the stylesheet assertion cannot have a per-route
+budget. The limit is now 13,312 B (13 KiB), about 3% above the measured maximum
+of 12,942 B. Ordinary routes measure about 9.8 KB; the catalog shows every
+module's components.
 
 The same local mobile Lighthouse run scored `#/` 0.92, `#/students` 0.97,
 `#/students/aria/report` 0.96, `#/catalog` 0.94, and `#/coverage` 0.87 for
