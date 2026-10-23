@@ -88,7 +88,7 @@ test.describe('tablet 1024 bottom tabs', () => {
     await expect(page.locator('.rail')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Open sidebar' })).toHaveCount(0);
     // Every tab shows its label at tablet width.
-    for (const name of ['Home', 'Students', 'Observations', 'Reports', 'More']) await expect(nav.getByText(name, { exact: true })).toBeVisible();
+    for (const name of ['Home', 'Students', 'Attendance', 'Reports', 'More']) await expect(nav.getByText(name, { exact: true })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Students' })).toHaveAttribute('aria-current', 'page');
     // Top bar keeps language, theme and account.
     await expect(page.getByRole('button', { name: /Language:/ })).toBeVisible();
@@ -131,6 +131,7 @@ test.describe('mobile 390 shell', () => {
     await page.goto('./#/students');
     await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'More' }).click();
     const sheet = page.getByRole('menu', { name: 'More' });
+    await expect(sheet.getByRole('menuitem', { name: 'Add observation' })).toBeVisible();
     await expect(sheet.getByRole('menuitemcheckbox', { name: 'Simulate AI unavailable' })).toBeVisible();
     await page.screenshot(shot('24-mobile-more-sheet'));
     await page.keyboard.press('Escape');

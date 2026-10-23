@@ -5,7 +5,8 @@ for (const route of [
   { path: '#/students/aria/studio', ready: '.studio-head h1', name: 'studio' },
   { path: '#/students/aria/report', ready: '.a4', name: 'report' },
   { path: '#/catalog', ready: '.catalog-page h2', name: 'catalog' },
-  { path: '#/classes', ready: '.class-roster .row-link', name: 'classes' }
+  { path: '#/classes', ready: '.class-roster .row-link', name: 'classes' },
+  { path: '#/attendance', ready: '#main .attendance-list', name: 'attendance' }
 ]) {
   test(`${route.name} layout shift stays below 0.05 on a slow connection`, async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'CDP is Chromium-only');
