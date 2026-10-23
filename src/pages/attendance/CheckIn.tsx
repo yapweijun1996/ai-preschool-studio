@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AccessDenied } from '../../components/AccessDenied';
 import { Icon } from '../../components/Icon';
@@ -23,15 +23,33 @@ export function AttendanceKiosk() {
   const [pinAttempted, setPinAttempted] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ name: string; at: string } | null>(null);
+  const codeRef = useRef<HTMLInputElement>(null);
+  const successRef = useRef<HTMLHeadingElement>(null);
+  const resetFocusRef = useRef(false);
+  const resetAttempt = () => {
+    resetFocusRef.current = true;
+    setSuccess(null);
+    setCode('');
+    setPin('');
+    setPinAttempted(false);
+    setError('');
+  };
   const credentials = DEMO_CHECK_IN_CREDENTIALS.slice(0, 3).map((credential) => ({
     ...credential,
     name: state.children[credential.childId]?.name ?? '',
   }));
   useEffect(() => {
     if (!success) return;
-    const timer = window.setTimeout(() => setSuccess(null), 5000);
+    successRef.current?.focus();
+    const timer = window.setTimeout(resetAttempt, 5000);
     return () => window.clearTimeout(timer);
   }, [success]);
+  useEffect(() => {
+    if (success || !resetFocusRef.current) return;
+    resetFocusRef.current = false;
+    if (method === 'pin') codeRef.current?.focus();
+    else document.querySelector<HTMLElement>('.kiosk-card-list button')?.focus();
+  }, [method, success]);
   const done = (record: { childId: string; arrivedAt?: string }) => {
     const child = state.children[record.childId];
     setSuccess({
@@ -139,7 +157,7 @@ export function AttendanceKiosk() {
                 <span className="kiosk-success-mark">
                   <Icon name="check" size={24} />
                 </span>
-                <h2 className="h2">
+                <h2 className="h2" ref={successRef} tabIndex={-1}>
                   {t('pages.attendance.pinSuccess', {
                     name: success.name,
                     time: success.at,
@@ -148,12 +166,7 @@ export function AttendanceKiosk() {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => {
-                    setSuccess(null);
-                    setCode('');
-                    setPin('');
-                    setPinAttempted(false);
-                  }}
+                  onClick={resetAttempt}
                 >
                   {t('pages.attendance.nextFamily')}
                 </button>
@@ -180,6 +193,7 @@ export function AttendanceKiosk() {
                         {t('pages.attendance.childCode')}
                         <input
                           id="child-code"
+                          ref={codeRef}
                           className="input"
                           type="text"
                           autoComplete="off"
