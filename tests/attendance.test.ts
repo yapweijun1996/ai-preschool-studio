@@ -163,15 +163,17 @@ describe('attendance demo adapter', () => {
 
   it('enforces PIN lockout for three failures and clears it after five minutes', async () => {
     let instant = new Date('2026-10-22T09:00:00+08:00');
-    const { port } = adapterFrom(initialState(), () => instant);
+    const { port, getState } = adapterFrom(initialState(), () => instant);
     expect(await port.checkInWithPin('FC-1001', '0000')).toEqual({ ok: false, reason: 'pin-invalid' });
     expect(await port.checkInWithPin('FC-1001', '0000')).toEqual({ ok: false, reason: 'pin-invalid' });
     expect(await port.checkInWithPin('FC-1001', '0000')).toEqual({ ok: false, reason: 'pin-locked' });
     instant = new Date('2026-10-22T09:04:59.999+08:00');
-    expect(await port.checkInWithPin('FC-1001', '4821')).toEqual({ ok: false, reason: 'pin-locked' });
+    expect(await port.checkInWithPin('FC-1001', '2467')).toEqual({ ok: false, reason: 'pin-locked' });
+    expect(JSON.stringify(getState().attendancePinLockouts)).not.toContain('2467');
     instant = new Date('2026-10-22T09:05:00+08:00');
-    const unlocked = await port.checkInWithPin('FC-1001', '4821');
+    const unlocked = await port.checkInWithPin('FC-1001', '2467');
     expect(unlocked.ok, JSON.stringify(unlocked)).toBe(true);
+    if (unlocked.ok) expect(unlocked.value.markedBy).toBe('kiosk');
     expect(await port.checkInWithPin('missing-code', '4821')).toEqual({ ok: false, reason: 'pin-invalid' });
   });
 
@@ -192,7 +194,7 @@ describe('attendance demo adapter', () => {
     if (change.ok) expect(change.value.by).toBe('admin-wong');
     const audit = JSON.stringify(getState().auditEvents);
     expect(audit).not.toContain('Fictional reason private to amendment');
-    expect(audit).not.toContain('4821');
+    expect(audit).not.toContain('2467');
     expect(getState().auditEvents.at(-1)?.summaryKey).toBe('attendance.amended');
     expect(getState().attendanceRecords.some((item) => item.date === currentDate && item.childId === childId)).toBe(true);
   });

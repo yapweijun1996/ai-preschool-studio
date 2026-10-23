@@ -97,6 +97,6 @@ export const DEMO_ATTENDANCE_AMENDMENTS: AttendanceAmendment[] = amendments;
 export const DEMO_CHECK_IN_CREDENTIALS: DemoCheckInCredential[] = STUDENTS.map((child, index) => ({
   childId: child.id,
   childCode: `FC-${String(1001 + index)}`,
-  pin: String(4821 + index).padStart(4, '0'),
+  pin: String((index * 7919 + 2467) % 10000).padStart(4, '0'),
   cardId: `QR-FIC-${String(index + 1).padStart(4, '0')}`
 }));

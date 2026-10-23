@@ -25,7 +25,7 @@ Capabilities: `attendance.view` (teacher, reviewer, admin), `attendance.mark` (t
 ## Flows
 
 1. Teacher opens `/attendance`, selects their class register for today, reviews the summary strip, and marks a child Present (arrival defaults to now) or Absent (chooses a reason). Filters are All, Not marked, Present, Absent and Late. “Mark remaining present” requires confirmation.
-2. A guardian uses `/attendance/check-in` and selects Staff, PIN, QR or Face (placeholder). PIN uses fictional child code and PIN values; three wrong attempts lock that code for five minutes. QR simulates a fictional card scan without camera access. Face is unavailable in the demo because no child has face-match consent recorded.
+2. A guardian uses `/attendance/check-in` and selects Staff, PIN, QR or Face (placeholder). Demo PINs are fictional, deterministic, non-sequential values stored in clear text in session state for this demo only; lockout state and errors never contain a PIN. Studio Platform stores only salted PIN hashes. Three wrong attempts lock that code for five minutes. QR simulates a fictional card scan without camera access. Face is unavailable in the demo because no child has face-match consent recorded.
 3. Admin opens `/attendance/history`, chooses a seeded school day, reviews each record and its amendment trail, then amends a field with a required reason. Teachers can read past registers but cannot amend them.
 4. Pick-up & Release calls `recordDeparture` when releasing a present child; Attendance alone owns departure time.
 
