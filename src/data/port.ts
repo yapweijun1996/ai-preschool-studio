@@ -41,7 +41,7 @@ export type PortRefusal =
 export interface AttendanceRegister { date: string; rows: AttendanceRow[] }
 export interface AttendanceMarkPresentInput { arrivedAt: string; method: AttendanceMethod }
 export interface AttendanceMarkAbsentInput { reason: AbsenceReason }
-export interface AttendanceAmendInput { field: 'status' | 'arrivedAt' | 'departedAt' | 'absenceReason'; to?: string; reason: string }
+export interface AttendanceAmendInput { field: 'status' | 'arrivedAt' | 'departedAt' | 'absenceReason'; to?: string; reason: string; absenceReason?: AbsenceReason }
 
 
 export type PortResult<T> = { ok: true; value: T } | { ok: false; reason: PortRefusal };

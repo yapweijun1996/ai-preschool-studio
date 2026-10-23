@@ -45,6 +45,7 @@ export const pages: Dict['pages'] = {
     reasonTravel: 'Perjalanan',
     reasonOther: 'Lain-lain',
     requiredReason: 'Pilih sebab ketidakhadiran untuk meneruskan.',
+    chooseAbsenceReason: 'Pilih sebab',
     amendTitle: 'Ubah kehadiran {name}',
     amendReason: 'Sebab perubahan',
     amendHelp: 'Masukkan 5 hingga 200 aksara.',

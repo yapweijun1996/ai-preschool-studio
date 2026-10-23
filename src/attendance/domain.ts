@@ -151,14 +151,16 @@ export function validateAmendmentReason(reason: string): AttendanceRefusal | und
   return length < 5 || length > 200 ? 'reason-required' : undefined;
 }
 
-export function validateAmendmentValue(field: AmendmentField, to: string | undefined, record: AttendanceRecord, nowIso: string): AttendanceRefusal | undefined {
+export function validateAmendmentValue(field: AmendmentField, to: string | undefined, record: AttendanceRecord, nowIso: string, absenceReason?: AbsenceReason): AttendanceRefusal | undefined {
   if (field === 'status' && to !== 'present' && to !== 'absent') return 'invalid-time';
+  if (field === 'status' && to === 'absent' && !absenceReason) return 'reason-required';
+  if (field === 'status' && to === 'absent' && !(['sick', 'family', 'travel', 'other'] as string[]).includes(absenceReason!)) return 'invalid-time';
   if (field === 'absenceReason' && to !== undefined && !(['sick', 'family', 'travel', 'other'] as string[]).includes(to)) return 'invalid-time';
   if ((field === 'arrivedAt' || field === 'departedAt') && to !== undefined) {
     if (!/^\d{4}-\d\d-\d\dT.*(?:Z|[+-]\d\d:\d\d)$/.test(to) || !Number.isFinite(Date.parse(to)) || localDate(to) !== record.date) return 'invalid-time';
   }
   const amended = { ...record, [field]: to } as AttendanceRecord;
-  if (field === 'status' && to === 'absent') { delete amended.arrivedAt; delete amended.departedAt; amended.absenceReason ??= 'other'; }
+  if (field === 'status' && to === 'absent') { delete amended.arrivedAt; delete amended.departedAt; amended.absenceReason = absenceReason; }
   if (field === 'status' && to === 'present') { delete amended.absenceReason; amended.arrivedAt ??= record.markedAt; amended.method ??= 'staff'; }
   if (field === 'arrivedAt' && to === undefined) return 'invalid-time';
   if (field === 'absenceReason' && amended.status === 'absent' && to === undefined) return 'reason-required';

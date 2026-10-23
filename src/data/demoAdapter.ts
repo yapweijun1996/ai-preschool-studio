@@ -267,7 +267,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       });
       if (permitted) return refusal(permitted);
       const value = input.to === undefined || input.to === '' ? undefined : input.to;
-      const invalidValue = validateAmendmentValue(input.field, value, existing, attendanceNow());
+      const invalidValue = validateAmendmentValue(input.field, value, existing, attendanceNow(), input.absenceReason);
       if (invalidValue) return refusal(invalidValue);
       const previous = existing[input.field];
       const amended = { ...existing, [input.field]: value } as AttendanceRecord;
@@ -279,7 +279,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (input.field === 'status' && amended.status === 'absent') {
         delete amended.arrivedAt;
         delete amended.departedAt;
-        amended.absenceReason ??= 'other';
+        amended.absenceReason = input.absenceReason;
       }
       const invalid = validateRecord(amended, attendanceNow());
       if (invalid) return refusal(invalid);

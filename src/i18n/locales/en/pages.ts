@@ -45,6 +45,7 @@ export const pages = {
     reasonTravel: 'Travel',
     reasonOther: 'Other',
     requiredReason: 'Choose an absence reason to continue.',
+    chooseAbsenceReason: 'Choose a reason',
     amendTitle: 'Change attendance for {name}',
     amendReason: 'Reason for this change',
     amendHelp: 'Enter 5 to 200 characters.',

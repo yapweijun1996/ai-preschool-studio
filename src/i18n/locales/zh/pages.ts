@@ -45,6 +45,7 @@ export const pages: Dict['pages'] = {
     reasonTravel: '出行',
     reasonOther: '其他',
     requiredReason: '请选择缺席原因以继续。',
+    chooseAbsenceReason: '选择原因',
     amendTitle: '更改 {name} 的出勤记录',
     amendReason: '更改原因',
     amendHelp: '请输入 5 至 200 个字符。',

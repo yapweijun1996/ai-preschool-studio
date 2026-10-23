@@ -91,6 +91,8 @@ describe('attendance pure domain', () => {
   it('validates amendment enum values and timestamp date/order', () => {
     const record = { ...DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY && item.status === 'present')! };
     expect(validateAmendmentValue('status', 'banana', record, '2026-10-22T10:00:00+08:00')).toBe('invalid-time');
+    expect(validateAmendmentValue('status', 'absent', record, '2026-10-22T10:00:00+08:00')).toBe('reason-required');
+    expect(validateAmendmentValue('status', 'absent', record, '2026-10-22T10:00:00+08:00', 'family')).toBeUndefined();
     expect(validateAmendmentValue('absenceReason', 'xyz', record, '2026-10-22T10:00:00+08:00')).toBe('invalid-time');
     expect(validateAmendmentValue('arrivedAt', '2026-10-21T08:00:00+08:00', record, '2026-10-22T10:00:00+08:00')).toBe('invalid-time');
   });
@@ -172,8 +174,10 @@ describe('attendance demo adapter', () => {
     const { port, getState } = adapterFrom();
     const present = DEMO_ATTENDANCE_RECORDS.find((item) => item.date < TODAY && item.status === 'present')!;
     const auditBefore = getState().auditEvents.length;
-    const result = await port.amendAttendance(present.id, { field: 'status', to: 'absent', reason: 'Fictional correction' }, admin);
+    expect(await port.amendAttendance(present.id, { field: 'status', to: 'absent', reason: 'Fictional correction' }, admin)).toEqual({ ok: false, reason: 'reason-required' });
+    const result = await port.amendAttendance(present.id, { field: 'status', to: 'absent', absenceReason: 'family', reason: 'Fictional correction' }, admin);
     expect(result.ok && result.value.map((row) => row.field)).toEqual(['status', 'arrivedAt', 'absenceReason']);
+    expect(result.ok && result.value.at(-1)?.to).toBe('family');
     expect(getState().attendanceAmendments.filter((item) => item.recordId === present.id).map((item) => item.field)).toEqual(['status', 'arrivedAt', 'absenceReason']);
     expect(getState().auditEvents).toHaveLength(auditBefore + 1);
     expect(getState().auditEvents.at(-1)).toMatchObject({ action: 'attendance.amended', summaryKey: 'pages.audit.summaryAttendanceAmended' });
