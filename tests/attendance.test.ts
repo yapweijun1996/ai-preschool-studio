@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DEMO_CLASSES, DEMO_CHILDREN } from '../src/children/demo';
 import {
-  canAmend, canMark, checkInMethods, dailySummary, isLate,
+  attendanceEmptyState, canAmend, canMark, checkInMethods, dailySummary, isLate,
   formatAttendanceDateTime, localDate, localTime, validateAmendmentReason, validateAmendmentValue, validateRecord,
   type AttendanceRow
 } from '../src/attendance/domain';
@@ -27,6 +27,13 @@ function adapterFrom(seed = initialState(), clock: () => Date = () => new Date('
 }
 
 describe('attendance pure domain', () => {
+  it('distinguishes an empty register from filters with no matching children', () => {
+    expect(attendanceEmptyState('all', 0)).toBe('empty');
+    expect(attendanceEmptyState('notMarked', 20)).toBe('everyoneMarked');
+    expect(attendanceEmptyState('present', 20)).toBe('nonePresent');
+    expect(attendanceEmptyState('late', 20)).toBe('noneLate');
+    expect(attendanceEmptyState('absent', 20)).toBe('noneAbsent');
+  });
   it('uses one session-persisted elapsed demo timeline from 09:00 Singapore time', () => {
     const startedAt = Date.parse('2027-01-01T00:00:00.000Z');
     sessionStorage.setItem('aps-demo-clock-started-at', String(startedAt));

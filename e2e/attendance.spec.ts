@@ -72,6 +72,8 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(page.getByRole('status').last()).toContainText('Attendance saved');
   await expect(page.locator('.attendance-stat.stat-notMarked strong')).toHaveText('0');
   await expect(page.locator('.attendance-summary')).toBeFocused();
+  await page.getByRole('button', { name: /Not marked/ }).click();
+  await expect(page.getByText('Everyone is marked.')).toBeVisible();
 });
 
 test('filters and summary counts update after marking; reviewer is read-only; parent is denied', async ({
@@ -151,6 +153,7 @@ test('legacy check-in route redirects; reviewer sees a read-only kiosk explanati
 test('admin can amend a past day; teacher cannot amend a past day', async ({ page }) => {
   await open(page, './#/attendance/history', 'admin');
   await expect(page.locator('#history-date')).toHaveValue(/2026-10-/);
+  await expect(page.getByLabel('School day')).toBeVisible();
   const target = page.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' });
   await target.getByRole('button', { name: 'Amend Aria Tan' }).click();
   const dialog = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });

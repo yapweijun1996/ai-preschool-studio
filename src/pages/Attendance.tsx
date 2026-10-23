@@ -6,7 +6,7 @@ import { Icon } from '../components/Icon';
 import { Modal } from '../components/Modal';
 import { Avatar } from '../components/ui';
 import { DEMO_CHECK_IN_CREDENTIALS } from '../attendance/demo';
-import { formatAttendanceDateTime } from '../attendance/domain';
+import { attendanceEmptyState, formatAttendanceDateTime } from '../attendance/domain';
 import { PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../attendance/policy';
 import { CLASS_NAME, TODAY } from '../data/demo';
 import type {
@@ -117,27 +117,36 @@ function useRegister(date = TODAY) {
   const role = useRole();
   const [rows, setRows] = useState<AttendanceRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   useEffect(() => {
     let live = true;
     setLoading(true);
+    setLoadFailed(false);
     void port.getAttendanceRegister(CLASS_ID, date, actor(role.role)).then(
       (register) => {
         if (live) {
           setRows(register.rows);
           setLoading(false);
+          setLoadFailed(false);
         }
       },
       () => {
-        if (live) setLoading(false);
+        if (live) {
+          setLoading(false);
+          setLoadFailed(true);
+        }
       },
     );
     return () => {
       live = false;
     };
-  }, [port, date, role.role, state]);
+  }, [port, date, role.role, state, retryCount]);
   return {
     rows,
     loading,
+    loadFailed,
+    retry: () => setRetryCount((count) => count + 1),
     port,
     role,
     refresh: () =>
@@ -168,7 +177,7 @@ function focusAttendanceChildWhenReady(childId: string, attempts = 30) {
 
 export function Attendance() {
   const { t, fmtDate } = useI18n();
-  const { rows, loading, port, role, refresh } = useRegister();
+  const { rows, loading, loadFailed, retry, port, role, refresh } = useRegister();
   const [filter, setFilter] = useState<Filter>('all');
   const [dialog, setDialog] = useState<Dialog>(null);
   const [message, setMessage] = useState('');
@@ -305,6 +314,15 @@ export function Attendance() {
                 <p className="sec">{error}</p>
               </div>
             )}
+            {loadFailed && (
+              <div className="notice notice-danger" role="alert">
+                <Icon name="alertCircle" size={18} />
+                <p className="sec">{t('pages.attendance.registerLoadFailed')}</p>
+                <button className="btn btn-secondary" type="button" onClick={retry}>
+                  {t('pages.attendance.retry')}
+                </button>
+              </div>
+            )}
             <section
               className="attendance-list"
               aria-label={t('pages.attendance.registerLabel')}
@@ -318,9 +336,11 @@ export function Attendance() {
                     <span className="skel" />
                   </div>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : loadFailed ? null : filtered.length === 0 ? (
                 <div className="card card-pad">
-                  <p className="sec muted">{t('pages.attendance.empty')}</p>
+                  <p className="sec muted">
+                    {t(`pages.attendance.${attendanceEmptyState(filter, rows.length)}`)}
+                  </p>
                 </div>
               ) : (
                 filtered.map((row) => {
@@ -1128,6 +1148,8 @@ export function AttendanceHistory() {
   const [date, setDate] = useState(initialDate);
   const [rows, setRows] = useState<AttendanceRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [dialog, setDialog] = useState<AttendanceRow | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -1139,21 +1161,26 @@ export function AttendanceHistory() {
   useEffect(() => {
     let live = true;
     setLoading(true);
+    setLoadFailed(false);
     void port.getAttendanceRegister(CLASS_ID, date, actor(role.role)).then(
       (register) => {
         if (live) {
           setRows(register.rows);
           setLoading(false);
+          setLoadFailed(false);
         }
       },
       () => {
-        if (live) setLoading(false);
+        if (live) {
+          setLoading(false);
+          setLoadFailed(true);
+        }
       },
     );
     return () => {
       live = false;
     };
-  }, [port, date, role.role, state]);
+  }, [port, date, role.role, state, retryCount]);
   useEffect(() => {
     let live = true;
     void Promise.all(
@@ -1215,7 +1242,6 @@ export function AttendanceHistory() {
                   className="input"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  aria-label={t('pages.attendance.selectDay')}
                 >
                   {dates.map((day) => (
                     <option key={day} value={day}>
@@ -1236,6 +1262,19 @@ export function AttendanceHistory() {
                 <p className="sec">{error}</p>
               </div>
             )}
+            {loadFailed && (
+              <div className="notice notice-danger" role="alert">
+                <Icon name="alertCircle" size={18} />
+                <p className="sec">{t('pages.attendance.historyLoadFailed')}</p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => setRetryCount((count) => count + 1)}
+                >
+                  {t('pages.attendance.retry')}
+                </button>
+              </div>
+            )}
             <div role="status" aria-live="polite" className="sr-only">
               {message}
             </div>
@@ -1252,7 +1291,7 @@ export function AttendanceHistory() {
                     <span className="skel" />
                   </div>
                 ))
-              ) : rows.length === 0 ? (
+              ) : loadFailed ? null : rows.length === 0 ? (
                 <div className="card card-pad">
                   <p className="sec muted">{t('pages.attendance.historyEmpty')}</p>
                 </div>

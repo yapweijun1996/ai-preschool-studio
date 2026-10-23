@@ -67,6 +67,18 @@ export interface AttendanceSummary {
   absenceReasons: Record<AbsenceReason, number>;
 }
 
+export function attendanceEmptyState(
+  filter: 'all' | 'notMarked' | 'present' | 'late' | 'absent',
+  totalRows: number,
+): 'empty' | 'everyoneMarked' | 'nonePresent' | 'noneLate' | 'noneAbsent' {
+  if (totalRows === 0) return 'empty';
+  if (filter === 'notMarked') return 'everyoneMarked';
+  if (filter === 'present') return 'nonePresent';
+  if (filter === 'late') return 'noneLate';
+  if (filter === 'absent') return 'noneAbsent';
+  return 'empty';
+}
+
 export type AttendanceRefusal =
   | 'not-today' | 'already-marked' | 'reason-required' | 'child-withdrawn'
   | 'invalid-time' | 'past-date' | 'not-permitted' | 'unknown-child'
