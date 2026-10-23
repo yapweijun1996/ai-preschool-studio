@@ -7,7 +7,7 @@ import { Modal } from '../components/Modal';
 import { Avatar } from '../components/ui';
 import { DEMO_CHECK_IN_CREDENTIALS } from '../attendance/demo';
 import { attendanceEmptyState, formatAttendanceDateTime } from '../attendance/domain';
-import { PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../attendance/policy';
+import { LATE_CUTOFF_LOCAL_TIME, PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../attendance/policy';
 import { CLASS_NAME, TODAY } from '../data/demo';
 import type {
   AbsenceReason,
@@ -28,7 +28,7 @@ const CLASS_ID = 'k2-sunflower-2026';
 type Filter = 'all' | 'notMarked' | 'present' | 'late' | 'absent';
 type Dialog =
   | { kind: 'absence'; row: AttendanceRow }
-  | { kind: 'bulk'; count: number }
+  | { kind: 'bulk'; count: number; time: string }
   | { kind: 'amend'; row: AttendanceRow }
   | null;
 const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
@@ -209,6 +209,10 @@ export function Attendance() {
     setError(t(REFUSAL_KEYS[reason]));
     setMessage('');
   };
+  const announceSaved = (key: TKey) => {
+    setMessage('');
+    window.setTimeout(() => setMessage(t(key)), 0);
+  };
   const markPresent = async (row: AttendanceRow, time = timeValue()) => {
     const result = await port.markPresent(
       row.child.id,
@@ -218,7 +222,7 @@ export function Attendance() {
     if (!result.ok) saveRefusal(result.reason);
     else {
       setError('');
-      setMessage(t('pages.attendance.saved'));
+      announceSaved('pages.attendance.saved');
       setTimeFor(null);
       await refresh();
       focusRow(row.child.id);
@@ -266,6 +270,11 @@ export function Attendance() {
                 <div key={key} className={`attendance-stat stat-${key}`}>
                   <span className="cap muted">{t(`pages.attendance.${key}`)}</span>
                   <strong className="h2 num">{counts[key]}</strong>
+                  {key === 'present' && counts.late > 0 && (
+                    <span className="attendance-late-count">
+                      {t('pages.attendance.summaryLateCount', { count: counts.late })}
+                    </span>
+                  )}
                   {key === 'late' && (
                     <span className="sr-only">{t('pages.attendance.lateNote')}</span>
                   )}
@@ -298,7 +307,7 @@ export function Attendance() {
                   onClick={() => {
                     fallbackFocusId.current = null;
                     fallbackFocusRef.current = summaryRef.current;
-                    setDialog({ kind: 'bulk', count: counts.notMarked });
+                    setDialog({ kind: 'bulk', count: counts.notMarked, time: timeValue() });
                   }}
                 >
                   {t('pages.attendance.markRemaining')}
@@ -367,10 +376,16 @@ export function Attendance() {
                         </strong>
                         <div className="attendance-meta">
                           {row.record ? (
-                            <span className={`status attendance-status st-${row.record.status}`}>
-                              {t(`pages.attendance.${row.record.status}`)}
-                              {row.late ? ` · ${t('pages.attendance.late')}` : ''}
-                            </span>
+                            <>
+                              <span className={`status attendance-status st-${row.record.status}`}>
+                                {t(`pages.attendance.${row.record.status}`)}
+                              </span>
+                              {row.late && (
+                                <span className="status attendance-late-badge">
+                                  {t('pages.attendance.late')}
+                                </span>
+                              )}
+                            </>
                           ) : (
                             <span className="status st-notstarted">
                               {t('pages.attendance.notMarked')}
@@ -416,6 +431,13 @@ export function Attendance() {
                                     onClick={() => void markPresent(row, arrival)}
                                   >
                                     {t('pages.attendance.save')}
+                                  </button>
+                                  <button
+                                    className="btn btn-ghost"
+                                    type="button"
+                                    onClick={() => setTimeFor(null)}
+                                  >
+                                    {t('pages.attendance.cancel')}
                                   </button>
                                 </>
                               ) : (
@@ -496,7 +518,7 @@ export function Attendance() {
                     setDialog(null);
                     return false;
                   }
-                  setMessage(t('pages.attendance.saved'));
+                  announceSaved('pages.attendance.saved');
                   await refresh();
                   focusRow(dialog.row.child.id);
                   return true;
@@ -514,7 +536,13 @@ export function Attendance() {
                 <h2 id="bulk-title" className="h2">
                   {t('pages.attendance.confirmBulkTitle')}
                 </h2>
-                <p className="sec">{t('pages.attendance.confirmBulk', { count: dialog.count })}</p>
+                <p className="sec">
+                  {t('pages.attendance.confirmBulk', {
+                    count: dialog.count,
+                    time: dialog.time,
+                    cutoff: LATE_CUTOFF_LOCAL_TIME,
+                  })}
+                </p>
                 <div className="row">
                   <button className="btn btn-ghost" type="button" onClick={() => setDialog(null)}>
                     {t('pages.attendance.cancel')}
@@ -528,7 +556,7 @@ export function Attendance() {
                         saveRefusal(result.reason);
                         setDialog(null);
                       } else {
-                        setMessage(t('pages.attendance.saved'));
+                        announceSaved('pages.attendance.saved');
                         setError('');
                         await refresh();
                         setDialog(null);
@@ -563,7 +591,7 @@ export function Attendance() {
                     saveRefusal(result.reason);
                     return false;
                   }
-                  setMessage(t('pages.attendance.saved'));
+                  announceSaved('pages.attendance.saved');
                   setError('');
                   await refresh();
                   focusRow(dialog.row.child.id);
@@ -1155,6 +1183,10 @@ export function AttendanceHistory() {
   const [dialog, setDialog] = useState<AttendanceRow | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const announceSaved = () => {
+    setMessage('');
+    window.setTimeout(() => setMessage(t('pages.attendance.historySaved')), 0);
+  };
   const [trails, setTrails] = useState<
     Record<string, import('../attendance/domain').AttendanceAmendment[]>
   >({});
@@ -1328,8 +1360,12 @@ export function AttendanceHistory() {
                             <>
                               <span className={`status attendance-status st-${record.status}`}>
                                 {t(`pages.attendance.${record.status}`)}
-                                {row.late ? ` · ${t('pages.attendance.late')}` : ''}
                               </span>
+                              {row.late && (
+                                <span className="status attendance-late-badge">
+                                  {t('pages.attendance.late')}
+                                </span>
+                              )}
                               {record.arrivedAt && (
                                 <span>
                                   {t('pages.attendance.arrivalTime')}: {localTime(record.arrivedAt)}
@@ -1426,7 +1462,7 @@ export function AttendanceHistory() {
                     setError(t(REFUSAL_KEYS[result.reason]));
                     return false;
                   }
-                  setMessage(t('pages.attendance.historySaved'));
+                  announceSaved();
                   setError('');
                   const fresh = await port.getAttendanceRegister(CLASS_ID, date, actor(role.role));
                   setRows(fresh.rows);

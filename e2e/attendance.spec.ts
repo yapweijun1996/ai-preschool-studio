@@ -65,9 +65,16 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(historyAria).toContainText('Corrected against the fictional paper register.');
 
   await page.getByRole('link', { name: 'Today' }).click();
+  await page.getByRole('button', { name: /Not marked/ }).click();
+  const timeRow = page.locator('#main .attendance-row').first();
+  await timeRow.getByRole('button', { name: /^Set arrival time for/ }).click();
+  await expect(timeRow.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  await timeRow.getByRole('button', { name: 'Cancel' }).click();
   await page.getByRole('button', { name: 'Mark remaining present' }).click();
   const bulk = page.getByRole('dialog', { name: 'Mark remaining children present?' });
   await expect(bulk).toContainText('remaining children present');
+  await expect(bulk).toContainText('at 09:00');
+  await expect(bulk).toContainText('after 08:30 are recorded as late');
   await bulk.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.getByRole('status').last()).toContainText('Attendance saved');
   await expect(page.locator('.attendance-stat.stat-notMarked strong')).toHaveText('0');
@@ -86,8 +93,11 @@ test('filters and summary counts update after marking; reviewer is read-only; pa
   );
   await row(page, 'Aiden Lee').getByRole('button', { name: 'Mark Aiden Lee present' }).click();
   await expect(page.locator('.attendance-stat.stat-present strong')).toHaveText('13');
+  await expect(page.locator('.attendance-stat.stat-present .attendance-late-count')).toBeVisible();
   await page.getByRole('button', { name: /Late/ }).click();
   await expect(page.locator('.attendance-row')).toHaveCount(3);
+  await expect(page.locator('.attendance-row').first().locator('.attendance-status')).toHaveText('Present');
+  await expect(page.locator('.attendance-row').first().locator('.attendance-late-badge')).toHaveText('Late');
   await page.getByRole('button', { name: /Not marked/ }).click();
   await expect(page.locator('.attendance-row')).toHaveCount(initialNotMarked - 1);
 

@@ -19,6 +19,8 @@
 .attendance-actions .btn { min-height: 44px; }
 .attendance-status.st-present { background: var(--color-primary-soft); color: var(--color-primary); }
 .attendance-status.st-absent { background: var(--color-danger-soft); color: var(--color-danger); }
+.attendance-late-badge { background: var(--color-warning-soft); color: var(--color-warning); }
+.attendance-late-count { color: var(--color-warning); font-size: 12px; font-weight: 600; }
 .time-input { width: 120px; min-height: 44px; }
 .attendance-skeleton { display: flex; align-items: center; gap: 14px; height: 82px; padding: 14px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
 .attendance-skeleton .skel:first-child { width: 40px; height: 40px; border-radius: 50%; }
@@ -46,6 +48,7 @@
  .attendance-actions .btn { min-width: 0; justify-content: center; }
  .attendance-actions .time-input { width: 100%; }
  .attendance-actions .time-input { grid-column: 1 / -1; }
+ .attendance-actions .time-input + .btn { grid-column: 1; }
  .attendance-actions:not(:has(.time-input)) > .btn:nth-of-type(3) { grid-column: 1 / -1; }
  .attendance-actions > .btn:only-child { grid-column: 1 / -1; }
 }
