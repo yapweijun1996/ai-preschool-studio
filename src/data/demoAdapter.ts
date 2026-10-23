@@ -19,7 +19,7 @@ import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, type Observation, type Paragraph } from './demo';
 import { allSummaries, milestonesFor, studentSummary } from '../store/selectors';
-import { now } from '../utils/clock';
+import { now, demoNow } from '../utils/clock';
 import { can } from '../roles';
 import {
   approvalBlock,
@@ -38,7 +38,8 @@ import {
 const success = <T>(value: T): PortResult<T> => ({ ok: true, value });
 const refusal = (reason: PortRefusal): PortResult<never> => ({ ok: false, reason });
 
-export function createDemoAdapter(getState: () => State, dispatch: (a: Action) => void): DataPort {
+export function createDemoAdapter(getState: () => State, dispatch: (a: Action) => void, clock: () => Date = demoNow): DataPort {
+  const attendanceNow = () => now(clock);
   const run = <T>(action: Action, value: T, reason: PortRefusal): PortResult<T> => {
     const before = getState();
     if (reducer(before, action) === before) return refusal(reason);
@@ -72,7 +73,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     const records = state.attendanceRecords.filter((record) => record.classId === classId && record.date === date);
     const recordByChild = new Map(records.map((record) => [record.childId, record]));
     const children = Object.values(state.children).filter((child) => child.classId === classId && (
-      child.status === 'active' || (date !== dateInAttendanceZone(now()) && recordByChild.has(child.id))
+      child.status === 'active' || (date !== dateInAttendanceZone(attendanceNow()) && recordByChild.has(child.id))
     ));
     return {
       date,
@@ -234,14 +235,14 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       return dailySummary(registerFor(classId, date, actor).rows);
     },
     async markPresent(childId: string, input: AttendanceMarkPresentInput, actor) {
-      return mark(childId, 'present', input.method, now(), input.arrivedAt, undefined, actor);
+      return mark(childId, 'present', input.method, attendanceNow(), input.arrivedAt, undefined, actor);
     },
     async markAbsent(childId: string, input: AttendanceMarkAbsentInput, actor) {
-      return mark(childId, 'absent', 'staff', now(), undefined, input.reason, actor);
+      return mark(childId, 'absent', 'staff', attendanceNow(), undefined, input.reason, actor);
     },
     async markRemainingPresent(classId, actor) {
       if (!can(actor.role, 'attendance.mark') || !canReadAttendance(classId, actor)) return refusal('not-permitted');
-      const at = now();
+      const at = attendanceNow();
       const rows = registerFor(classId, dateInAttendanceZone(at), actor).rows;
       const created: AttendanceRecord[] = [];
       for (const row of rows.filter((item) => !item.record)) {
@@ -257,7 +258,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (!existing) return refusal('unknown-record');
       const reasonRefusal = validateAmendmentReason(input.reason);
       if (reasonRefusal) return refusal(reasonRefusal);
-      const today = dateInAttendanceZone(now());
+      const today = dateInAttendanceZone(attendanceNow());
       const permitted = canAmend({
         role: actor.role, date: existing.date, today,
         actorClassIds: actor.name === TEACHER ? state.classes.filter((item) => item.teacherIds.includes('teacher-lim')).map((item) => item.id) : [],
@@ -276,9 +277,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
         delete amended.arrivedAt;
         delete amended.departedAt;
       }
-      const invalid = validateRecord(amended, now());
+      const invalid = validateRecord(amended, attendanceNow());
       if (invalid) return refusal(invalid);
-      const at = now();
+      const at = attendanceNow();
       const amendment: AttendanceAmendment = {
         id: `AMEND-${String(state.nextAttendanceAmendmentNumber).padStart(4, '0')}`,
         recordId, childId: existing.childId, date: existing.date, field: input.field,
@@ -302,9 +303,9 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (!canReadAttendance(record.classId, actor)) return refusal('not-permitted');
       if (record.departedAt) return refusal('already-departed');
       const updated = { ...record, departedAt };
-      const invalid = validateRecord(updated, now());
+      const invalid = validateRecord(updated, attendanceNow());
       if (invalid) return refusal(invalid);
-      dispatch({ type: 'attendanceChanged', record: updated, audit: 'departed', actor, at: now() });
+      dispatch({ type: 'attendanceChanged', record: updated, audit: 'departed', actor, at: attendanceNow() });
       return success(updated);
     },
     async checkInWithPin(childCode, pin, atIso) {

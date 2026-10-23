@@ -10,6 +10,7 @@ import { createDemoAdapter } from '../src/data/demoAdapter';
 import type { DataPort } from '../src/data/port';
 import { initialState, reducer, type State } from '../src/store/reducer';
 import { TODAY } from '../src/data/demo';
+import { demoNow } from '../src/utils/clock';
 
 const schoolClass = DEMO_CLASSES[0];
 const teacher = { role: 'teacher' as const, name: 'Ms. Lim' };
@@ -25,6 +26,9 @@ function adapterFrom(seed = initialState()): { port: DataPort; getState: () => S
 }
 
 describe('attendance pure domain', () => {
+  it('anchors demoNow to the seeded business date and Singapore wall-clock time', () => {
+    expect(demoNow(() => new Date('2027-01-01T00:15:30.123Z')).toISOString()).toBe('2026-10-22T16:15:30.123Z');
+  });
   it('derives local dates, times and late status in Singapore independent of host timezone', () => {
     expect(localDate('2026-10-22T16:45:00.000Z')).toBe('2026-10-23');
     expect(localTime('2026-10-22T16:45:00.000Z')).toBe('00:45');
