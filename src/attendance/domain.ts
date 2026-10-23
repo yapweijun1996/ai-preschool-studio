@@ -98,8 +98,10 @@ export function localTime(instant: string, timeZone = ATTENDANCE_TIME_ZONE): str
 
 export function isLate(arrivedAt: string | undefined, cutoff = LATE_CUTOFF_LOCAL_TIME): boolean {
   if (!arrivedAt) return false;
-  const time = localTime(arrivedAt);
-  return time !== undefined && time > cutoff;
+  const parts = dateTimeParts(arrivedAt);
+  if (!parts) return false;
+  const millis = String(new Date(arrivedAt).getMilliseconds()).padStart(3, '0');
+  return `${parts.hour}:${parts.minute}:${parts.second}.${millis}` > `${cutoff}:00.000`;
 }
 
 export function validateRecord(

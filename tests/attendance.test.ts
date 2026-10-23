@@ -34,6 +34,8 @@ describe('attendance pure domain', () => {
     expect(localTime('2026-10-22T16:45:00.000Z')).toBe('00:45');
     expect(isLate('2026-10-23T00:29:00.000Z')).toBe(false);
     expect(isLate('2026-10-23T00:30:00.000Z')).toBe(false);
+    expect(isLate('2026-10-23T00:30:00.001Z')).toBe(true);
+    expect(isLate('2026-10-23T00:30:59.000Z')).toBe(true);
     expect(isLate('2026-10-23T00:31:00.000Z')).toBe(true);
   });
 
