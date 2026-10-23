@@ -197,7 +197,7 @@ describe('attendance demo adapter', () => {
     const audit = JSON.stringify(getState().auditEvents);
     expect(audit).not.toContain('Fictional reason private to amendment');
     expect(audit).not.toContain('2467');
-    expect(getState().auditEvents.at(-1)?.summaryKey).toBe('attendance.amended');
+    expect(getState().auditEvents.at(-1)?.summaryKey).toBe('pages.audit.summaryAttendanceAmended');
     expect(getState().attendanceRecords.some((item) => item.date === currentDate && item.childId === childId)).toBe(true);
   });
 
