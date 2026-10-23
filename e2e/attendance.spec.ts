@@ -20,6 +20,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   const aiden = row(page, 'Aiden Lee');
   await aiden.getByRole('button', { name: 'Present', exact: true }).click();
   await expect(aiden).toContainText('Present');
+  await expect(aiden.locator('.attendance-child > strong')).toBeFocused();
   const siti = row(page, 'Siti Aminah');
   await siti.getByRole('button', { name: 'Absent', exact: true }).click();
   const absence = page.getByRole('dialog', { name: 'Mark Siti Aminah absent' });
@@ -28,6 +29,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await absence.getByRole('radio', { name: 'Sick' }).check();
   await absence.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(siti.getByText('Absent', { exact: true })).toBeVisible();
+  await expect(siti.locator('.attendance-child > strong')).toBeFocused();
 
   const aria = row(page, 'Aria Tan');
   await aria.getByRole('button', { name: 'Change' }).click();
@@ -36,6 +38,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
     .getByLabel('Reason for this change')
     .fill('Corrected against the fictional paper register.');
   await amend.getByRole('button', { name: 'Save change' }).click();
+  await expect(aria.locator('.attendance-child > strong')).toBeFocused();
   await page.getByRole('link', { name: 'History' }).click();
   await page.locator('#history-date').selectOption('2026-10-22');
   const historyAria = row(page, 'Aria Tan');
@@ -49,6 +52,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await bulk.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.getByRole('status').last()).toContainText('Attendance saved');
   await expect(page.locator('.attendance-stat.stat-notMarked strong')).toHaveText('0');
+  await expect(page.locator('.attendance-summary')).toBeFocused();
 });
 
 test('filters and summary counts update after marking; reviewer is read-only; parent is denied', async ({
@@ -128,6 +132,7 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
     .getByLabel('Reason for this change')
     .fill('Fictional historical correction for acceptance.');
   await dialog.getByRole('button', { name: 'Save change' }).click();
+  await expect(target.locator('[data-attendance-child="aria"]')).toBeFocused();
   await expect(page.getByRole('status').last()).toContainText('amendment saved');
   await target.locator('details summary').click();
   await expect(target).toContainText('Fictional historical correction for acceptance.');

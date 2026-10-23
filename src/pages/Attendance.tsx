@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { AccessDenied } from '../components/AccessDenied';
 import { AppShell } from '../components/AppShell';
@@ -149,6 +149,14 @@ function timeValue(dateTime?: string) {
 function atTime(value: string, date = TODAY) {
   return `${date}T${value}:00+08:00`;
 }
+function focusAttendanceChildWhenReady(childId: string, attempts = 30) {
+  window.setTimeout(() => {
+    const heading = document.querySelector<HTMLElement>(`[data-attendance-child="${childId}"]`);
+    const list = heading?.closest<HTMLElement>('.attendance-list');
+    if (heading && list?.getAttribute('aria-busy') === 'false') heading.focus();
+    else if (attempts > 0) focusAttendanceChildWhenReady(childId, attempts - 1);
+  }, 16);
+}
 
 export function Attendance() {
   const { t, fmtDate } = useI18n();
@@ -160,6 +168,13 @@ export function Attendance() {
   const [timeFor, setTimeFor] = useState<string | null>(null);
   const [arrival, setArrival] = useState(timeValue());
   const trigger = useRef<HTMLButtonElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const fallbackFocusRef = useRef<HTMLElement>(null);
+  const fallbackFocusId = useRef<string | null>(null);
+  const rowHeadings = useRef(new Map<string, HTMLElement>());
+  const focusRow = (childId: string) => {
+    focusAttendanceChildWhenReady(childId);
+  };
   const readOnly = !role.can('attendance.mark');
   const counts = useMemo(() => summary(rows), [rows]);
   const filtered = rows.filter(
@@ -189,6 +204,7 @@ export function Attendance() {
       setMessage(t('pages.attendance.saved'));
       setTimeFor(null);
       await refresh();
+      focusRow(row.child.id);
     }
   };
   const filteredCounts: Record<Filter, number> = {
@@ -223,7 +239,12 @@ export function Attendance() {
                 <p className="sec">{t('pages.attendance.readOnly')}</p>
               </div>
             )}
-            <section className="attendance-summary" aria-label={t('pages.attendance.title')}>
+            <section
+              ref={summaryRef}
+              tabIndex={-1}
+              className="attendance-summary"
+              aria-label={t('pages.attendance.title')}
+            >
               {(['present', 'late', 'absent', 'notMarked'] as const).map((key) => (
                 <div key={key} className={`attendance-stat stat-${key}`}>
                   <span className="cap muted">{t(`pages.attendance.${key}`)}</span>
@@ -257,7 +278,11 @@ export function Attendance() {
                 <button
                   className="btn btn-primary"
                   type="button"
-                  onClick={() => setDialog({ kind: 'bulk', count: counts.notMarked })}
+                  onClick={() => {
+                    fallbackFocusId.current = null;
+                    fallbackFocusRef.current = summaryRef.current;
+                    setDialog({ kind: 'bulk', count: counts.notMarked });
+                  }}
                 >
                   {t('pages.attendance.markRemaining')}
                 </button>
@@ -296,7 +321,22 @@ export function Attendance() {
                     <article className="card attendance-row" key={row.child.id}>
                       <Avatar initials={row.child.initials} />
                       <div className="attendance-child grow">
-                        <strong className="strong">{row.child.name}</strong>
+                        <strong
+                          className="strong"
+                          tabIndex={-1}
+                          data-attendance-child={row.child.id}
+                          ref={(element) => {
+                            if (element) {
+                              rowHeadings.current.set(row.child.id, element);
+                              if (fallbackFocusId.current === row.child.id) {
+                                fallbackFocusRef.current = element;
+                              }
+                            }
+                            else rowHeadings.current.delete(row.child.id);
+                          }}
+                        >
+                          {row.child.name}
+                        </strong>
                         <div className="attendance-meta">
                           {row.record ? (
                             <span className={`status attendance-status st-${row.record.status}`}>
@@ -363,6 +403,8 @@ export function Attendance() {
                                     type="button"
                                     onClick={(e) => {
                                       trigger.current = e.currentTarget;
+                                      fallbackFocusId.current = row.child.id;
+                                      fallbackFocusRef.current = rowHeadings.current.get(row.child.id) ?? null;
                                       setDialog({ kind: 'absence', row });
                                       setError('');
                                     }}
@@ -389,6 +431,8 @@ export function Attendance() {
                               type="button"
                               onClick={(e) => {
                                 trigger.current = e.currentTarget;
+                                fallbackFocusId.current = row.child.id;
+                                fallbackFocusRef.current = rowHeadings.current.get(row.child.id) ?? null;
                                 setDialog({ kind: 'amend', row });
                                 setError('');
                               }}
@@ -406,6 +450,7 @@ export function Attendance() {
             {dialog?.kind === 'absence' && (
               <AbsenceDialog
                 row={dialog.row}
+                fallbackFocusRef={fallbackFocusRef}
                 onClose={() => setDialog(null)}
                 onSave={async (reason) => {
                   const result = await port.markAbsent(
@@ -420,6 +465,7 @@ export function Attendance() {
                   }
                   setMessage(t('pages.attendance.saved'));
                   await refresh();
+                  focusRow(dialog.row.child.id);
                   return true;
                 }}
               />
@@ -428,6 +474,7 @@ export function Attendance() {
               <Modal
                 labelledBy="bulk-title"
                 onClose={() => setDialog(null)}
+                fallbackFocusRef={fallbackFocusRef}
                 backdropClassName="dialog-backdrop"
                 panelClassName="card card-pad stack"
               >
@@ -452,6 +499,7 @@ export function Attendance() {
                         setError('');
                         await refresh();
                         setDialog(null);
+                        window.setTimeout(() => summaryRef.current?.focus(), 0);
                       }
                     }}
                   >
@@ -463,6 +511,7 @@ export function Attendance() {
             {dialog?.kind === 'amend' && dialog.row.record && (
               <AmendDialog
                 row={dialog.row}
+                fallbackFocusRef={fallbackFocusRef}
                 onClose={() => setDialog(null)}
                 onSave={async (field, to, reason, absenceReason) => {
                   const result = await port.amendAttendance(
@@ -483,6 +532,7 @@ export function Attendance() {
                   setMessage(t('pages.attendance.saved'));
                   setError('');
                   await refresh();
+                  focusRow(dialog.row.child.id);
                   return true;
                 }}
               />
@@ -498,10 +548,12 @@ function AbsenceDialog({
   row,
   onClose,
   onSave,
+  fallbackFocusRef,
 }: {
   row: AttendanceRow;
   onClose: () => void;
   onSave: (reason: AbsenceReason) => Promise<boolean>;
+  fallbackFocusRef?: RefObject<HTMLElement | null>;
 }) {
   const { t } = useI18n();
   const [reason, setReason] = useState<AbsenceReason | ''>('');
@@ -514,6 +566,7 @@ function AbsenceDialog({
       onClose={onClose}
       backdropClassName="dialog-backdrop"
       panelClassName="card card-pad stack"
+      fallbackFocusRef={fallbackFocusRef}
     >
       <h2 className="h2" id="absence-title">
         {t('pages.attendance.absenceTitle', { name: row.child.name })}
@@ -570,6 +623,7 @@ function AmendDialog({
   row,
   onClose,
   onSave,
+  fallbackFocusRef,
 }: {
   row: AttendanceRow;
   onClose: () => void;
@@ -579,6 +633,7 @@ function AmendDialog({
     reason: string,
     absenceReason?: AbsenceReason,
   ) => Promise<boolean>;
+  fallbackFocusRef?: RefObject<HTMLElement | null>;
 }) {
   const { t } = useI18n();
   const record = row.record!;
@@ -603,6 +658,7 @@ function AmendDialog({
       onClose={onClose}
       backdropClassName="dialog-backdrop"
       panelClassName="card card-pad stack"
+      fallbackFocusRef={fallbackFocusRef}
     >
       <h2 className="h2" id="amend-title">
         {t('pages.attendance.amendTitle', { name: row.child.name })}
@@ -1029,6 +1085,8 @@ export function AttendanceHistory() {
   const [trails, setTrails] = useState<
     Record<string, import('../attendance/domain').AttendanceAmendment[]>
   >({});
+  const fallbackFocusRef = useRef<HTMLElement>(null);
+  const fallbackFocusId = useRef<string | null>(null);
   useEffect(() => {
     let live = true;
     setLoading(true);
@@ -1157,7 +1215,18 @@ export function AttendanceHistory() {
                       <Avatar initials={row.child.initials} />
                       <div className="attendance-child grow">
                         <div className="row">
-                          <strong className="strong">{row.child.name}</strong>
+                          <strong
+                            className="strong"
+                            tabIndex={-1}
+                            data-attendance-child={row.child.id}
+                            ref={(element) => {
+                              if (element && fallbackFocusId.current === row.child.id) {
+                                fallbackFocusRef.current = element;
+                              }
+                            }}
+                          >
+                            {row.child.name}
+                          </strong>
                           {row.child.status === 'withdrawn' && (
                             <span className="status st-notstarted">
                               {t('pages.attendance.withdrawn')}
@@ -1228,7 +1297,13 @@ export function AttendanceHistory() {
                         <button
                           className="btn btn-secondary"
                           type="button"
-                          onClick={() => setDialog(row)}
+                          onClick={() => {
+                            fallbackFocusId.current = row.child.id;
+                            fallbackFocusRef.current = document.querySelector<HTMLElement>(
+                              `[data-attendance-child="${row.child.id}"]`,
+                            );
+                            setDialog(row);
+                          }}
                         >
                           {t('pages.attendance.adminAmend')}
                         </button>
@@ -1242,6 +1317,7 @@ export function AttendanceHistory() {
               <AmendDialog
                 row={dialog}
                 onClose={() => setDialog(null)}
+                fallbackFocusRef={fallbackFocusRef}
                 onSave={async (field, to, reason, absenceReason) => {
                   const result = await port.amendAttendance(
                     dialog.record!.id,
@@ -1262,6 +1338,7 @@ export function AttendanceHistory() {
                   setError('');
                   const fresh = await port.getAttendanceRegister(CLASS_ID, date, actor(role.role));
                   setRows(fresh.rows);
+                  focusAttendanceChildWhenReady(dialog.child.id);
                   setDialog(null);
                   return true;
                 }}
