@@ -97,6 +97,7 @@ export const pages: Dict['pages'] = {
     refusalUnknownCard: 'Kad ini tidak dikenali.',
     refusalUnknownRecord: 'Rekod kehadiran tidak ditemui.',
     kioskTitle: 'Kiosk daftar masuk',
+    actorKiosk: 'Kiosk daftar masuk',
     kioskDemoBanner: 'Mod kiosk (demo)',
     exitKiosk: 'Keluar dari kiosk',
     showDemoCredentials: 'Tunjukkan butiran log masuk demo rekaan',

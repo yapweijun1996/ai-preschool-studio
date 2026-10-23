@@ -97,6 +97,7 @@ export const pages = {
     refusalUnknownCard: 'This card is not recognised.',
     refusalUnknownRecord: 'The attendance record could not be found.',
     kioskTitle: 'Check-in kiosk',
+    actorKiosk: 'Check-in kiosk',
     kioskDemoBanner: 'Kiosk mode (demo)',
     exitKiosk: 'Exit kiosk',
     showDemoCredentials: 'Show fictional demo credentials',

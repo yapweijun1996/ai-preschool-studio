@@ -96,6 +96,16 @@ export function localTime(instant: string, timeZone = ATTENDANCE_TIME_ZONE): str
   return parts ? `${parts.hour}:${parts.minute}` : undefined;
 }
 
+/** Formats an attendance instant using the school's Singapore calendar date and time. */
+export function formatAttendanceDateTime(
+  instant: string,
+  formatDate: (date: string) => string,
+): string {
+  const date = localDate(instant);
+  const time = localTime(instant);
+  return date && time ? `${formatDate(date)} ${time}` : instant;
+}
+
 export function isLate(arrivedAt: string | undefined, cutoff = LATE_CUTOFF_LOCAL_TIME): boolean {
   if (!arrivedAt) return false;
   const parts = dateTimeParts(arrivedAt);

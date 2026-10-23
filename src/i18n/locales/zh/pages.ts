@@ -97,6 +97,7 @@ export const pages: Dict['pages'] = {
     refusalUnknownCard: '无法识别此卡。',
     refusalUnknownRecord: '找不到此出勤记录。',
     kioskTitle: '签到亭',
+    actorKiosk: '自助签到',
     kioskDemoBanner: '自助签到（演示）',
     exitKiosk: '退出自助签到',
     showDemoCredentials: '显示虚构的演示登录资料',

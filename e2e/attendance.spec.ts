@@ -159,6 +159,7 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
   await expect(page.getByRole('status').last()).toContainText('amendment saved');
   await target.locator('details summary').click();
   await expect(target).toContainText('Fictional historical correction for acceptance.');
+  await expect(target).toContainText('Ms. Wong · 22 Oct 2026 09:00');
 
   const teacher = await page.context().newPage();
   await open(teacher, './#/attendance/history', 'teacher');

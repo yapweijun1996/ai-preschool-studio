@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DEMO_CLASSES, DEMO_CHILDREN } from '../src/children/demo';
 import {
   canAmend, canMark, checkInMethods, dailySummary, isLate,
-  localDate, localTime, validateAmendmentReason, validateAmendmentValue, validateRecord,
+  formatAttendanceDateTime, localDate, localTime, validateAmendmentReason, validateAmendmentValue, validateRecord,
   type AttendanceRow
 } from '../src/attendance/domain';
 import { DEMO_ATTENDANCE_RECORDS, DEMO_CHECK_IN_CREDENTIALS } from '../src/attendance/demo';
@@ -45,6 +45,7 @@ describe('attendance pure domain', () => {
   it('derives local dates, times and late status in Singapore independent of host timezone', () => {
     expect(localDate('2026-10-22T16:45:00.000Z')).toBe('2026-10-23');
     expect(localTime('2026-10-22T16:45:00.000Z')).toBe('00:45');
+    expect(formatAttendanceDateTime('2026-10-22T16:45:00.000Z', (date) => date)).toBe('2026-10-23 00:45');
     expect(isLate('2026-10-23T00:29:00.000Z')).toBe(false);
     expect(isLate('2026-10-23T00:30:00.000Z')).toBe(false);
     expect(isLate('2026-10-23T00:30:00.001Z')).toBe(true);

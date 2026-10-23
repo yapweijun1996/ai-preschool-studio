@@ -6,6 +6,7 @@ import { Icon } from '../components/Icon';
 import { Modal } from '../components/Modal';
 import { Avatar } from '../components/ui';
 import { DEMO_CHECK_IN_CREDENTIALS } from '../attendance/demo';
+import { formatAttendanceDateTime } from '../attendance/domain';
 import { CLASS_NAME, TODAY } from '../data/demo';
 import type {
   AbsenceReason,
@@ -148,6 +149,12 @@ function timeValue(dateTime?: string) {
 }
 function atTime(value: string, date = TODAY) {
   return `${date}T${value}:00+08:00`;
+}
+function amendmentActorName(actorId: string, t: (key: TKey) => string) {
+  if (actorId === 'admin-wong') return 'Ms. Wong';
+  if (actorId === 'teacher-lim') return 'Ms. Lim';
+  if (actorId === 'check-in-kiosk') return t('pages.attendance.actorKiosk');
+  return actorId;
 }
 function focusAttendanceChildWhenReady(childId: string, attempts = 30) {
   window.setTimeout(() => {
@@ -1096,7 +1103,7 @@ export function AttendanceKiosk() {
 }
 
 export function AttendanceHistory() {
-  const { t, fmtDate, fmtTime } = useI18n();
+  const { t, fmtDate } = useI18n();
   const { state } = usePortfolio();
   const port = useDataPort();
   const role = useRole();
@@ -1299,8 +1306,8 @@ export function AttendanceHistory() {
                                 <li key={amendment.id}>
                                   <strong>
                                     {t('pages.attendance.amendmentWhoWhen', {
-                                      by: amendment.by,
-                                      when: `${fmtDate(amendment.at)} ${fmtTime(new Date(amendment.at))}`,
+                                      by: amendmentActorName(amendment.by, t),
+                                      when: formatAttendanceDateTime(amendment.at, fmtDate),
                                     })}
                                   </strong>
                                   <span>
