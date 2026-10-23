@@ -188,6 +188,39 @@ test('exiting kiosk requires fictional staff PIN and locks after three failures'
   await expect(page).toHaveURL(/#\/attendance$/);
 });
 
+test('kiosk method tabs fit at mobile width in all supported languages', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const lang of ['en', 'zh', 'ms']) {
+    await open(page, './#/attendance/kiosk');
+    await page.evaluate((language) => localStorage.setItem('aps-lang', language), lang);
+    await page.reload();
+    const face = page.getByRole('tab', {
+      name: lang === 'en'
+        ? 'Face (unavailable)'
+        : lang === 'zh'
+          ? '人脸（不可用）'
+          : 'Wajah (tidak tersedia)',
+    });
+    await expect(face).toBeVisible();
+    const metrics = await page.locator('.attendance-kiosk-tabs button').evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const rect = button.getBoundingClientRect();
+        return {
+          height: rect.height,
+          width: rect.width,
+          clientWidth: button.clientWidth,
+          scrollWidth: button.scrollWidth,
+        };
+      }),
+    );
+    expect(metrics).toHaveLength(3);
+    for (const item of metrics) {
+      expect(item.height).toBeGreaterThanOrEqual(44);
+      expect(item.scrollWidth).toBeLessThanOrEqual(item.clientWidth);
+    }
+  }
+});
+
 test('legacy check-in route redirects; reviewer sees a read-only kiosk explanation', async ({
   page,
 }) => {

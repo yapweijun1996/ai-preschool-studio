@@ -123,6 +123,7 @@ export const pages = {
     qrTab: 'QR',
     faceTab: 'Face',
     faceUnavailableTab: '(unavailable)',
+    kioskFaceUnavailableLabel: 'Face (unavailable)',
     searchChildren: 'Search children',
     noChildren: 'No children match this search.',
     pinTitle: 'Check in with child code and PIN',

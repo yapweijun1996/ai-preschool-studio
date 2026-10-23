@@ -148,6 +148,11 @@ export function AttendanceKiosk() {
                 role="tab"
                 aria-selected={method === item}
                 aria-controls="kiosk-panel"
+                aria-label={
+                  item === 'face'
+                    ? t('pages.attendance.kioskFaceUnavailableLabel')
+                    : t(KIOSK_TAB_LABELS[item])
+                }
                 data-unavailable={item === 'face' || undefined}
                 onClick={() => {
                   setMethod(item);
@@ -155,9 +160,12 @@ export function AttendanceKiosk() {
                   setSuccess(null);
                 }}
               >
-                {item === 'face'
-                  ? `${t('pages.attendance.faceTab')} ${t(KIOSK_TAB_LABELS[item])}`
-                  : t(KIOSK_TAB_LABELS[item])}
+                {item === 'face' ? (
+                  <span className="kiosk-face-tab-label">
+                    <span>{t('pages.attendance.faceTab')}</span>
+                    <small>{t('pages.attendance.faceUnavailableTab')}</small>
+                  </span>
+                ) : t(KIOSK_TAB_LABELS[item])}
               </button>
             ))}
           </div>

@@ -123,6 +123,7 @@ export const pages: Dict['pages'] = {
     qrTab: '二维码',
     faceTab: '人脸',
     faceUnavailableTab: '（不可用）',
+    kioskFaceUnavailableLabel: '人脸（不可用）',
     searchChildren: '搜索儿童',
     noChildren: '没有符合搜索条件的儿童。',
     pinTitle: '使用儿童代码和 PIN 签到',

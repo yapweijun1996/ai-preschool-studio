@@ -123,6 +123,7 @@ export const pages: Dict['pages'] = {
     qrTab: 'QR',
     faceTab: 'Wajah',
     faceUnavailableTab: '(tidak tersedia)',
+    kioskFaceUnavailableLabel: 'Wajah (tidak tersedia)',
     searchChildren: 'Cari kanak-kanak',
     noChildren: 'Tiada kanak-kanak sepadan dengan carian ini.',
     pinTitle: 'Daftar masuk dengan kod kanak-kanak dan PIN',
