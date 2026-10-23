@@ -106,6 +106,7 @@ describe('attendance demo adapter', () => {
   it('seeds ten school days, two amendments, and today with 12 present, one absent and seven unmarked', async () => {
     expect(new Set(DEMO_ATTENDANCE_RECORDS.map((record) => record.date)).size).toBe(11);
     expect(DEMO_ATTENDANCE_RECORDS).toHaveLength(213);
+    expect(DEMO_ATTENDANCE_RECORDS.filter((record) => record.arrivedAt).every((record) => Date.parse(record.markedAt) >= Date.parse(record.arrivedAt!))).toBe(true);
     const { port } = adapterFrom();
     const register = await port.getAttendanceRegister(schoolClass.id, TODAY, teacher);
     expect(register.rows).toHaveLength(20);
@@ -114,6 +115,7 @@ describe('attendance demo adapter', () => {
       absenceReasons: { family: 1 }
     });
     expect((await port.getAmendments(DEMO_ATTENDANCE_RECORDS[2 * 20 + 2].id, teacher))).toHaveLength(1);
+    expect((await port.getAmendments(DEMO_ATTENDANCE_RECORDS[2 * 20 + 2].id, teacher))[0].by).toBe('admin-wong');
     expect((await port.getAmendments(DEMO_ATTENDANCE_RECORDS[5 * 20 + 16].id, teacher))).toHaveLength(1);
   });
 

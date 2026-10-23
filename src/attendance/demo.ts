@@ -38,7 +38,8 @@ historyDays.forEach((date, dayIndex) => {
       status: absent ? 'absent' : 'present',
       ...(!absent ? { arrivedAt: originalArrival, method: 'staff' as const } : { absenceReason: reason }),
       markedBy: 'teacher-lim',
-      markedAt: asSingaporeInstant(date, 8, 40)
+      markedAt: absent ? asSingaporeInstant(date, 8, 40) :
+        (Date.parse(originalArrival) > Date.parse(asSingaporeInstant(date, 8, 40)) ? originalArrival : asSingaporeInstant(date, 8, 40))
     };
     records.push(record);
 
@@ -50,7 +51,7 @@ historyDays.forEach((date, dayIndex) => {
         recordId: record.id, childId: child.id, date, field: 'arrivedAt',
         from: record.arrivedAt, to: correctedArrival,
         reason: 'Fictional correction: paper register showed an earlier arrival.',
-        by: 'Ms. Wong', at: asSingaporeInstant(date, 9, 15)
+        by: 'admin-wong', at: asSingaporeInstant(date, 9, 15)
       });
       record.arrivedAt = correctedArrival;
     }
@@ -64,7 +65,7 @@ historyDays.forEach((date, dayIndex) => {
         recordId: record.id, childId: child.id, date, field: 'absenceReason',
         from, to: record.absenceReason,
         reason: 'Fictional correction: guardian clarified the absence category.',
-        by: 'Ms. Wong', at: asSingaporeInstant(date, 9, 20)
+        by: 'admin-wong', at: asSingaporeInstant(date, 9, 20)
       });
     }
   });
