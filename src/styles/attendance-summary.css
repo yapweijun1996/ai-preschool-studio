@@ -1,0 +1,44 @@
+.attendance-dashboard-tile { overflow: hidden; }
+.attendance-tile-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 20px 20px;
+}
+.attendance-tile-counts > div {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 5px;
+}
+.attendance-tile-late { color: var(--color-warning); }
+.attendance-profile { min-width: 0; margin: 16px 0 24px; }
+.attendance-day-strip {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(72px, 1fr));
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.attendance-day {
+  min-height: 82px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.attendance-day-mark { width: 10px; height: 10px; border-radius: 50%; background: var(--color-border-strong); }
+.attendance-day-present .attendance-day-mark { background: var(--color-primary); }
+.attendance-day-late { color: var(--color-warning); }
+.attendance-day-late .attendance-day-mark { background: var(--color-warning); }
+.attendance-day-absent { color: var(--color-danger); }
+.attendance-day-absent .attendance-day-mark { background: var(--color-danger); }
+.attendance-day-notMarked { border-style: dashed; }
+@media (max-width: 600px) {
+  .attendance-tile-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .attendance-day-strip { grid-template-columns: repeat(10, 82px); }
+}
