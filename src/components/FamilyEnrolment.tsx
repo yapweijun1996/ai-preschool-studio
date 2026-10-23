@@ -46,7 +46,7 @@ const REFUSAL_KEYS: Partial<Record<PortRefusal, TKey>> = {
   'invalid-collector': 'pages.children.refusal.invalidCollector',
   'report-in-review': 'pages.children.refusal.reportInReview',
   'invalid-target': 'pages.children.refusal.invalidTarget',
-  'record-child-mismatch': 'pages.children.refusal.invalidTarget'
+  'record-child-mismatch': 'pages.children.refusal.recordChildMismatch'
 };
 
 export function FamilyEnrolment({ childId }: { childId: string }) {

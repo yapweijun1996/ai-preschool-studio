@@ -517,7 +517,8 @@ export const pages = {
       unknownChild: 'This child could not be found.', invalidChild: 'Check the child details and class.', unknownGuardian: 'This guardian could not be found.',
       invalidGuardian: 'Check the guardian details and contact formats.', primaryGuardian: 'Each child must keep at least one primary guardian.',
       unknownCollector: 'This authorised collector could not be found.', invalidCollector: 'Check the collector details and validity dates.',
-      reportInReview: 'This child cannot be withdrawn while a report is in review.', invalidTarget: 'This change is no longer available. Refresh and try again.'
+      reportInReview: 'This child cannot be withdrawn while a report is in review.', invalidTarget: 'This change is no longer available. Refresh and try again.',
+      recordChildMismatch: 'This collector record belongs to a different child.',
     },
     dialog: { child: 'Edit child details', guardian: 'Guardian details', collector: 'Authorised collector details', remove: 'Confirm removal', withdraw: 'Confirm withdrawal' }
   }

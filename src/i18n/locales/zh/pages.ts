@@ -472,7 +472,7 @@ export const pages: Dict['pages'] = {
     collectorPhotoIdNote: '在接送时通过带照片的证件核实身份（接送与放行，第二阶段）。', formError: '请检查标记的字段并重试。', refusalTitle: '无法保存此更改。', errorRequired: '此字段为必填项。', errorPhone: '请使用虚构的新加坡格式 +65 9000 1234。',
     errorEmail: '请使用以 @example.com 结尾的电子邮件地址。', errorDate: '请输入有效的日历日期。', errorDateOrder: '结束日期必须等于或晚于开始日期。',
     accessTitle: '无法访问儿童资料', loadingFamily: '正在加载家庭与入学信息…',
-    refusal: { unknownChild: '找不到此儿童。', invalidChild: '请检查儿童资料和班级。', unknownGuardian: '找不到此监护人。', invalidGuardian: '请检查监护人资料和联系格式。', primaryGuardian: '每名儿童必须至少保留一位主要监护人。', unknownCollector: '找不到此获授权接送人。', invalidCollector: '请检查接送人资料和有效日期。', reportInReview: '报告审核中，暂不能为此儿童办理退园。', invalidTarget: '此更改已不可用，请刷新后重试。' },
+    refusal: { unknownChild: '找不到此儿童。', invalidChild: '请检查儿童资料和班级。', unknownGuardian: '找不到此监护人。', invalidGuardian: '请检查监护人资料和联系格式。', primaryGuardian: '每名儿童必须至少保留一位主要监护人。', unknownCollector: '找不到此获授权接送人。', invalidCollector: '请检查接送人资料和有效日期。', reportInReview: '报告审核中，暂不能为此儿童办理退园。', invalidTarget: '此更改已不可用，请刷新后重试。', recordChildMismatch: '此接送人记录属于另一名儿童。' },
     dialog: { child: '编辑儿童资料', guardian: '监护人资料', collector: '获授权接送人资料', remove: '确认移除', withdraw: '确认退园' }
   }
 };
