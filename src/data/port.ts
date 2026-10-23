@@ -35,6 +35,7 @@ export type PortRefusal =
   | 'status-change-not-allowed'
   | 'not-today' | 'already-marked' | 'child-withdrawn' | 'invalid-time' | 'past-date'
   | 'not-permitted' | 'not-present' | 'already-departed' | 'pin-invalid' | 'pin-locked'
+  | 'consent-not-recorded'
   | 'unknown-card' | 'unknown-record';
 
 export interface AttendanceRegister { date: string; rows: AttendanceRow[] }

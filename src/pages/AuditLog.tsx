@@ -7,7 +7,7 @@ import { STUDENTS } from '../data/demo';
 import { useI18n } from '../i18n';
 import { usePortfolio } from '../store/PortfolioContext';
 import type { AuditEvent } from '../store/reducer';
-import { AUDIT_ACTIONS, auditActionLabel, isAuditAction } from '../store/audit';
+import { AUDIT_ACTIONS, auditActionLabel, auditSummaryLabel, isAuditAction } from '../store/audit';
 import { useRole } from '../roles/RoleContext';
 
 const actions = AUDIT_ACTIONS;
@@ -62,7 +62,7 @@ export function AuditLog() {
   }
 
   const childName = (id: string) => STUDENTS.find((student) => student.id === id)?.name ?? id;
-  const summary = (event: AuditEvent) => t(event.summaryKey, event.summaryParams);
+  const summary = (event: AuditEvent) => t(auditSummaryLabel(event), event.summaryParams);
   const clear = () => {
     setAction('');
     setStudentId('');

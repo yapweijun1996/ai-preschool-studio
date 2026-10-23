@@ -52,8 +52,7 @@ export type AuditSummaryKey =
   | 'pages.audit.summaryGuardianCreated' | 'pages.audit.summaryGuardianUpdated'
   | 'pages.audit.summaryGuardianRemoved' | 'pages.audit.summaryCollectorCreated'
   | 'pages.audit.summaryCollectorUpdated' | 'pages.audit.summaryCollectorRemoved'
-  | 'pages.audit.summaryAttendanceMarked' | 'pages.audit.summaryAttendanceAmended'
-  | 'pages.audit.summaryAttendanceDeparted' | 'pages.audit.summaryAttendanceCheckin';
+  | 'attendance.marked' | 'attendance.amended' | 'attendance.departed' | 'attendance.checkin';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -604,8 +603,8 @@ export function reducer(state: State, action: Action): State {
         : state.attendanceAmendments;
       const actionName = `attendance.${action.audit}` as AuditAction;
       const summaryKey = ({
-        marked: 'pages.audit.summaryAttendanceMarked', amended: 'pages.audit.summaryAttendanceAmended',
-        departed: 'pages.audit.summaryAttendanceDeparted', checkin: 'pages.audit.summaryAttendanceCheckin'
+        marked: 'attendance.marked', amended: 'attendance.amended',
+        departed: 'attendance.departed', checkin: 'attendance.checkin'
       } as const)[action.audit] as AuditSummaryKey;
       return appendAudit({
         ...state,

@@ -36,6 +36,16 @@ export const auditActionLabel: Record<AuditAction, TKey> = {
   'attendance.checkin': 'pages.audit.summaryAttendanceCheckin'
 };
 
+export function auditSummaryLabel(event: AuditEvent): TKey {
+  switch (event.summaryKey) {
+    case 'attendance.marked': return 'pages.audit.summaryAttendanceMarked';
+    case 'attendance.amended': return 'pages.audit.summaryAttendanceAmended';
+    case 'attendance.departed': return 'pages.audit.summaryAttendanceDeparted';
+    case 'attendance.checkin': return 'pages.audit.summaryAttendanceCheckin';
+    default: return event.summaryKey;
+  }
+}
+
 export function auditActionForDecision(decision: DecisionEvent): AuditAction {
   switch (decision.type) {
     case 'submitted': return 'report.submitted';

@@ -69,7 +69,8 @@ const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
   'pin-invalid': 'pages.children.refusal.invalidTarget',
   'pin-locked': 'pages.children.refusal.invalidTarget',
   'unknown-card': 'pages.children.refusal.invalidTarget',
-  'unknown-record': 'pages.children.refusal.invalidTarget'
+  'unknown-record': 'pages.children.refusal.invalidTarget',
+  'consent-not-recorded': 'pages.children.refusal.invalidTarget'
 };
 
 export function FamilyEnrolment({ childId }: { childId: string }) {

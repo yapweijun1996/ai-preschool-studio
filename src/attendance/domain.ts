@@ -54,7 +54,7 @@ export interface DemoCheckInCredential {
 export interface PinLockoutState { failedAttempts: number; lockedUntil?: string }
 
 export interface AttendanceRow {
-  child: Child;
+  child: Omit<Child, 'notes'>;
   record?: AttendanceRecord;
   late: boolean;
 }
@@ -103,7 +103,7 @@ export function isLate(arrivedAt: string | undefined, cutoff = LATE_CUTOFF_LOCAL
 }
 
 export function validateRecord(
-  value: Pick<AttendanceRecord, 'status' | 'arrivedAt' | 'departedAt' | 'absenceReason'>,
+  value: Pick<AttendanceRecord, 'status' | 'arrivedAt' | 'departedAt' | 'absenceReason'> & Partial<Pick<AttendanceRecord, 'date'>>,
   nowIso: string
 ): AttendanceRefusal | undefined {
   const nowMs = Date.parse(nowIso);
@@ -115,10 +115,12 @@ export function validateRecord(
   if (!value.arrivedAt || !Number.isFinite(Date.parse(value.arrivedAt))) return 'invalid-time';
   const arrived = Date.parse(value.arrivedAt);
   if (arrived > nowMs) return 'invalid-time';
+  if (value.date && localDate(value.arrivedAt) !== value.date) return 'invalid-time';
   if (value.absenceReason) return 'invalid-time';
   if (value.departedAt) {
     const departed = Date.parse(value.departedAt);
-    if (!Number.isFinite(departed) || departed <= arrived || departed > nowMs) return 'invalid-time';
+    if (!Number.isFinite(departed) || departed <= arrived || departed > nowMs ||
+      (value.date && localDate(value.departedAt) !== value.date)) return 'invalid-time';
   }
   return undefined;
 }
