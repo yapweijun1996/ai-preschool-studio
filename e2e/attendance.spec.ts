@@ -162,6 +162,32 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await expect(page.getByText(/Use PIN or QR, or ask a staff member/)).toBeVisible();
 });
 
+test('exiting kiosk requires fictional staff PIN and locks after three failures', async ({ page }) => {
+  await open(page, './#/attendance/kiosk');
+  await page.locator('.kiosk-credentials summary').click();
+  await expect(page.locator('.kiosk-credentials')).toHaveAttribute('open', '');
+  await expect(page.getByText(/Fictional demo staff PIN: 8642/)).toBeVisible();
+  await page.getByRole('button', { name: 'Exit kiosk' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Staff verification required' });
+  await expect(dialog.getByLabel('Staff PIN')).toBeFocused();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await dialog.getByLabel('Staff PIN').fill('1111');
+    await dialog.getByRole('button', { name: 'Verify and exit' }).click();
+    if (attempt < 2) {
+      await expect(dialog.getByRole('alert')).toContainText(
+        attempt === 0 ? '2 attempts left' : '1 attempt left',
+      );
+    }
+  }
+  await expect(dialog.getByRole('alert')).toContainText('locked after 3 failed attempts');
+  await expect(page).toHaveURL(/#\/attendance\/kiosk$/);
+  await page.reload();
+  await page.getByRole('button', { name: 'Exit kiosk' }).click();
+  await page.getByLabel('Staff PIN').fill('8642');
+  await page.getByRole('button', { name: 'Verify and exit' }).click();
+  await expect(page).toHaveURL(/#\/attendance$/);
+});
+
 test('legacy check-in route redirects; reviewer sees a read-only kiosk explanation', async ({
   page,
 }) => {

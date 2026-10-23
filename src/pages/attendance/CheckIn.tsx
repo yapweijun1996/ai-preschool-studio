@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AccessDenied } from '../../components/AccessDenied';
 import { Icon } from '../../components/Icon';
+import { Modal } from '../../components/Modal';
 import { DEMO_CHECK_IN_CREDENTIALS } from '../../attendance/demo';
 import { CLASS_NAME } from '../../data/demo';
 import { useI18n } from '../../i18n';
@@ -14,6 +15,7 @@ import { KIOSK_TAB_LABELS, REFUSAL_KEYS, type KioskMethod } from './shared';
 
 export function AttendanceKiosk() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const { state } = usePortfolio();
   const port = useDataPort();
   const role = useRole();
@@ -23,6 +25,11 @@ export function AttendanceKiosk() {
   const [pinAttempted, setPinAttempted] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ name: string; at: string } | null>(null);
+  const [exitOpen, setExitOpen] = useState(false);
+  const [staffPin, setStaffPin] = useState('');
+  const [staffFailures, setStaffFailures] = useState(0);
+  const [staffLockedUntil, setStaffLockedUntil] = useState(0);
+  const [staffError, setStaffError] = useState('');
   const codeRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const resetFocusRef = useRef(false);
@@ -110,9 +117,17 @@ export function AttendanceKiosk() {
           <div className="notice notice-info kiosk-demo-banner" role="note">
             <Icon name="info" size={18} />
             <strong>{t('pages.attendance.kioskDemoBanner')}</strong>
-            <Link className="btn btn-secondary" to="/attendance">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => {
+                setStaffPin('');
+                setStaffError('');
+                setExitOpen(true);
+              }}
+            >
               {t('pages.attendance.exitKiosk')}
-            </Link>
+            </button>
           </div>
           <div className="page-title-row">
             <div className="grow">
@@ -295,7 +310,80 @@ export function AttendanceKiosk() {
                 </div>
               ))}
             </div>
+            <p className="cap muted">
+              {t('pages.attendance.staffCredential', { pin: '8642' })}
+            </p>
           </details>
+          {exitOpen && (
+            <Modal
+              labelledBy="exit-kiosk-title"
+              onClose={() => setExitOpen(false)}
+              backdropClassName="dialog-backdrop"
+              panelClassName="card card-pad stack"
+            >
+              <h2 className="h2" id="exit-kiosk-title">
+                {t('pages.attendance.exitDialogTitle')}
+              </h2>
+              <p className="sec muted">{t('pages.attendance.exitDialogHelp')}</p>
+              <label className="stack sec" htmlFor="staff-pin">
+                {t('pages.attendance.staffPinLabel')}
+                <input
+                  id="staff-pin"
+                  className="input"
+                  type="password"
+                  autoComplete="off"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  value={staffPin}
+                  onChange={(event) => {
+                    setStaffPin(event.target.value.replace(/\D/g, '').slice(0, 4));
+                    setStaffError('');
+                  }}
+                />
+              </label>
+              {staffError && <p role="alert" className="field-error">{staffError}</p>}
+              <div className="row">
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  onClick={() => setExitOpen(false)}
+                >
+                  {t('pages.attendance.cancel')}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  disabled={staffPin.length !== 4}
+                  onClick={() => {
+                    if (Date.now() < staffLockedUntil) {
+                      setStaffError(t('pages.attendance.staffPinLocked'));
+                    } else if (staffPin === '8642') {
+                      setStaffPin('');
+                      setExitOpen(false);
+                      navigate('/attendance');
+                    } else {
+                      const failures = staffFailures + 1;
+                      setStaffFailures(failures);
+                      setStaffPin('');
+                      setStaffError(
+                        failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT
+                          ? t('pages.attendance.staffPinLocked')
+                          : t('pages.attendance.staffPinInvalid', {
+                              count: PIN_ATTEMPTS_BEFORE_LOCKOUT - failures,
+                            }),
+                      );
+                      if (failures >= PIN_ATTEMPTS_BEFORE_LOCKOUT) {
+                        setStaffLockedUntil(Date.now() + PIN_LOCKOUT_MS);
+                      }
+                    }
+                  }}
+                >
+                  {t('pages.attendance.confirmExit')}
+                </button>
+              </div>
+            </Modal>
+          )}
         </div>
       )}
     </main>
