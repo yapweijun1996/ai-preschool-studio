@@ -13,6 +13,7 @@ const rawPageLoaders = {
   studio: () => import('../pages/PortfolioStudio').then((m) => ({ default: m.PortfolioStudio })),
   report: () => import('../pages/ReportPreview').then((m) => ({ default: m.ReportPreview })),
   family: () => import('../pages/FamilyReport').then((m) => ({ default: m.FamilyReport })),
+  attendance: () => import('../pages/Attendance').then((m) => ({ default: m.Attendance })),
   coverage: () => import('../pages/Coverage').then((m) => ({ default: m.Coverage })),
   reviews: () => import('../pages/Reviews').then((m) => ({ default: m.Reviews })),
   audit: () => import('../pages/AuditLog').then((m) => ({ default: m.AuditLog })),
@@ -64,6 +65,7 @@ export const AddObservation = routePage('observe');
 export const PortfolioStudio = routePage('studio');
 export const ReportPreview = routePage('report');
 export const FamilyReport = routePage('family');
+export const Attendance = routePage('attendance');
 export const Coverage = routePage('coverage');
 export const Reviews = routePage('reviews');
 export const AuditLog = routePage('audit');
@@ -73,7 +75,8 @@ export const NotFound = routePage('notFound');
 
 export function pageKindForPath(pathname: string): PageKind | undefined {
   const path = pathname.split('?')[0];
-  return path === '/students' ? 'students'
+  return path.startsWith('/attendance') ? 'attendance'
+    : path === '/students' ? 'students'
     : path === '/classes' ? 'classes'
     : path === '/coverage' ? 'coverage'
     : path === '/reviews' ? 'reviews'
@@ -109,6 +112,7 @@ const fallbackInfo: Record<PageKind, { frame: 'list' | 'detail' | 'editor' | 're
   studio: { frame: 'editor' },
   report: { frame: 'report' },
   family: { frame: 'report' },
+  attendance: { frame: 'list' },
   coverage: { frame: 'summary' },
   reviews: { frame: 'list' },
   audit: { frame: 'list' },
@@ -131,6 +135,7 @@ export function RouteFallback({ kind }: { kind: PageKind }) {
     studio: { module: 'students', title: t('pages.studio.title'), focus: true },
     report: { module: 'reports', title: t('pages.report.title') },
     family: { module: 'reports', title: t('pages.children.familyTitle') },
+    attendance: { module: 'attendance', title: t('pages.attendance.title') },
     coverage: { module: 'students', title: t('pages.coverage.title') },
     reviews: { module: 'reports', title: t('pages.reviews.title') },
     audit: { module: 'settings', title: t('pages.audit.title') },

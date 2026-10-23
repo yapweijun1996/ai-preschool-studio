@@ -1,0 +1,121 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AccessDenied } from '../components/AccessDenied';
+import { AppShell } from '../components/AppShell';
+import { Icon } from '../components/Icon';
+import { Modal } from '../components/Modal';
+import { Avatar } from '../components/ui';
+import { CLASS_NAME, TODAY } from '../data/demo';
+import type { AbsenceReason, AmendmentField, AttendanceRow, AttendanceSummary } from '../attendance/domain';
+import type { PortRefusal } from '../data/port';
+import { useI18n, type TKey } from '../i18n';
+import { useDataPort, usePortfolio } from '../store/PortfolioContext';
+import { useRole } from '../roles/RoleContext';
+import { demoRole } from '../roles';
+import { localTime } from '../attendance/domain';
+import { now } from '../utils/clock';
+import '../styles/attendance.css';
+
+const CLASS_ID = 'k2-sunflower-2026';
+type Filter = 'all' | 'notMarked' | 'present' | 'late' | 'absent';
+type Dialog = { kind: 'absence'; row: AttendanceRow } | { kind: 'bulk'; count: number } | { kind: 'amend'; row: AttendanceRow } | null;
+const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
+  'unknown-student':'pages.attendance.refusalUnknownStudent','wrong-child-observation':'pages.attendance.refusalWrongChildObservation','date-outside-period':'pages.attendance.refusalDateOutsidePeriod','report-locked':'pages.attendance.refusalReportLocked','report-not-editable':'pages.attendance.refusalReportNotEditable','not-ready':'pages.attendance.refusalNotReady','unverified-claims':'pages.attendance.refusalUnverifiedClaims','invalid-target':'pages.attendance.refusalInvalidTarget','no-observations':'pages.attendance.refusalNoObservations','not-approved':'pages.attendance.refusalNotApproved','reason-required':'pages.attendance.refusalReasonRequired','unknown-child':'pages.attendance.refusalUnknownChild','invalid-child':'pages.attendance.refusalInvalidChild','unknown-guardian':'pages.attendance.refusalUnknownGuardian','invalid-guardian':'pages.attendance.refusalInvalidGuardian','primary-guardian-required':'pages.attendance.refusalPrimaryGuardianRequired','unknown-collector':'pages.attendance.refusalUnknownCollector','invalid-collector':'pages.attendance.refusalInvalidCollector','report-in-review':'pages.attendance.refusalReportInReview','record-child-mismatch':'pages.attendance.refusalRecordChildMismatch','status-change-not-allowed':'pages.attendance.refusalStatusChangeNotAllowed','not-today':'pages.attendance.refusalNotToday','already-marked':'pages.attendance.refusalAlreadyMarked','child-withdrawn':'pages.attendance.refusalChildWithdrawn','invalid-time':'pages.attendance.refusalInvalidTime','past-date':'pages.attendance.refusalPastDate','not-permitted':'pages.attendance.refusalNotPermitted','not-present':'pages.attendance.refusalNotPresent','already-departed':'pages.attendance.refusalAlreadyDeparted','pin-invalid':'pages.attendance.refusalPinInvalid','pin-locked':'pages.attendance.refusalPinLocked','consent-not-recorded':'pages.attendance.refusalConsentNotRecorded','unknown-card':'pages.attendance.refusalUnknownCard','unknown-record':'pages.attendance.refusalUnknownRecord'
+};
+const REASON_KEYS: Record<AbsenceReason, TKey> = { sick: 'pages.attendance.reasonSick', family: 'pages.attendance.reasonFamily', travel: 'pages.attendance.reasonTravel', other: 'pages.attendance.reasonOther' };
+const FILTERS: Filter[] = ['all','notMarked','present','late','absent'];
+
+function actor(role: ReturnType<typeof useRole>['role']) { return { role, name: demoRole(role).name }; }
+function summary(rows: AttendanceRow[]): AttendanceSummary {
+  const value: AttendanceSummary = { present: 0, late: 0, absent: 0, notMarked: 0, absenceReasons: { sick: 0, family: 0, travel: 0, other: 0 } };
+  rows.forEach((row) => { if (!row.record) value.notMarked++; else if (row.record.status === 'absent') { value.absent++; if (row.record.absenceReason) value.absenceReasons[row.record.absenceReason]++; } else { value.present++; if (row.late) value.late++; } });
+  return value;
+}
+
+function useRegister(date = TODAY) {
+  const { state } = usePortfolio();
+  const port = useDataPort();
+  const role = useRole();
+  const [rows, setRows] = useState<AttendanceRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let live = true;
+    setLoading(true);
+    void port.getAttendanceRegister(CLASS_ID, date, actor(role.role)).then((register) => { if (live) { setRows(register.rows); setLoading(false); } }, () => { if (live) setLoading(false); });
+    return () => { live = false; };
+  }, [port, date, role.role, state]);
+  return { rows, loading, port, role, refresh: () => port.getAttendanceRegister(CLASS_ID, date, actor(role.role)).then((r) => setRows(r.rows)) };
+}
+
+function timeValue(dateTime?: string) { return dateTime ? localTime(dateTime) ?? '' : localTime(now()) ?? '08:00'; }
+function atTime(value: string) { return `${TODAY}T${value}:00+08:00`; }
+
+export function Attendance() {
+  const { t, fmtDate } = useI18n();
+  const { rows, loading, port, role, refresh } = useRegister();
+  const [filter, setFilter] = useState<Filter>('all');
+  const [dialog, setDialog] = useState<Dialog>(null);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [timeFor, setTimeFor] = useState<string | null>(null);
+  const [arrival, setArrival] = useState(timeValue());
+  const trigger = useRef<HTMLButtonElement>(null);
+  const readOnly = !role.can('attendance.mark');
+  const counts = useMemo(() => summary(rows), [rows]);
+  const filtered = rows.filter((row) => filter === 'all' || (filter === 'notMarked' ? !row.record : filter === 'present' ? row.record?.status === 'present' : filter === 'late' ? row.late : row.record?.status === 'absent'));
+  const saveRefusal = (reason: PortRefusal) => { setError(t(REFUSAL_KEYS[reason])); setMessage(''); };
+  const markPresent = async (row: AttendanceRow, time = timeValue()) => {
+    const result = await port.markPresent(row.child.id, { arrivedAt: atTime(time), method: 'staff' }, actor(role.role));
+    if (!result.ok) saveRefusal(result.reason); else { setError(''); setMessage(t('pages.attendance.saved')); setTimeFor(null); await refresh(); }
+  };
+  const filteredCounts: Record<Filter, number> = { all: rows.length, notMarked: counts.notMarked, present: counts.present, late: counts.late, absent: counts.absent };
+  return <AppShell module="attendance" mobileTitle={t('pages.attendance.title')}>
+    {() => !role.can('attendance.view') ? <AccessDenied title="pages.attendance.title" /> : <div className="page attendance-page">
+      <div className="page-title-row"><div className="grow"><h1 className="h1">{t('pages.attendance.title')}</h1><p className="sec muted">{t('pages.attendance.subtitle', { className: CLASS_NAME })} · {fmtDate(TODAY)}</p></div><Link className="btn btn-secondary" to="/attendance/check-in"><Icon name="scan" size={18} />{t('shell.panel.attendanceKiosk')}</Link></div>
+      {readOnly && <div className="notice notice-info" role="note"><Icon name="eye" size={18} /><p className="sec">{t('pages.attendance.readOnly')}</p></div>}
+      <section className="attendance-summary" aria-label={t('pages.attendance.title')}>
+        {(['present','late','absent','notMarked'] as const).map((key) => <div key={key} className={`attendance-stat stat-${key}`}><span className="cap muted">{t(`pages.attendance.${key}`)}</span><strong className="h2 num">{counts[key]}</strong>{key === 'late' && <span className="sr-only">{t('pages.attendance.lateNote')}</span>}</div>)}
+      </section>
+      <p className="sr-only">{t('pages.attendance.lateNote')}</p>
+      <div className="attendance-tools">
+        <div className="attendance-filters" role="group" aria-label={t('pages.attendance.filters')}>
+          {FILTERS.map((key) => <button key={key} className={`filter-chip${filter === key ? ' is-active' : ''}`} type="button" aria-pressed={filter === key} onClick={() => setFilter(key)}>{t(`pages.attendance.${key === 'notMarked' ? 'filterNotMarked' : key === 'present' ? 'filterPresent' : key === 'late' ? 'filterLate' : key === 'absent' ? 'filterAbsent' : 'all'}`)} <span className="num">{filteredCounts[key]}</span></button>)}
+        </div>
+        {!readOnly && counts.notMarked > 0 && <button className="btn btn-primary" type="button" onClick={() => setDialog({ kind: 'bulk', count: counts.notMarked })}>{t('pages.attendance.markRemaining')}</button>}
+      </div>
+      <div className="sr-only" role="status" aria-live="polite">{message}</div>
+      {error && <div className="notice notice-danger" role="alert"><Icon name="alertCircle" size={18} /><p className="sec">{error}</p></div>}
+      <section className="attendance-list" aria-label={t('pages.attendance.title')} aria-busy={loading}>
+        {loading ? Array.from({ length: 8 }, (_, i) => <div className="attendance-skeleton" key={i}><span className="skel"/><span className="skel grow"/><span className="skel"/></div>) : filtered.length === 0 ? <div className="card card-pad"><p className="sec muted">{t('pages.attendance.empty')}</p></div> : filtered.map((row) => {
+          const time = row.record?.arrivedAt ? timeValue(row.record.arrivedAt) : '';
+          return <article className="card attendance-row" key={row.child.id}>
+            <Avatar initials={row.child.initials} />
+            <div className="attendance-child grow"><strong className="strong">{row.child.name}</strong><div className="attendance-meta">
+              {row.record ? <span className={`status attendance-status st-${row.record.status}`}>{t(`pages.attendance.${row.record.status}`)}{row.late ? ` · ${t('pages.attendance.late')}` : ''}</span> : <span className="status st-notstarted">{t('pages.attendance.notMarked')}</span>}
+              {row.record?.status === 'present' && <><span className="num">{time}</span><span>{t('pages.attendance.method')}: {t(row.record.method === 'pin' ? 'pages.attendance.methodPin' : row.record.method === 'qr' ? 'pages.attendance.methodQr' : 'pages.attendance.methodStaff')}</span></>}
+            </div></div>
+            {!readOnly && <div className="attendance-actions">
+              {!row.record && <>{timeFor === row.child.id ? <><label className="sr-only" htmlFor={`arrival-${row.child.id}`}>{t('pages.attendance.arrivalTime')}</label><input id={`arrival-${row.child.id}`} className="input time-input" type="time" value={arrival} onChange={(e) => setArrival(e.target.value)} /><button className="btn btn-primary" type="button" onClick={() => void markPresent(row, arrival)}>{t('pages.attendance.save')}</button></> : <><button className="btn btn-primary" type="button" onClick={() => void markPresent(row)}>{t('pages.attendance.markPresent')}</button><button className="btn btn-ghost" type="button" onClick={(e) => { trigger.current = e.currentTarget; setDialog({ kind: 'absence', row }); setError(''); }}>{t('pages.attendance.markAbsent')}</button><button className="btn btn-ghost" type="button" onClick={() => { setTimeFor(row.child.id); setArrival(timeValue()); }}>{t('pages.attendance.setTime')}</button></>}</>}
+              {row.record && <button className="btn btn-secondary" type="button" onClick={(e) => { trigger.current = e.currentTarget; setDialog({ kind: 'amend', row }); setError(''); }}>{t('pages.attendance.change')}</button>}
+            </div>}
+          </article>;
+        })}
+      </section>
+      {dialog?.kind === 'absence' && <AbsenceDialog row={dialog.row} onClose={() => setDialog(null)} onSave={async (reason) => { const result = await port.markAbsent(dialog.row.child.id, { reason }, actor(role.role)); if (!result.ok) { saveRefusal(result.reason); setDialog(null); return false; } setMessage(t('pages.attendance.saved')); await refresh(); return true; }} />}
+      {dialog?.kind === 'bulk' && <Modal labelledBy="bulk-title" onClose={() => setDialog(null)} backdropClassName="modal-backdrop" panelClassName="modal card card-pad stack"><h2 id="bulk-title" className="h2">{t('pages.attendance.confirmBulkTitle')}</h2><p className="sec">{t('pages.attendance.confirmBulk', { count: dialog.count })}</p><div className="row"><button className="btn btn-ghost" type="button" onClick={() => setDialog(null)}>{t('pages.attendance.cancel')}</button><button className="btn btn-primary" type="button" onClick={async () => { const result = await port.markRemainingPresent(CLASS_ID, actor(role.role)); if (!result.ok) { saveRefusal(result.reason); setDialog(null); } else { setMessage(t('pages.attendance.saved')); setError(''); await refresh(); setDialog(null); } }}>{t('pages.attendance.confirm')}</button></div></Modal>}
+      {dialog?.kind === 'amend' && dialog.row.record && <AmendDialog row={dialog.row} onClose={() => setDialog(null)} onSave={async (field, to, reason) => { const result = await port.amendAttendance(dialog.row.record!.id, { field, to, reason }, actor(role.role)); if (!result.ok) { saveRefusal(result.reason); setDialog(null); return false; } setMessage(t('pages.attendance.saved')); setError(''); await refresh(); return true; }} />}
+    </div>}
+  </AppShell>;
+}
+
+function AbsenceDialog({ row, onClose, onSave }: { row: AttendanceRow; onClose: () => void; onSave: (reason: AbsenceReason) => Promise<boolean> }) {
+  const { t } = useI18n(); const [reason, setReason] = useState<AbsenceReason | ''>(''); const [error, setError] = useState(false); const [saving, setSaving] = useState(false);
+  const choices: AbsenceReason[] = ['sick','family','travel','other'];
+  return <Modal labelledBy="absence-title" onClose={onClose} backdropClassName="modal-backdrop" panelClassName="modal card card-pad stack"><h2 className="h2" id="absence-title">{t('pages.attendance.absenceTitle', { name: row.child.name })}</h2><fieldset className="stack attendance-reasons"><legend className="sec semibold">{t('pages.attendance.absenceReason')}</legend>{choices.map((value) => <label className="radio-row" key={value}><input type="radio" name="absence-reason" value={value} checked={reason === value} onChange={() => { setReason(value); setError(false); }} />{t(REASON_KEYS[value])}</label>)}</fieldset>{error && <p className="field-error" role="alert">{t('pages.attendance.requiredReason')}</p>}<div className="row"><button className="btn btn-ghost" type="button" onClick={onClose}>{t('pages.attendance.cancel')}</button><button className="btn btn-primary" type="button" disabled={saving} onClick={async () => { if (!reason) { setError(true); return; } setSaving(true); if (await onSave(reason)) onClose(); else setSaving(false); }}>{t('pages.attendance.save')}</button></div></Modal>;
+}
+
+function AmendDialog({ row, onClose, onSave }: { row: AttendanceRow; onClose: () => void; onSave: (field: AmendmentField, to: string | undefined, reason: string) => Promise<boolean> }) {
+  const { t } = useI18n(); const record = row.record!; const [field, setField] = useState<AmendmentField>('status'); const [to, setTo] = useState<string>(record.status); const [reason, setReason] = useState(''); const [error, setError] = useState(false);
+  const label = field === 'status' ? 'pages.attendance.fieldStatus' : field === 'arrivedAt' ? 'pages.attendance.fieldArrival' : 'pages.attendance.fieldAbsence';
+  return <Modal labelledBy="amend-title" onClose={onClose} backdropClassName="modal-backdrop" panelClassName="modal card card-pad stack"><h2 className="h2" id="amend-title">{t('pages.attendance.amendTitle', { name: row.child.name })}</h2><label className="stack sec" htmlFor="amend-field">{t('pages.attendance.fieldStatus')}<select className="input" id="amend-field" value={field} onChange={(e) => { const next = e.target.value as AmendmentField; setField(next); setTo(next === 'status' ? record.status : next === 'arrivedAt' ? (record.arrivedAt ?? atTime(timeValue(record.arrivedAt))) : record.absenceReason ?? 'other'); }}><option value="status">{t('pages.attendance.fieldStatus')}</option><option value="arrivedAt">{t('pages.attendance.fieldArrival')}</option>{record.status === 'absent' && <option value="absenceReason">{t('pages.attendance.fieldAbsence')}</option>}</select></label><label className="stack sec" htmlFor="amend-value">{t(label)}{field === 'status' ? <select id="amend-value" className="input" value={to} onChange={(e) => setTo(e.target.value)}><option value="present">{t('pages.attendance.valuePresent')}</option><option value="absent">{t('pages.attendance.valueAbsent')}</option></select> : field === 'arrivedAt' ? <input id="amend-value" className="input" type="time" value={to} onChange={(e) => setTo(atTime(e.target.value))} /> : <select id="amend-value" className="input" value={to} onChange={(e) => setTo(e.target.value)}>{(['sick','family','travel','other'] as AbsenceReason[]).map((r) => <option key={r} value={r}>{t(REASON_KEYS[r])}</option>)}</select>}</label><label className="stack sec" htmlFor="amend-reason">{t('pages.attendance.amendReason')}<textarea id="amend-reason" className="input" rows={4} minLength={5} maxLength={200} value={reason} onChange={(e) => { setReason(e.target.value); setError(false); }} /></label><p className="cap muted">{t('pages.attendance.amendHelp')}</p><p className="cap num" aria-live="polite">{t('pages.attendance.characters', { count: reason.length })}</p>{error && <p role="alert" className="field-error">{t('pages.attendance.errorReason')}</p>}<div className="row"><button className="btn btn-ghost" type="button" onClick={onClose}>{t('pages.attendance.cancel')}</button><button className="btn btn-primary" type="button" onClick={async () => { if (reason.trim().length < 5 || reason.length > 200) { setError(true); return; } const value = field === 'arrivedAt' ? to : to; if (await onSave(field, value, reason)) onClose(); }}>{t('pages.attendance.submit')}</button></div></Modal>;
+}

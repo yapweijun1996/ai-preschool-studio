@@ -36,7 +36,7 @@ const ERROR_KEYS: Record<FieldError, TKey> = {
   'date-format': 'pages.children.errorDate',
   'date-order': 'pages.children.errorDateOrder'
 };
-const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
+const REFUSAL_KEYS: Partial<Record<PortRefusal, TKey>> = {
   'unknown-child': 'pages.children.refusal.unknownChild',
   'invalid-child': 'pages.children.refusal.invalidChild',
   'unknown-guardian': 'pages.children.refusal.unknownGuardian',
@@ -46,31 +46,7 @@ const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
   'invalid-collector': 'pages.children.refusal.invalidCollector',
   'report-in-review': 'pages.children.refusal.reportInReview',
   'invalid-target': 'pages.children.refusal.invalidTarget',
-  'record-child-mismatch': 'pages.children.refusal.invalidTarget',
-  'unknown-student': 'pages.children.refusal.invalidTarget',
-  'wrong-child-observation': 'pages.children.refusal.invalidTarget',
-  'date-outside-period': 'pages.children.refusal.invalidTarget',
-  'report-locked': 'pages.children.refusal.invalidTarget',
-  'report-not-editable': 'pages.children.refusal.invalidTarget',
-  'not-ready': 'pages.children.refusal.invalidTarget',
-  'unverified-claims': 'pages.children.refusal.invalidTarget',
-  'no-observations': 'pages.children.refusal.invalidTarget',
-  'not-approved': 'pages.children.refusal.invalidTarget',
-  'reason-required': 'pages.children.refusal.invalidTarget',
-  'status-change-not-allowed': 'pages.children.refusal.invalidTarget',
-  'not-today': 'pages.children.refusal.invalidTarget',
-  'already-marked': 'pages.children.refusal.invalidTarget',
-  'child-withdrawn': 'pages.children.refusal.invalidTarget',
-  'invalid-time': 'pages.children.refusal.invalidTarget',
-  'past-date': 'pages.children.refusal.invalidTarget',
-  'not-permitted': 'pages.children.refusal.invalidTarget',
-  'not-present': 'pages.children.refusal.invalidTarget',
-  'already-departed': 'pages.children.refusal.invalidTarget',
-  'pin-invalid': 'pages.children.refusal.invalidTarget',
-  'pin-locked': 'pages.children.refusal.invalidTarget',
-  'unknown-card': 'pages.children.refusal.invalidTarget',
-  'unknown-record': 'pages.children.refusal.invalidTarget',
-  'consent-not-recorded': 'pages.children.refusal.invalidTarget'
+  'record-child-mismatch': 'pages.children.refusal.invalidTarget'
 };
 
 export function FamilyEnrolment({ childId }: { childId: string }) {
@@ -211,7 +187,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
     } else { setSaving(false); return; }
     setSaving(false);
     if (result.ok) { setSaved(true); close(); }
-      else { setRefused(true); setFormError(t(REFUSAL_KEYS[result.reason])); }
+      else { setRefused(true); setFormError(t(REFUSAL_KEYS[result.reason] ?? 'pages.children.formError')); }
   };
 
   const removeOrWithdraw = async () => {
@@ -224,7 +200,7 @@ export function FamilyEnrolment({ childId }: { childId: string }) {
         : dialog === 'withdraw' ? await port.withdrawChild(childId, actor) : { ok: false, reason: 'invalid-target' };
     setSaving(false);
     if (result.ok) { setSaved(true); close(); }
-    else { setRefused(true); setFormError(t(REFUSAL_KEYS[result.reason])); }
+    else { setRefused(true); setFormError(t(REFUSAL_KEYS[result.reason] ?? 'pages.children.formError')); }
   };
 
   if (!child) return null;
