@@ -43,6 +43,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
 
 test('filters and summary counts update after marking; reviewer is read-only; parent is denied', async ({ page }) => {
   await open(page);
+  await expect(page.locator('#main .attendance-list[aria-busy="false"]')).toBeVisible();
   const initialNotMarked = Number(await page.locator('.attendance-stat.stat-notMarked strong').innerText());
   await row(page, 'Aiden Lee').getByRole('button', { name: 'Present', exact: true }).click();
   await expect(page.locator('.attendance-stat.stat-present strong')).toHaveText('13');
