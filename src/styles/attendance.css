@@ -1,4 +1,6 @@
 .attendance-page { gap: 18px; }
+.attendance-dialog { width: min(560px, calc(100vw - 32px)); max-height: min(90vh, 780px); overflow-y: auto; }
+.attendance-dialog-backdrop { padding: 16px; }
 .kiosk-screen { min-height: 100vh; padding: 24px; background: var(--color-app-bg); }
 .kiosk-demo-banner { display: flex; align-items: center; gap: 10px; }
 .kiosk-demo-banner .btn { margin-left: auto; }

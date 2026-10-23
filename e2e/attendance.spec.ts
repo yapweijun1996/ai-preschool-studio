@@ -297,6 +297,7 @@ test('keyboard absence dialog traps focus, Escape closes it, and focus returns t
 });
 
 test('attendance dialogs are centered overlays that block page actions', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await open(page);
   const target = row(page, 'Aiden Lee');
   await target.getByRole('button', { name: 'Mark Aiden Lee absent' }).click();
@@ -307,6 +308,7 @@ test('attendance dialogs are centered overlays that block page actions', async (
   expect(viewport).not.toBeNull();
   expect(Math.abs(box!.x + box!.width / 2 - viewport!.width / 2)).toBeLessThanOrEqual(1);
   expect(Math.abs(box!.y + box!.height / 2 - viewport!.height / 2)).toBeLessThanOrEqual(1);
+  expect(box!.width).toBe(358);
 
   await expect(target.getByRole('button', { name: 'Mark Aiden Lee present' })).toBeVisible();
   await expect(

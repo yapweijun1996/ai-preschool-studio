@@ -326,8 +326,8 @@ export function AttendanceKiosk() {
             <Modal
               labelledBy="exit-kiosk-title"
               onClose={() => setExitOpen(false)}
-              backdropClassName="dialog-backdrop"
-              panelClassName="card card-pad stack"
+              backdropClassName="dialog-backdrop attendance-dialog-backdrop"
+              panelClassName="card card-pad stack attendance-dialog"
             >
               <h2 className="h2" id="exit-kiosk-title">
                 {t('pages.attendance.exitDialogTitle')}

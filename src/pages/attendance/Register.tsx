@@ -391,8 +391,8 @@ export function Attendance() {
                 labelledBy="bulk-title"
                 onClose={() => setDialog(null)}
                 fallbackFocusRef={fallbackFocusRef}
-                backdropClassName="dialog-backdrop"
-                panelClassName="card card-pad stack"
+                backdropClassName="dialog-backdrop attendance-dialog-backdrop"
+                panelClassName="card card-pad stack attendance-dialog"
               >
                 <h2 id="bulk-title" className="h2">
                   {t('pages.attendance.confirmBulkTitle')}

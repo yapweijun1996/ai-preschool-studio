@@ -52,8 +52,8 @@ export function AmendDialog({
     <Modal
       labelledBy="amend-title"
       onClose={onClose}
-      backdropClassName="dialog-backdrop"
-      panelClassName="card card-pad stack"
+      backdropClassName="dialog-backdrop attendance-dialog-backdrop"
+      panelClassName="card card-pad stack attendance-dialog"
       fallbackFocusRef={fallbackFocusRef}
       ariaBusy={saving}
     >

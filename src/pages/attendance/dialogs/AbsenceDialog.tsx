@@ -24,8 +24,8 @@ export function AbsenceDialog({
     <Modal
       labelledBy="absence-title"
       onClose={onClose}
-      backdropClassName="dialog-backdrop"
-      panelClassName="card card-pad stack"
+      backdropClassName="dialog-backdrop attendance-dialog-backdrop"
+      panelClassName="card card-pad stack attendance-dialog"
       fallbackFocusRef={fallbackFocusRef}
     >
       <h2 className="h2" id="absence-title">
