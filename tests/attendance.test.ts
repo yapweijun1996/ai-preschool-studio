@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DEMO_CLASSES, DEMO_CHILDREN } from '../src/children/demo';
 import {
-  canAmend, canMark, checkInMethods, dailySummary, dateInAttendanceZone, isLate,
+  canAmend, canMark, checkInMethods, dailySummary, isLate,
   localDate, localTime, validateAmendmentReason, validateAmendmentValue, validateRecord,
   type AttendanceRow
 } from '../src/attendance/domain';
-import { DEMO_ATTENDANCE_RECORDS } from '../src/attendance/demo';
+import { DEMO_ATTENDANCE_RECORDS, DEMO_CHECK_IN_CREDENTIALS } from '../src/attendance/demo';
 import { createDemoAdapter } from '../src/data/demoAdapter';
 import type { DataPort } from '../src/data/port';
 import { initialState, reducer, type State } from '../src/store/reducer';
@@ -18,6 +18,7 @@ const admin = { role: 'admin' as const, name: 'Ms. Wong' };
 const reviewer = { role: 'reviewer' as const, name: 'Mr. Tan' };
 const parent = { role: 'parent' as const, name: 'Fictional Parent' };
 const iso = (date: string, time: string) => `${date}T${time}:00+08:00`;
+const unmarkedChildId = Object.keys(DEMO_CHILDREN).find((id) => !DEMO_ATTENDANCE_RECORDS.some((record) => record.childId === id && record.date === TODAY))!;
 
 function adapterFrom(seed = initialState(), clock: () => Date = () => new Date('2026-10-22T09:00:00+08:00')): { port: DataPort; getState: () => State } {
   let state = seed;
@@ -27,7 +28,7 @@ function adapterFrom(seed = initialState(), clock: () => Date = () => new Date('
 
 describe('attendance pure domain', () => {
   it('anchors demoNow to the seeded business date and Singapore wall-clock time', () => {
-    expect(demoNow(() => new Date('2027-01-01T00:15:30.123Z')).toISOString()).toBe('2026-10-22T16:15:30.123Z');
+    expect(demoNow(() => new Date('2027-01-01T00:15:30.123Z')).toISOString()).toBe('2026-10-22T00:15:30.123Z');
   });
   it('derives local dates, times and late status in Singapore independent of host timezone', () => {
     expect(localDate('2026-10-22T16:45:00.000Z')).toBe('2026-10-23');
@@ -124,16 +125,16 @@ describe('attendance demo adapter', () => {
     const withdrawnId = Object.keys(state.children)[0];
     state.children = { ...state.children, [withdrawnId]: { ...state.children[withdrawnId], status: 'withdrawn' } };
     const { port } = adapterFrom(state);
-    const today = dateInAttendanceZone(new Date().toISOString());
+    const today = TODAY;
     expect((await port.getAttendanceRegister(schoolClass.id, today, teacher)).rows.some((row) => row.child.id === withdrawnId)).toBe(false);
-    const historic = await port.getAttendanceRegister(schoolClass.id, TODAY, teacher);
+    const historic = await port.getAttendanceRegister(schoolClass.id, DEMO_ATTENDANCE_RECORDS[0].date, teacher);
     expect(historic.rows.some((row) => row.child.id === withdrawnId)).toBe(true);
   });
 
   it('refuses teacher past-day amendments and parent/reviewer writes', async () => {
     const { port } = adapterFrom();
-    const record = DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY)!;
-    expect(await port.amendAttendance(record.id, { field: 'arrivedAt', to: iso(TODAY, '08:01'), reason: 'Fictional correction' }, teacher)).toEqual({ ok: false, reason: 'past-date' });
+    const record = DEMO_ATTENDANCE_RECORDS.find((item) => item.date < TODAY)!;
+    expect(await port.amendAttendance(record.id, { field: 'arrivedAt', to: iso(record.date, '08:01'), reason: 'Fictional correction' }, teacher)).toEqual({ ok: false, reason: 'past-date' });
     expect(await port.markAbsent('aria', { reason: 'sick' }, reviewer)).toEqual({ ok: false, reason: 'not-permitted' });
     expect(await port.markAbsent('aria', { reason: 'sick' }, parent)).toEqual({ ok: false, reason: 'not-permitted' });
     expect(await port.amendAttendance('missing', { field: 'status', to: 'banana', reason: '' } as never, reviewer)).toEqual({ ok: false, reason: 'not-permitted' });
@@ -152,42 +153,42 @@ describe('attendance demo adapter', () => {
 
   it('requires an absence reason when marking absent', async () => {
     const { port } = adapterFrom();
-    expect(await port.markAbsent('aria', {} as never, teacher)).toEqual({ ok: false, reason: 'reason-required' });
+    expect(await port.markAbsent(unmarkedChildId, {} as never, teacher)).toEqual({ ok: false, reason: 'reason-required' });
   });
 
   it('records each field cleared when amending present to absent', async () => {
     const { port, getState } = adapterFrom();
-    const present = DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY && item.status === 'present')!;
-    await port.amendAttendance(present.id, { field: 'absenceReason', to: 'sick', reason: 'Fictional correction' }, admin);
+    const present = DEMO_ATTENDANCE_RECORDS.find((item) => item.date < TODAY && item.status === 'present')!;
     await port.amendAttendance(present.id, { field: 'status', to: 'absent', reason: 'Fictional correction' }, admin);
-    expect(getState().attendanceAmendments.filter((item) => item.recordId === present.id).map((item) => item.field)).toEqual(['absenceReason', 'status', 'arrivedAt']);
+    expect(getState().attendanceAmendments.filter((item) => item.recordId === present.id).map((item) => item.field)).toEqual(['status', 'arrivedAt', 'absenceReason']);
   });
 
   it('enforces PIN lockout for three failures and clears it after five minutes', async () => {
     let instant = new Date('2026-10-22T09:00:00+08:00');
     const { port, getState } = adapterFrom(initialState(), () => instant);
-    expect(await port.checkInWithPin('FC-1001', '0000')).toEqual({ ok: false, reason: 'pin-invalid' });
-    expect(await port.checkInWithPin('FC-1001', '0000')).toEqual({ ok: false, reason: 'pin-invalid' });
-    expect(await port.checkInWithPin('FC-1001', '0000')).toEqual({ ok: false, reason: 'pin-locked' });
+    expect(await port.checkInWithPin('FC-1019', '0000')).toEqual({ ok: false, reason: 'pin-invalid' });
+    expect(await port.checkInWithPin('FC-1019', '0000')).toEqual({ ok: false, reason: 'pin-invalid' });
+    expect(await port.checkInWithPin('FC-1019', '0000')).toEqual({ ok: false, reason: 'pin-locked' });
     instant = new Date('2026-10-22T09:04:59.999+08:00');
-    expect(await port.checkInWithPin('FC-1001', '2467')).toEqual({ ok: false, reason: 'pin-locked' });
-    expect(JSON.stringify(getState().attendancePinLockouts)).not.toContain('2467');
+    expect(await port.checkInWithPin('FC-1019', '5009')).toEqual({ ok: false, reason: 'pin-locked' });
+    expect(JSON.stringify(getState().attendancePinLockouts)).not.toContain('5009');
     instant = new Date('2026-10-22T09:05:00+08:00');
-    const unlocked = await port.checkInWithPin('FC-1001', '2467');
+    expect(await port.checkInWithPin('FC-1019', 'wrong')).toEqual({ ok: false, reason: 'pin-invalid' });
+    const unlocked = await port.checkInWithPin('FC-1019', '5009');
     expect(unlocked.ok, JSON.stringify(unlocked)).toBe(true);
     if (unlocked.ok) expect(unlocked.value.markedBy).toBe('kiosk');
-    expect(await port.checkInWithPin('missing-code', '4821')).toEqual({ ok: false, reason: 'pin-invalid' });
+    expect(await port.checkInWithPin('missing-code', '5009')).toEqual({ ok: false, reason: 'pin-invalid' });
   });
 
   it('keeps PINs and amendment reasons out of audit events and refuses duplicate marks', async () => {
     const { port, getState } = adapterFrom();
-    const nowIso = new Date().toISOString();
-    const currentDate = dateInAttendanceZone(nowIso);
-    const childId = Object.keys(DEMO_CHILDREN)[0];
-    const firstMark = await port.markPresent(childId, { arrivedAt: new Date(Date.parse(nowIso) - 60_000).toISOString(), method: 'staff' }, teacher);
+    const nowIso = '2026-10-22T09:00:00+08:00';
+    const currentDate = TODAY;
+    const childId = unmarkedChildId;
+    const firstMark = await port.markPresent(childId, { arrivedAt: iso(TODAY, '08:59'), method: 'staff' }, teacher);
     expect(firstMark.ok, JSON.stringify(firstMark)).toBe(true);
     if (firstMark.ok) expect(firstMark.value.markedBy).toBe('teacher-lim');
-    expect(await port.markPresent(Object.keys(DEMO_CHILDREN)[1], { arrivedAt: nowIso, method: 'face-placeholder' }, teacher)).toEqual({ ok: false, reason: 'consent-not-recorded' });
+    expect(await port.markPresent(childId, { arrivedAt: nowIso, method: 'face-placeholder' }, teacher)).toEqual({ ok: false, reason: 'consent-not-recorded' });
     expect(await port.markPresent(childId, { arrivedAt: nowIso, method: 'staff' }, teacher)).toEqual({ ok: false, reason: 'already-marked' });
 
     const record = DEMO_ATTENDANCE_RECORDS.find((item) => item.date === TODAY)!;
@@ -205,14 +206,14 @@ describe('attendance demo adapter', () => {
     const { port } = adapterFrom();
     const absent = DEMO_ATTENDANCE_RECORDS.find((record) => record.date === TODAY && record.status === 'absent')!;
     expect(await port.recordDeparture(absent.childId, iso(TODAY, '17:00'), admin)).toEqual({ ok: false, reason: 'not-present' });
-    const childId = Object.keys(DEMO_CHILDREN)[1];
-    expect(await port.recordDeparture(childId, new Date().toISOString(), admin)).toEqual({ ok: false, reason: 'not-present' });
-    const arrival = new Date(Date.now() - 10 * 60_000).toISOString();
+    const childId = unmarkedChildId;
+    expect(await port.recordDeparture(childId, iso(TODAY, '09:00'), admin)).toEqual({ ok: false, reason: 'not-present' });
+    const arrival = iso(TODAY, '08:50');
     const marked = await port.markPresent(childId, { arrivedAt: arrival, method: 'staff' }, teacher);
     expect(marked.ok).toBe(true);
-    const departedAt = new Date().toISOString();
+    const departedAt = iso(TODAY, '08:55');
     expect((await port.recordDeparture(childId, departedAt, admin)).ok).toBe(true);
-    expect(await port.recordDeparture(childId, new Date(Date.now() + 60_000).toISOString(), admin)).toEqual({ ok: false, reason: 'already-departed' });
+    expect(await port.recordDeparture(childId, iso(TODAY, '09:00'), admin)).toEqual({ ok: false, reason: 'already-departed' });
   });
 
   it('refuses recordDeparture for a past business date so history needs an amendment', async () => {
@@ -232,5 +233,43 @@ describe('attendance demo adapter', () => {
     const fictionalKiosk = { role: 'teacher' as const, name: 'Fictional kiosk' };
     expect((await port.getAttendanceRegister(schoolClass.id, TODAY, fictionalKiosk)).rows).toHaveLength(0);
     expect(await port.markPresent('aria', { arrivedAt: iso(TODAY, '09:00'), method: 'staff' }, fictionalKiosk)).toEqual({ ok: false, reason: 'not-permitted' });
+  });
+
+  it('gives a teacher from another class an empty register and refuses writes', async () => {
+    const { port } = adapterFrom();
+    const otherTeacher = { role: 'teacher' as const, name: 'Mr. Other Class' };
+    expect((await port.getAttendanceRegister(schoolClass.id, TODAY, otherTeacher)).rows).toHaveLength(0);
+    expect(await port.markPresent(unmarkedChildId, { arrivedAt: iso(TODAY, '09:00'), method: 'staff' }, otherTeacher)).toEqual({ ok: false, reason: 'not-permitted' });
+  });
+
+  it('marks remaining children and refuses parent/reviewer attendance writes first', async () => {
+    const { port } = adapterFrom();
+    expect((await port.markRemainingPresent(schoolClass.id, teacher)).ok).toBe(true);
+    expect((await port.getAttendanceSummary(schoolClass.id, TODAY, teacher)).notMarked).toBe(0);
+    for (const actor of [reviewer, parent]) {
+      expect(await port.amendAttendance('missing', { field: 'status', to: 'banana', reason: '' } as never, actor)).toEqual({ ok: false, reason: 'not-permitted' });
+      expect(await port.recordDeparture('missing', iso(TODAY, '09:00'), actor)).toEqual({ ok: false, reason: 'not-permitted' });
+      expect(await port.markRemainingPresent('missing-class', actor)).toEqual({ ok: false, reason: 'not-permitted' });
+    }
+  });
+
+  it('rejects arrival and departure instants on a different date than today’s record', async () => {
+    const { port } = adapterFrom();
+    expect(await port.markPresent(unmarkedChildId, { arrivedAt: iso('2026-10-21', '08:00'), method: 'staff' }, teacher)).toEqual({ ok: false, reason: 'invalid-time' });
+    const marked = await port.markPresent(unmarkedChildId, { arrivedAt: iso(TODAY, '08:00'), method: 'staff' }, teacher);
+    expect(marked.ok).toBe(true);
+    expect(await port.recordDeparture(unmarkedChildId, iso('2026-10-21', '17:00'), admin)).toEqual({ ok: false, reason: 'past-date' });
+  });
+
+  it('allows a valid PIN for another code while one code is locked', async () => {
+    const creds = DEMO_CHECK_IN_CREDENTIALS.filter((credential) => credential.childId !== 'aria');
+    let instant = new Date('2026-10-22T09:00:00+08:00');
+    const { port } = adapterFrom(initialState(), () => instant);
+    const [lockedCode, successfulCode] = creds.slice(-2);
+    for (let i = 0; i < 3; i++) await port.checkInWithPin(lockedCode.childCode, 'wrong');
+    const result = await port.checkInWithPin(successfulCode.childCode, successfulCode.pin);
+    expect(result.ok).toBe(true);
+    instant = new Date('2026-10-22T09:05:00+08:00');
+    expect(await port.checkInWithPin(lockedCode.childCode, 'wrong')).toEqual({ ok: false, reason: 'pin-invalid' });
   });
 });

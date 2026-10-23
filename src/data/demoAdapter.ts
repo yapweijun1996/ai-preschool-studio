@@ -279,6 +279,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (input.field === 'status' && amended.status === 'absent') {
         delete amended.arrivedAt;
         delete amended.departedAt;
+        amended.absenceReason ??= 'other';
       }
       const invalid = validateRecord(amended, attendanceNow());
       if (invalid) return refusal(invalid);
@@ -287,7 +288,7 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
         field: input.field, ...(previous !== undefined ? { from: String(previous) } : {}), ...(value !== undefined ? { to: value } : {})
       }];
       if (input.field === 'status') {
-        for (const field of ['arrivedAt', 'departedAt'] as const) {
+        for (const field of ['arrivedAt', 'departedAt', 'absenceReason'] as const) {
           if (existing[field] !== amended[field]) changes.push({ field, ...(existing[field] !== undefined ? { from: existing[field] } : {}), ...(amended[field] !== undefined ? { to: amended[field] } : {}) });
         }
       }
