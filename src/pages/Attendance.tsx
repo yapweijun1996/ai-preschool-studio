@@ -430,8 +430,8 @@ export function Attendance() {
               <Modal
                 labelledBy="bulk-title"
                 onClose={() => setDialog(null)}
-                backdropClassName="modal-backdrop"
-                panelClassName="modal card card-pad stack"
+                backdropClassName="dialog-backdrop"
+                panelClassName="card card-pad stack"
               >
                 <h2 id="bulk-title" className="h2">
                   {t('pages.attendance.confirmBulkTitle')}
@@ -514,8 +514,8 @@ function AbsenceDialog({
     <Modal
       labelledBy="absence-title"
       onClose={onClose}
-      backdropClassName="modal-backdrop"
-      panelClassName="modal card card-pad stack"
+      backdropClassName="dialog-backdrop"
+      panelClassName="card card-pad stack"
     >
       <h2 className="h2" id="absence-title">
         {t('pages.attendance.absenceTitle', { name: row.child.name })}
@@ -603,8 +603,8 @@ function AmendDialog({
     <Modal
       labelledBy="amend-title"
       onClose={onClose}
-      backdropClassName="modal-backdrop"
-      panelClassName="modal card card-pad stack"
+      backdropClassName="dialog-backdrop"
+      panelClassName="card card-pad stack"
     >
       <h2 className="h2" id="amend-title">
         {t('pages.attendance.amendTitle', { name: row.child.name })}

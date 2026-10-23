@@ -116,6 +116,26 @@ test('keyboard absence dialog traps focus, Escape closes it, and focus returns t
   await expect(trigger).toBeFocused();
 });
 
+test('attendance dialogs are centered overlays that block page actions', async ({ page }) => {
+  await open(page);
+  const target = row(page, 'Aiden Lee');
+  await target.getByRole('button', { name: 'Absent', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Mark Aiden Lee absent' });
+  const box = await dialog.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(Math.abs(box!.x + box!.width / 2 - viewport!.width / 2)).toBeLessThanOrEqual(1);
+  expect(Math.abs(box!.y + box!.height / 2 - viewport!.height / 2)).toBeLessThanOrEqual(1);
+
+  await expect(target.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
+  await expect(
+    target.getByRole('button', { name: 'Present', exact: true }).click({ trial: true, timeout: 500 }),
+  ).rejects.toThrow();
+  await expect(target.getByText('Not marked', { exact: true })).toBeVisible();
+  await expect(dialog).toBeVisible();
+});
+
 test('mobile tab bar has Attendance and More contains Add observation', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page);
