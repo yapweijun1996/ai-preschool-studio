@@ -44,6 +44,12 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(amend.locator('#amend-field')).toHaveAccessibleName('Change');
   await expect(amend.locator('#amend-field')).toHaveValue('status');
   await expect(amend.getByRole('button', { name: 'Save change' })).toBeDisabled();
+  await expect(amend.getByRole('status')).toHaveCount(0);
+  await amend.locator('#amend-value').selectOption('absent');
+  await amend.getByRole('button', { name: 'Save change' }).click();
+  await expect(amend.getByRole('alert')).toContainText('Choose an absence reason');
+  await expect(amend.getByRole('alert')).not.toContainText('Enter a reason between');
+  await amend.locator('#amend-value').selectOption('present');
   await expect(amend.getByRole('status')).toContainText('differs from the current value');
   await amend.locator('#amend-field').selectOption('arrivedAt');
   await expect(amend.locator('#amend-value')).toHaveAccessibleName('Arrival time');

@@ -28,7 +28,8 @@ export function AmendDialog({
   const [to, setTo] = useState<string>(record.status);
   const [absenceReason, setAbsenceReason] = useState<AbsenceReason | ''>('');
   const [reason, setReason] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<'reason' | 'absence' | null>(null);
+  const [showNoChange, setShowNoChange] = useState(false);
   const [saving, setSaving] = useState(false);
   const label =
     field === 'status'
@@ -68,7 +69,8 @@ export function AmendDialog({
           onChange={(e) => {
             const next = e.target.value as AmendmentField;
             setField(next);
-            setError(false);
+            setError(null);
+            setShowNoChange(false);
             setTo(
               next === 'status'
                 ? record.status
@@ -101,7 +103,8 @@ export function AmendDialog({
             value={to}
             onChange={(e) => {
               setTo(e.target.value);
-              setError(false);
+              setError(null);
+              setShowNoChange(e.target.value === fromValue);
               if (e.target.value === 'absent') setAbsenceReason('');
             }}
           >
@@ -114,14 +117,22 @@ export function AmendDialog({
             className="input"
             type="time"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e) => {
+              setTo(e.target.value);
+              setError(null);
+              setShowNoChange(e.target.value === fromValue);
+            }}
           />
         ) : (
           <select
             id="amend-value"
             className="input"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e) => {
+              setTo(e.target.value);
+              setError(null);
+              setShowNoChange(e.target.value === fromValue);
+            }}
           >
             {(['sick', 'family', 'travel', 'other'] as AbsenceReason[]).map((r) => (
               <option key={r} value={r}>
@@ -138,7 +149,10 @@ export function AmendDialog({
             id="amend-absence-reason"
             className="input"
             value={absenceReason}
-            onChange={(e) => setAbsenceReason(e.target.value as AbsenceReason | '')}
+            onChange={(e) => {
+              setAbsenceReason(e.target.value as AbsenceReason | '');
+              setError(null);
+            }}
           >
             <option value="">{t('pages.attendance.chooseAbsenceReason')}</option>
             {(['sick', 'family', 'travel', 'other'] as AbsenceReason[]).map((r) => (
@@ -160,7 +174,7 @@ export function AmendDialog({
           value={reason}
           onChange={(e) => {
             setReason(e.target.value);
-            setError(false);
+            setError(null);
           }}
         />
       </label>
@@ -168,12 +182,17 @@ export function AmendDialog({
       <p className="cap num" aria-live="polite">
         {t('pages.attendance.characters', { count: reason.length })}
       </p>
-      {error && (
+      {error === 'absence' && (
+        <p role="alert" className="field-error">
+          {t('pages.attendance.requiredReason')}
+        </p>
+      )}
+      {error === 'reason' && (
         <p role="alert" className="field-error">
           {t('pages.attendance.errorReason')}
         </p>
       )}
-      {noChange && (
+      {showNoChange && noChange && (
         <p role="status" className="field-error">
           {t('pages.attendance.noOpAmendment')}
         </p>
@@ -192,12 +211,12 @@ export function AmendDialog({
           type="button"
           disabled={saving || noChange}
           onClick={async () => {
-            if (
-              reason.trim().length < 5 ||
-              reason.length > 200 ||
-              (statusToAbsent && !absenceReason)
-            ) {
-              setError(true);
+            if (statusToAbsent && !absenceReason) {
+              setError('absence');
+              return;
+            }
+            if (reason.trim().length < 5 || reason.length > 200) {
+              setError('reason');
               return;
             }
             const value = timeField ? atTime(to, record.date) : to;
