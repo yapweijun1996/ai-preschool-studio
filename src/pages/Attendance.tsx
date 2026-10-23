@@ -143,7 +143,7 @@ export function AttendanceKiosk() {
     setPinAttempted(true);
     const result = await port.checkInWithPin(code.trim().toUpperCase(), pin);
     setPin('');
-    if (!result.ok) { const lockedUntil = state.attendancePinLockouts[code.trim().toUpperCase()]?.lockedUntil; const minutes = lockedUntil ? Math.max(1, Math.ceil((Date.parse(lockedUntil) - Date.now()) / 60000)) : 5; setError(result.reason === 'pin-locked' ? t('pages.attendance.pinLocked', { minutes }) : t(REFUSAL_KEYS[result.reason])); return; }
+    if (!result.ok) { const lockedUntil = state.attendancePinLockouts[code.trim().toUpperCase()]?.lockedUntil; const minutes = lockedUntil ? Math.max(1, Math.ceil((Date.parse(lockedUntil) - Date.parse(now())) / 60000)) : 5; setError(result.reason === 'pin-locked' ? t('pages.attendance.pinLocked', { minutes }) : t(REFUSAL_KEYS[result.reason])); return; }
     done(result.value);
   };
   const tryQr = async (cardId: string) => { const result = await port.checkInWithQr(cardId); if (!result.ok) setError(t(REFUSAL_KEYS[result.reason])); else done(result.value); };
