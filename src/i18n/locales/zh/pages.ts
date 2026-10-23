@@ -52,7 +52,7 @@ export const pages: Dict['pages'] = {
     noneAbsent: '没有儿童被标记为缺席。',
     markRemaining: '将其余儿童标记为出席',
     confirmBulkTitle: '将其余儿童标记为出席？',
-    confirmBulk: '这会将其余 {count} 名儿童按 {time} 标记为出席。{cutoff} 后标记的儿童会记录为迟到。',
+    confirmBulk: '这会将其余 {count} 名儿童标记为出席。到达时间将记录为 {time}。在 {cutoff} 后到达的儿童会记录为迟到。',
     confirm: '确认',
     cancel: '取消',
     absenceTitle: '将 {name} 标记为缺席',

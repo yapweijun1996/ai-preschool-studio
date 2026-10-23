@@ -52,7 +52,7 @@ export const pages: Dict['pages'] = {
     noneAbsent: 'Tiada kanak-kanak ditandakan tidak hadir.',
     markRemaining: 'Tandakan yang selebihnya hadir',
     confirmBulkTitle: 'Tandakan kanak-kanak yang selebihnya hadir?',
-    confirmBulk: 'Ini akan menandakan {count} kanak-kanak yang selebihnya hadir pada {time}. Kanak-kanak yang ditanda selepas {cutoff} direkodkan sebagai lewat.',
+    confirmBulk: 'Ini akan menandakan {count} kanak-kanak yang selebihnya hadir. Waktu tiba akan direkodkan sebagai {time}. Kanak-kanak yang tiba selepas {cutoff} direkodkan sebagai lewat.',
     confirm: 'Sahkan',
     cancel: 'Batal',
     absenceTitle: 'Tandakan {name} tidak hadir',

@@ -52,7 +52,7 @@ export const pages = {
     noneAbsent: 'No children are marked absent.',
     markRemaining: 'Mark remaining present',
     confirmBulkTitle: 'Mark remaining children present?',
-    confirmBulk: 'This will mark {count} remaining children present at {time}. Children marked after {cutoff} are recorded as late.',
+    confirmBulk: 'This will mark {count} remaining children present. Arrival will be recorded as {time}. Children arriving after {cutoff} are recorded as late.',
     confirm: 'Confirm',
     cancel: 'Cancel',
     absenceTitle: 'Mark {name} absent',

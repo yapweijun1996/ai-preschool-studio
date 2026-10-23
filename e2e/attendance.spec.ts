@@ -82,8 +82,8 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await page.getByRole('button', { name: 'Mark remaining present' }).click();
   const bulk = page.getByRole('dialog', { name: 'Mark remaining children present?' });
   await expect(bulk).toContainText('remaining children present');
-  await expect(bulk).toContainText('at 09:00');
-  await expect(bulk).toContainText('after 08:30 are recorded as late');
+  await expect(bulk).toContainText('Arrival will be recorded as 09:00');
+  await expect(bulk).toContainText('Children arriving after 08:30 are recorded as late');
   await bulk.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.getByRole('status').last()).toContainText('Attendance saved');
   await expect(page.locator('.attendance-stat.stat-notMarked strong')).toHaveText('0');
