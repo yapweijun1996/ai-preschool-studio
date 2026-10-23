@@ -161,8 +161,16 @@ test('kiosk PIN locks after three failures, QR scan works, and Face is unavailab
   await expect(page.getByRole('alert')).toContainText('5 minutes');
   await expect(page.getByLabel('4-digit PIN')).toHaveValue('');
   await page.getByRole('tab', { name: 'QR' }).click();
-  await page.getByRole('button', { name: /QR-FIC-0014/ }).click();
+  const qrCard = page.locator('.kiosk-card-list').getByRole('button', {
+    name: 'QR-FIC-0014',
+    exact: true,
+  });
+  await expect(qrCard).toHaveCount(1);
+  await expect(page.locator('.kiosk-card-list')).not.toContainText('Aiden Lee');
+  await qrCard.click();
   await expect(page.locator('#kiosk-panel .kiosk-success')).toContainText('checked in at');
+  await expect(page.locator('.kiosk-success h2')).toContainText('Aiden checked in');
+  await expect(page.locator('.kiosk-success h2')).not.toContainText('Aiden Lee');
   await expect(page.locator('.kiosk-success h2')).toBeFocused();
   await page.getByRole('button', { name: 'Next family' }).click();
   await expect(page.locator('.kiosk-card-list button').first()).toBeFocused();

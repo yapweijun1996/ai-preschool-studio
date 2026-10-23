@@ -61,7 +61,7 @@ export function AttendanceKiosk() {
   const done = (record: { childId: string; arrivedAt?: string }) => {
     const child = state.children[record.childId];
     setSuccess({
-      name: child?.name ?? '',
+      name: child?.name.split(/\s+/)[0] ?? '',
       at: record.arrivedAt ? (localTime(record.arrivedAt) ?? '') : '',
     });
     setError('');
@@ -286,17 +286,14 @@ export function AttendanceKiosk() {
                       <strong>{t('pages.attendance.scanCard')}</strong>
                     </div>
                     <div className="kiosk-card-list">
-                      {DEMO_CHECK_IN_CREDENTIALS.map((item) => ({
-                        ...item,
-                        name: state.children[item.childId]?.name ?? '',
-                      })).map((credential) => (
+                      {DEMO_CHECK_IN_CREDENTIALS.map((credential) => (
                         <button
                           key={credential.cardId}
                           className="btn btn-secondary"
                           type="button"
                           onClick={() => void tryQr(credential.cardId)}
                         >
-                          {credential.cardId} · {credential.name}
+                          {credential.cardId}
                         </button>
                       ))}
                     </div>
