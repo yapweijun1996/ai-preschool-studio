@@ -9,7 +9,12 @@ export type AttendanceDay = {
 
 export function AttendanceDayStrip({ days }: { days: AttendanceDay[] }) {
   return (
-    <div className="attendance-day-strip">
+    <div
+      className="attendance-day-strip"
+      role="region"
+      aria-labelledby="attendance-profile-title"
+      tabIndex={0}
+    >
       {days.map(({ date, label, status, statusLabel }) => (
         <div className={`attendance-day attendance-day-${status}`} key={date}>
           <span className="cap muted">{label}</span>
