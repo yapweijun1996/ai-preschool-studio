@@ -48,6 +48,7 @@ const sections = [
   'Cards',
   'Empty state',
   'Skeleton',
+  'Attendance',
 ];
 const names = designTokens.color.tokens.map(({ name }) => `--${name}`);
 const tokenValue = (value: string | Record<string, string>, theme: string) => typeof value === 'string' ? value : value[theme] ?? value.light;
@@ -154,6 +155,19 @@ function Tokens({ theme }: { theme: string }) {
       </div>
     </div>
   );
+}
+
+function AttendanceCatalogExamples() {
+  const { t } = useI18n();
+  const names = ['Aria Tan', 'Ethan Koh', 'Mei Ling Chua', 'Rayan Iskandar'];
+  const statusKeys = ['notMarked','present','late','absent'] as const;
+  return <div className="catalog-attendance stack">
+    <div className="attendance-summary">{(['present','late','absent','notMarked'] as const).map((key,index)=><div key={key} className={`attendance-stat stat-${key}`}><span className="cap muted">{t(`pages.attendance.${key}`)}</span><strong className="h2 num">{[18,2,1,3][index]}</strong>{key==='late'&&<span className="sr-only">{t('pages.attendance.lateNote')}</span>}</div>)}</div>
+    <div className="catalog-attendance-grid">{statusKeys.map((key,index)=><article className="card attendance-row" key={key}><Avatar initials={['AT','EK','MC','RI'][index]}/><div className="attendance-child grow"><strong className="strong">{names[index]}</strong><div className="attendance-meta"><span className={`status attendance-status st-${key==='notMarked'?'notstarted':key==='late'?'present':key}`}>{t(key==='notMarked'?'pages.attendance.notMarked':`pages.attendance.${key}`)}</span>{key==='present'&&<span className="num">07:52</span>}{key==='late'&&<span className="num">08:42</span>}</div></div><button className="btn btn-secondary" type="button">{t(key==='notMarked'?'pages.attendance.markPresent':'pages.attendance.change')}</button></article>)}</div>
+    <div className="catalog-attendance-grid"><section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.absenceTitle',{name:'Sofia Fernandez'})}</h3><fieldset className="stack attendance-reasons"><legend className="sec semibold">{t('pages.attendance.absenceReason')}</legend>{(['reasonSick','reasonFamily','reasonTravel','reasonOther'] as const).map((key,i)=><label className="radio-row" key={key}><input type="radio" name="catalog-reason" checked={i===1} readOnly/>{t(`pages.attendance.${key}`)}</label>)}</fieldset><button className="btn btn-primary" type="button">{t('pages.attendance.save')}</button></section>
+    <section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.amendTitle',{name:'Ethan Koh'})}</h3><label className="stack sec">{t('pages.attendance.amendReason')}<textarea className="input" rows={3} value={t('pages.attendance.catalogReason')} readOnly/></label><p className="cap num">{t('pages.attendance.characters',{count:42})}</p><button className="btn btn-primary" type="button">{t('pages.attendance.submit')}</button></section></div>
+    <div className="catalog-attendance-grid"><section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.pinTitle')}</h3><label className="stack sec">{t('pages.attendance.childCode')}<input className="input" value="FC-1001" readOnly/></label><label className="stack sec">{t('pages.attendance.pinLabel')}<input className="input" type="password" value="" placeholder="••••" readOnly autoComplete="off" inputMode="numeric"/></label><div className="notice notice-danger" role="alert"><Icon name="lock" size={18}/><p className="sec">{t('pages.attendance.pinLocked',{minutes:5})}</p></div></section><section className="card card-pad stack"><h3 className="h2">{t('pages.attendance.faceTab')}</h3><div className="face-placeholder" aria-hidden="true"><span className="face-card"><span className="face-card-band"/><span className="face-card-line"/><span className="face-card-slash"/></span><Icon name="lock" size={24}/></div><p className="sec">{t('pages.attendance.faceUnavailable')}</p></section></div>
+  </div>;
 }
 
 function SectionExamples({ name, theme }: { name: string; theme: string }) {
@@ -445,6 +459,8 @@ function SectionExamples({ name, theme }: { name: string; theme: string }) {
           </div>
         </MarkupExample>
       );
+    case 'Attendance':
+      return <AttendanceCatalogExamples />;
     case 'Empty state':
       return (
         <MarkupExample title="Empty state">

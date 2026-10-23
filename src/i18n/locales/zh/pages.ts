@@ -141,6 +141,7 @@ export const pages: Dict['pages'] = {
     schoolDay: '上课日',
     attendanceNotMarked: '未标记',
 
+    catalogReason: '此处填写虚构的更正原因。',
   },
   shared: {
     addObservation: '添加观察记录',

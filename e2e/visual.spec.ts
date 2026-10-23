@@ -100,3 +100,32 @@ test('aria report · desktop dark', async ({ page }) => {
   await openVisualPage(page, './#/students/aria/report', 'dark');
   await expect(page).toHaveScreenshot('aria-report-desktop-dark.png', { mask: [buildFooter(page)] });
 });
+
+
+test('attendance register · desktop light', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/attendance');
+  await expect(page.locator('#main .attendance-list[aria-busy="false"]')).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-desktop-light.png', { mask: [buildFooter(page)] });
+});
+
+test('attendance register · mobile light', async ({ page }) => {
+  await page.setViewportSize(mobile);
+  await openVisualPage(page, './#/attendance');
+  await expect(page.locator('#main .attendance-list[aria-busy="false"]')).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-mobile-light.png', { mask: [buildFooter(page)] });
+});
+
+test('attendance kiosk · desktop light', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/attendance/check-in');
+  await expect(page.locator('#main #kiosk-panel')).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-check-in-desktop-light.png', { mask: [buildFooter(page)] });
+});
+
+test('attendance history · desktop light', async ({ page }) => {
+  await page.setViewportSize(desktop);
+  await openVisualPage(page, './#/attendance/history');
+  await expect(page.locator('#main .attendance-list[aria-busy="false"]')).toBeVisible();
+  await expect(page.locator('#main')).toHaveScreenshot('attendance-history-desktop-light.png', { mask: [buildFooter(page)] });
+});

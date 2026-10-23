@@ -141,6 +141,7 @@ export const pages: Dict['pages'] = {
     schoolDay: 'Hari persekolahan',
     attendanceNotMarked: 'Belum ditanda',
 
+    catalogReason: 'Sebab pembetulan rekaan untuk contoh ini.',
   },
   shared: {
     addObservation: 'Tambah pemerhatian',

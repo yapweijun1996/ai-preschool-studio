@@ -141,6 +141,7 @@ export const pages = {
     schoolDay: 'School day',
     attendanceNotMarked: 'Not marked',
 
+    catalogReason: 'Fictional correction entered for this example.',
   },
   shared: {
     addObservation: 'Add observation',

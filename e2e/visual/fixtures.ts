@@ -68,6 +68,15 @@ export async function settleVisualPage(page: import('@playwright/test').Page, pa
     }
   } else if (path.includes('/coverage')) {
     await expect(page.locator('.coverage-page h1, h1.h1').first()).toBeVisible();
+  } else if (path.includes('/attendance/check-in')) {
+    await expect(main.getByRole('heading', { name: 'Check-in kiosk' })).toBeVisible();
+    await expect(main.locator('#kiosk-panel')).toBeVisible();
+  } else if (path.includes('/attendance/history')) {
+    await expect(main.getByRole('heading', { name: 'Attendance history' })).toBeVisible();
+    await expect(main.locator('.attendance-list[aria-busy="false"]')).toBeVisible();
+  } else if (path.includes('/attendance')) {
+    await expect(main.getByRole('heading', { name: 'Attendance', exact: true })).toBeVisible();
+    await expect(main.locator('.attendance-list[aria-busy="false"]')).toBeVisible();
   } else if (path.includes('/reviews')) {
     await expect(page.locator('h1.h1').first()).toBeVisible();
   } else if (path.includes('/settings')) {
