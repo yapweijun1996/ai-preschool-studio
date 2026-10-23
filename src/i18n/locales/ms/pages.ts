@@ -135,6 +135,12 @@ export const pages: Dict['pages'] = {
     timeEmpty: 'Tidak direkodkan',
     readOnlyPast: 'Daftar hari lepas adalah baca sahaja untuk guru.',
 
+    dashboardTile: 'Kehadiran hari ini',
+    viewRegister: 'Lihat daftar',
+    lastTenDays: 'Kehadiran · 10 hari persekolahan terakhir',
+    schoolDay: 'Hari persekolahan',
+    attendanceNotMarked: 'Belum ditanda',
+
   },
   shared: {
     addObservation: 'Tambah pemerhatian',

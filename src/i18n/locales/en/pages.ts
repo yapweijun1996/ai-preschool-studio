@@ -135,6 +135,12 @@ export const pages = {
     timeEmpty: 'Not recorded',
     readOnlyPast: 'This past register is read-only for teachers.',
 
+    dashboardTile: 'Attendance today',
+    viewRegister: 'View register',
+    lastTenDays: 'Attendance · last 10 school days',
+    schoolDay: 'School day',
+    attendanceNotMarked: 'Not marked',
+
   },
   shared: {
     addObservation: 'Add observation',

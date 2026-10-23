@@ -8,9 +8,10 @@ import { EmptyIllustration } from '../components/EmptyIllustration';
 import { ReportFlow } from '../components/ReportFlow';
 import { StudentTabs } from '../components/StudentTabs';
 import { Avatar, MilestoneDots, SourceChip, StatusLabel, VerifyLabel } from '../components/ui';
-import { CLASS_NAME, TEACHER } from '../data/demo';
+import { CLASS_NAME, TEACHER, TODAY } from '../data/demo';
+import { isLate } from '../attendance/domain';
 import { DOMAINS } from '../framework';
-import { useI18n } from '../i18n';
+import { useI18n, type TKey } from '../i18n';
 import { useLabels } from '../i18n/labels';
 import { usePortfolio } from '../store/PortfolioContext';
 import { observationsFor } from '../store/reducer';
@@ -83,6 +84,7 @@ export function StudentProfile() {
             )}
           </div>
           <StudentTabs id={id} active="overview" />
+          {role.can('attendance.view') && <AttendanceProfileStrip childId={id} />}
           <div className="grid-main-side profile-grid">
             <section aria-labelledby="ld-h" className="stack profile-main" style={{ gap: 16 }}>
               <div className="row"><h2 id="ld-h" className="h2 grow">{t('pages.profile.domainsHeading', { term: termShort(4) })}</h2><Link className="btn btn-ghost" to={`/students/${id}/progress`}><Icon name="compare" size={18} />{t('pages.profile.compare', terms)}</Link></div>
@@ -164,4 +166,17 @@ export function StudentProfile() {
       )}
     </AppShell>
   );
+}
+
+
+function AttendanceProfileStrip({ childId }: { childId: string }) {
+  const { t, fmtDate } = useI18n();
+  const { state } = usePortfolio();
+  const dates = [...new Set(state.attendanceRecords.filter((record) => record.date <= TODAY).map((record) => record.date))].sort().slice(-10);
+  const entries = dates.map((date) => {
+    const record = state.attendanceRecords.find((item) => item.childId === childId && item.date === date);
+    const status = !record ? 'notMarked' : record.status === 'absent' ? 'absent' : isLate(record.arrivedAt) ? 'late' : 'present';
+    return { date, status };
+  });
+  return <section className="card card-pad attendance-profile" aria-labelledby="attendance-profile-title"><h2 id="attendance-profile-title" className="h2">{t('pages.attendance.lastTenDays')}</h2><div className="attendance-day-strip">{entries.map(({date,status}) => <div className={`attendance-day attendance-day-${status}`} key={date}><span className="cap muted">{fmtDate(date,{day:'numeric',month:'short'})}</span><span className="attendance-day-mark" aria-hidden="true"/><span className="cap">{t(({ present: 'pages.attendance.present', late: 'pages.attendance.late', absent: 'pages.attendance.absent', notMarked: 'pages.attendance.attendanceNotMarked' } as Record<string,TKey>)[status])}</span></div>)}</div></section>;
 }

@@ -135,6 +135,12 @@ export const pages: Dict['pages'] = {
     timeEmpty: '未记录',
     readOnlyPast: '教师只能查看过去的名册。',
 
+    dashboardTile: '今日出勤',
+    viewRegister: '查看名册',
+    lastTenDays: '出勤 · 最近 10 个上课日',
+    schoolDay: '上课日',
+    attendanceNotMarked: '未标记',
+
   },
   shared: {
     addObservation: '添加观察记录',
