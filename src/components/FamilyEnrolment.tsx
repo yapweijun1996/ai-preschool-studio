@@ -57,7 +57,19 @@ const REFUSAL_KEYS: Record<PortRefusal, TKey> = {
   'no-observations': 'pages.children.refusal.invalidTarget',
   'not-approved': 'pages.children.refusal.invalidTarget',
   'reason-required': 'pages.children.refusal.invalidTarget',
-  'status-change-not-allowed': 'pages.children.refusal.invalidTarget'
+  'status-change-not-allowed': 'pages.children.refusal.invalidTarget',
+  'not-today': 'pages.children.refusal.invalidTarget',
+  'already-marked': 'pages.children.refusal.invalidTarget',
+  'child-withdrawn': 'pages.children.refusal.invalidTarget',
+  'invalid-time': 'pages.children.refusal.invalidTarget',
+  'past-date': 'pages.children.refusal.invalidTarget',
+  'not-permitted': 'pages.children.refusal.invalidTarget',
+  'not-present': 'pages.children.refusal.invalidTarget',
+  'already-departed': 'pages.children.refusal.invalidTarget',
+  'pin-invalid': 'pages.children.refusal.invalidTarget',
+  'pin-locked': 'pages.children.refusal.invalidTarget',
+  'unknown-card': 'pages.children.refusal.invalidTarget',
+  'unknown-record': 'pages.children.refusal.invalidTarget'
 };
 
 export function FamilyEnrolment({ childId }: { childId: string }) {

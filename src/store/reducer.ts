@@ -10,6 +10,7 @@ import type { Role } from '../roles';
 import { asInstant, now } from '../utils/clock';
 import { auditEventForDecision } from './audit';
 import { DEMO_CHILDREN, DEMO_CLASSES, DEMO_COLLECTORS, DEMO_GUARDIANS } from '../children/demo';
+import type { AttendanceAmendment, AttendanceRecord, DemoCheckInCredential, PinLockoutState } from '../attendance/domain';
 import {
   hasPrimaryGuardian, validateChild, validateCollector, validateGuardian, withdrawRefusal,
   type AuthorisedCollector, type Child, type Class, type Guardian
@@ -39,7 +40,8 @@ export type AuditAction =
   | 'observation.added' | 'report.submitted' | 'report.changesRequested' | 'report.approved'
   | 'report.released' | 'report.reopened' | 'role.switched' | 'demo.reset' | 'child.updated'
   | 'child.withdrawn' | 'guardian.created' | 'guardian.updated' | 'guardian.removed'
-  | 'collector.created' | 'collector.updated' | 'collector.removed';
+  | 'collector.created' | 'collector.updated' | 'collector.removed'
+  | 'attendance.marked' | 'attendance.amended' | 'attendance.departed' | 'attendance.checkin';
 export type AuditSummaryKey =
   | 'pages.audit.summaryObservationAdded' | 'pages.audit.summarySubmitted'
   | 'pages.audit.summaryChangesRequested' | 'pages.audit.summaryApproved'
@@ -48,7 +50,9 @@ export type AuditSummaryKey =
   | 'pages.audit.summaryChildUpdated' | 'pages.audit.summaryChildWithdrawn'
   | 'pages.audit.summaryGuardianCreated' | 'pages.audit.summaryGuardianUpdated'
   | 'pages.audit.summaryGuardianRemoved' | 'pages.audit.summaryCollectorCreated'
-  | 'pages.audit.summaryCollectorUpdated' | 'pages.audit.summaryCollectorRemoved';
+  | 'pages.audit.summaryCollectorUpdated' | 'pages.audit.summaryCollectorRemoved'
+  | 'pages.audit.summaryAttendanceMarked' | 'pages.audit.summaryAttendanceAmended'
+  | 'pages.audit.summaryAttendanceDeparted' | 'pages.audit.summaryAttendanceCheckin';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -92,6 +96,12 @@ export interface State {
   children: Record<string, Child>;
   guardians: Guardian[];
   collectors: AuthorisedCollector[];
+  attendanceRecords: AttendanceRecord[];
+  attendanceAmendments: AttendanceAmendment[];
+  attendanceCredentials: DemoCheckInCredential[];
+  attendancePinLockouts: Record<string, PinLockoutState>;
+  nextAttendanceNumber: number;
+  nextAttendanceAmendmentNumber: number;
 }
 
 export type Action =
@@ -116,6 +126,8 @@ export type Action =
   | { type: 'upsertCollector'; collector: AuthorisedCollector; actor?: Actor; at?: string }
   | { type: 'removeCollector'; collectorId: string; actor?: Actor; at?: string }
   | { type: 'withdrawChild'; childId: string; actor?: Actor; at?: string }
+  | { type: 'attendanceChanged'; record: AttendanceRecord; amendment?: AttendanceAmendment; audit: 'marked' | 'amended' | 'departed' | 'checkin'; actor: Actor; at: string }
+  | { type: 'attendancePinLockout'; childCode: string; state?: PinLockoutState }
   | { type: 'reset'; actor?: Actor; at?: string };
 
 export function initialState(): State {
@@ -200,7 +212,9 @@ export function initialState(): State {
     auditEvents: seededAudit, nextAuditNumber: seededAudit.length + 1,
     nextGuardianNumber: DEMO_GUARDIANS.length + 1,
     nextCollectorNumber: DEMO_COLLECTORS.length + 1,
-    classes: DEMO_CLASSES, children: DEMO_CHILDREN, guardians: DEMO_GUARDIANS, collectors: DEMO_COLLECTORS
+    classes: DEMO_CLASSES, children: DEMO_CHILDREN, guardians: DEMO_GUARDIANS, collectors: DEMO_COLLECTORS,
+    attendanceRecords: [], attendanceAmendments: [], attendanceCredentials: [], attendancePinLockouts: {},
+    nextAttendanceNumber: 1, nextAttendanceAmendmentNumber: 1
   };
 }
 
@@ -577,6 +591,38 @@ export function reducer(state: State, action: Action): State {
         target: { type: 'child', id: child.id },
         summaryKey: 'pages.audit.summaryChildWithdrawn'
       });
+    }
+    case 'attendanceChanged': {
+      const records = state.attendanceRecords.some((item) => item.id === action.record.id)
+        ? state.attendanceRecords.map((item) => item.id === action.record.id ? action.record : item)
+        : [...state.attendanceRecords, action.record];
+      const amendments = action.amendment
+        ? [...state.attendanceAmendments, action.amendment]
+        : state.attendanceAmendments;
+      const actionName = `attendance.${action.audit}` as AuditAction;
+      const summaryKey = ({
+        marked: 'pages.audit.summaryAttendanceMarked', amended: 'pages.audit.summaryAttendanceAmended',
+        departed: 'pages.audit.summaryAttendanceDeparted', checkin: 'pages.audit.summaryAttendanceCheckin'
+      } as const)[action.audit] as AuditSummaryKey;
+      return appendAudit({
+        ...state,
+        attendanceRecords: records,
+        attendanceAmendments: amendments,
+        nextAttendanceNumber: Math.max(state.nextAttendanceNumber, Number(action.record.id.split('-').at(-1)) + 1 || 1),
+        nextAttendanceAmendmentNumber: Math.max(state.nextAttendanceAmendmentNumber, action.amendment ? Number(action.amendment.id.split('-').at(-1)) + 1 || 1 : state.nextAttendanceAmendmentNumber)
+      }, {
+        at: action.at,
+        actor: { role: action.actor.role, name: action.actor.name },
+        action: actionName,
+        target: { type: 'child', id: action.record.childId },
+        summaryKey
+      });
+    }
+    case 'attendancePinLockout': {
+      const lockouts = { ...state.attendancePinLockouts };
+      if (action.state) lockouts[action.childCode] = action.state;
+      else delete lockouts[action.childCode];
+      return { ...state, attendancePinLockouts: lockouts };
     }
     case 'reset': {
       const seeded = initialState();

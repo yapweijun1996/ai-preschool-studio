@@ -43,6 +43,16 @@ export interface CheckInMethodAvailability {
   reason?: CheckInUnavailableReason;
 }
 
+/** Fictional-only kiosk credentials used by the local demo adapter. */
+export interface DemoCheckInCredential {
+  childId: string;
+  childCode: string;
+  pin: string;
+  cardId: string;
+}
+
+export interface PinLockoutState { failedAttempts: number; lockedUntil?: string }
+
 export interface AttendanceRow {
   child: Child;
   record?: AttendanceRecord;

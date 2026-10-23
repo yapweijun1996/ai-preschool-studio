@@ -7,6 +7,14 @@ import {
   withdrawRefusal
 } from '../children/domain';
 import type { Child } from '../children/domain';
+import {
+  canAmend, canMark, checkInMethods, dailySummary, dateInAttendanceZone, isLate,
+  validateAmendmentReason, validateRecord,
+  type AttendanceAmendment, type AttendanceRecord, type AttendanceRow, type AttendanceStatus
+} from '../attendance/domain';
+import type { AttendanceMarkAbsentInput, AttendanceMarkPresentInput, AttendanceRegister, AttendanceAmendInput } from './port';
+import { PIN_ATTEMPTS_BEFORE_LOCKOUT, PIN_LOCKOUT_MS } from '../attendance/policy';
+import { TEACHER } from './demo';
 import { classCoverage, needsAttention, reviewQueue } from '../coverage';
 import { periodOf, frameworkFor } from '../framework';
 import { STUDENTS, type Observation, type Paragraph } from './demo';
@@ -22,6 +30,7 @@ import {
   selectReportHistory,
   unverifiedClaims,
   type Action,
+  type Actor,
   type AuditFilters,
   type State
 } from '../store/reducer';
@@ -42,6 +51,41 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
     if (status === 'approved') return 'report-locked';
     if (status === 'review') return 'report-not-editable';
     return undefined;
+  };
+
+  const canReadAttendance = (classId: string, actor: Actor): boolean => {
+    if (!can(actor.role, 'attendance.view')) return false;
+    if (actor.role !== 'teacher') return true;
+    const klass = getState().classes.find((item) => item.id === classId);
+    return actor.name === TEACHER && !!klass?.teacherIds.includes('teacher-lim');
+  };
+  const makeRecord = (
+    childId: string, status: AttendanceStatus, method: AttendanceRecord['method'],
+    atIso: string, arrivedAt?: string, absenceReason?: AttendanceRecord['absenceReason']
+  ): AttendanceRecord => ({
+    id: `ATT-${String(getState().nextAttendanceNumber).padStart(4, '0')}`,
+    childId, classId: getState().children[childId].classId,
+    date: dateInAttendanceZone(atIso), status,
+    ...(arrivedAt ? { arrivedAt } : {}), ...(method ? { method } : {}),
+    ...(absenceReason ? { absenceReason } : {}), markedBy: 'demo-actor', markedAt: atIso
+  });
+  const mark = (
+    childId: string, status: AttendanceStatus, method: AttendanceRecord['method'],
+    atIso: string, arrivedAt?: string, absenceReason?: AttendanceRecord['absenceReason'],
+    actor: Actor = { role: 'teacher', name: TEACHER }, audit: 'marked' | 'checkin' = 'marked'
+  ): PortResult<AttendanceRecord> => {
+    const state = getState();
+    const child = state.children[childId];
+    const date = dateInAttendanceZone(atIso);
+    const current = state.attendanceRecords.find((record) => record.childId === childId && record.date === date);
+    if (!can(actor.role, 'attendance.mark') || !child || !canReadAttendance(child.classId, actor)) return refusal('not-permitted');
+    const gate = canMark({ child, classId: child?.classId ?? '', date, nowIso: atIso, existing: current });
+    if (gate) return refusal(gate);
+    const record = makeRecord(childId, status, method, atIso, arrivedAt, absenceReason);
+    const invalid = validateRecord(record, atIso);
+    if (invalid) return refusal(invalid);
+    dispatch({ type: 'attendanceChanged', record, audit, actor, at: atIso });
+    return success(record);
   };
 
   return {
@@ -157,6 +201,126 @@ export function createDemoAdapter(getState: () => State, dispatch: (a: Action) =
       if (child.status === 'withdrawn') return refusal('invalid-target');
       dispatch({ type: 'withdrawChild', childId, actor });
       return success({ ...child, status: 'withdrawn' });
+    },
+    async getAttendanceRegister(classId, date, actor): Promise<AttendanceRegister> {
+      const state = getState();
+      if (!canReadAttendance(classId, actor)) return { date, rows: [] };
+      const records = state.attendanceRecords.filter((record) => record.classId === classId && record.date === date);
+      const recordByChild = new Map(records.map((record) => [record.childId, record]));
+      const children = Object.values(state.children).filter((child) => child.classId === classId && (
+        child.status === 'active' || (date !== dateInAttendanceZone(now()) && recordByChild.has(child.id))
+      ));
+      return {
+        date,
+        rows: children.map((child): AttendanceRow => {
+          const record = recordByChild.get(child.id);
+          return { child, ...(record ? { record } : {}), late: !!record && record.status === 'present' && isLate(record.arrivedAt) };
+        })
+      };
+    },
+    async getAttendanceSummary(classId, date, actor) {
+      const register = await this.getAttendanceRegister(classId, date, actor);
+      return dailySummary(register.rows);
+    },
+    async markPresent(childId: string, input: AttendanceMarkPresentInput, actor) {
+      return mark(childId, 'present', input.method, now(), input.arrivedAt, undefined, actor);
+    },
+    async markAbsent(childId: string, input: AttendanceMarkAbsentInput, actor) {
+      return mark(childId, 'absent', 'staff', now(), undefined, input.reason, actor);
+    },
+    async markRemainingPresent(classId, actor) {
+      if (!can(actor.role, 'attendance.mark')) return refusal('not-permitted');
+      const at = now();
+      const rows = (await this.getAttendanceRegister(classId, dateInAttendanceZone(at), actor)).rows;
+      const created: AttendanceRecord[] = [];
+      for (const row of rows.filter((item) => !item.record)) {
+        const result = mark(row.child.id, 'present', 'staff', at, at, undefined, actor);
+        if (!result.ok) return result;
+        created.push(result.value);
+      }
+      return success(created);
+    },
+    async amendAttendance(recordId, input: AttendanceAmendInput, actor) {
+      const state = getState();
+      const existing = state.attendanceRecords.find((record) => record.id === recordId);
+      if (!existing) return refusal('unknown-record');
+      const reasonRefusal = validateAmendmentReason(input.reason);
+      if (reasonRefusal) return refusal(reasonRefusal);
+      const today = dateInAttendanceZone(now());
+      const permitted = canAmend({
+        role: actor.role, date: existing.date, today,
+        actorClassIds: actor.name === TEACHER ? state.classes.filter((item) => item.teacherIds.includes('teacher-lim')).map((item) => item.id) : [],
+        recordClassId: existing.classId
+      });
+      if (permitted) return refusal(permitted);
+      const previous = existing[input.field];
+      const value = input.to === undefined || input.to === '' ? undefined : input.to;
+      const amended = { ...existing, [input.field]: value } as AttendanceRecord;
+      if (amended.status === 'present') delete amended.absenceReason;
+      if (amended.status === 'absent') {
+        delete amended.arrivedAt;
+        delete amended.departedAt;
+      }
+      const invalid = validateRecord(amended, now());
+      if (invalid) return refusal(invalid);
+      const at = now();
+      const amendment: AttendanceAmendment = {
+        id: `AMEND-${String(state.nextAttendanceAmendmentNumber).padStart(4, '0')}`,
+        recordId, childId: existing.childId, date: existing.date, field: input.field,
+        ...(previous !== undefined ? { from: String(previous) } : {}),
+        ...(value !== undefined ? { to: value } : {}), reason: input.reason.trim(), by: actor.name, at
+      };
+      dispatch({ type: 'attendanceChanged', record: amended, amendment, audit: 'amended', actor, at });
+      return success(amendment);
+    },
+    async getAmendments(recordId, actor) {
+      const record = getState().attendanceRecords.find((item) => item.id === recordId);
+      if (!record || !canReadAttendance(record.classId, actor)) return [];
+      return getState().attendanceAmendments.filter((item) => item.recordId === recordId);
+    },
+    async recordDeparture(childId, departedAt, actor) {
+      const state = getState();
+      if (!can(actor.role, 'attendance.mark')) return refusal('not-permitted');
+      const date = dateInAttendanceZone(departedAt);
+      const record = state.attendanceRecords.find((item) => item.childId === childId && item.date === date);
+      if (!record || record.status !== 'present') return refusal('not-present');
+      if (record.departedAt) return refusal('already-departed');
+      const updated = { ...record, departedAt };
+      const invalid = validateRecord(updated, now());
+      if (invalid) return refusal(invalid);
+      dispatch({ type: 'attendanceChanged', record: updated, audit: 'departed', actor, at: now() });
+      return success(updated);
+    },
+    async checkInWithPin(childCode, pin, atIso) {
+      const state = getState();
+      const credential = state.attendanceCredentials.find((item) => item.childCode === childCode);
+      if (!credential) return refusal('pin-invalid');
+      const lockout = state.attendancePinLockouts[childCode];
+      if (lockout?.lockedUntil && Date.parse(lockout.lockedUntil) > Date.parse(atIso)) return refusal('pin-locked');
+      if (credential.pin !== pin) {
+        const attempts = lockout && lockout.lockedUntil && Date.parse(lockout.lockedUntil) <= Date.parse(atIso)
+          ? 0 : lockout?.failedAttempts ?? 0;
+        const failedAttempts = attempts + 1;
+        dispatch({ type: 'attendancePinLockout', childCode, state: {
+          failedAttempts,
+          ...(failedAttempts >= PIN_ATTEMPTS_BEFORE_LOCKOUT ? { lockedUntil: new Date(Date.parse(atIso) + PIN_LOCKOUT_MS).toISOString() } : {})
+        } });
+        return refusal(failedAttempts >= PIN_ATTEMPTS_BEFORE_LOCKOUT ? 'pin-locked' : 'pin-invalid');
+      }
+      dispatch({ type: 'attendancePinLockout', childCode });
+      const child = state.children[credential.childId];
+      if (!child) return refusal('unknown-child');
+      return mark(child.id, 'present', 'pin', atIso, atIso, undefined, { role: 'teacher', name: 'Fictional kiosk' }, 'checkin');
+    },
+    async checkInWithQr(cardId, atIso) {
+      const credential = getState().attendanceCredentials.find((item) => item.cardId === cardId);
+      if (!credential) return refusal('unknown-card');
+      return mark(credential.childId, 'present', 'qr', atIso, atIso, undefined, { role: 'teacher', name: 'Fictional kiosk' }, 'checkin');
+    },
+    async getCheckInMethods(childId) {
+      if (!getState().children[childId]) return checkInMethods(false);
+      // No seeded child has face-match consent recorded.
+      return checkInMethods(false);
     },
     async getStudentSummary(studentId) { return studentSummary(getState(), studentId); },
     async getCurrentFramework() { return frameworkFor(undefined); },

@@ -6,6 +6,10 @@ import type { Suggestion } from '../services/mockProvider';
 import type { ClassCoverage, CoverageStudent, ReviewQueue } from '../coverage';
 import type { AuthorisedCollector, Child, Class, Guardian } from '../children/domain';
 import type { Actor } from '../store/reducer';
+import type {
+  AbsenceReason, AttendanceAmendment, AttendanceMethod, AttendanceRecord,
+  AttendanceRow, AttendanceSummary, CheckInMethodAvailability
+} from '../attendance/domain';
 
 export type PortRefusal =
   | 'unknown-student'
@@ -28,7 +32,15 @@ export type PortRefusal =
   | 'invalid-collector'
   | 'report-in-review'
   | 'record-child-mismatch'
-  | 'status-change-not-allowed';
+  | 'status-change-not-allowed'
+  | 'not-today' | 'already-marked' | 'child-withdrawn' | 'invalid-time' | 'past-date'
+  | 'not-permitted' | 'not-present' | 'already-departed' | 'pin-invalid' | 'pin-locked'
+  | 'unknown-card' | 'unknown-record';
+
+export interface AttendanceRegister { date: string; rows: AttendanceRow[] }
+export interface AttendanceMarkPresentInput { arrivedAt: string; method: AttendanceMethod }
+export interface AttendanceMarkAbsentInput { reason: AbsenceReason }
+export interface AttendanceAmendInput { field: 'status' | 'arrivedAt' | 'departedAt' | 'absenceReason'; to?: string; reason: string }
 
 
 export type PortResult<T> = { ok: true; value: T } | { ok: false; reason: PortRefusal };
@@ -108,6 +120,19 @@ export interface DataPort {
   upsertCollector(collector: AuthorisedCollector, actor?: Actor): Promise<PortResult<AuthorisedCollector>>;
   removeCollector(collectorId: string, actor?: Actor): Promise<PortResult<void>>;
   withdrawChild(childId: string, actor?: Actor): Promise<PortResult<Child>>;
+
+  // Attendance (single owner of arrival/departure times)
+  getAttendanceRegister(classId: string, date: string, actor: Actor): Promise<AttendanceRegister>;
+  getAttendanceSummary(classId: string, date: string, actor: Actor): Promise<AttendanceSummary>;
+  markPresent(childId: string, input: AttendanceMarkPresentInput, actor: Actor): Promise<PortResult<AttendanceRecord>>;
+  markAbsent(childId: string, input: AttendanceMarkAbsentInput, actor: Actor): Promise<PortResult<AttendanceRecord>>;
+  markRemainingPresent(classId: string, actor: Actor): Promise<PortResult<AttendanceRecord[]>>;
+  amendAttendance(recordId: string, input: AttendanceAmendInput, actor: Actor): Promise<PortResult<AttendanceAmendment>>;
+  getAmendments(recordId: string, actor: Actor): Promise<AttendanceAmendment[]>;
+  recordDeparture(childId: string, departedAt: string, actor: Actor): Promise<PortResult<AttendanceRecord>>;
+  checkInWithPin(childCode: string, pin: string, atIso: string): Promise<PortResult<AttendanceRecord>>;
+  checkInWithQr(cardId: string, atIso: string): Promise<PortResult<AttendanceRecord>>;
+  getCheckInMethods(childId: string): Promise<CheckInMethodAvailability[]>;
 
   // Evidence coverage and review queue (derived reads)
   /** Returns coverage for every child and summary totals in the selected term. */

@@ -4,7 +4,8 @@ import type { AuditAction, AuditEvent, AuditSummaryKey, DecisionEvent } from './
 export const AUDIT_ACTIONS: readonly AuditAction[] = [
   'observation.added', 'report.submitted', 'report.changesRequested', 'report.approved',
   'report.released', 'report.reopened', 'role.switched', 'demo.reset', 'child.updated', 'child.withdrawn',
-  'guardian.created', 'guardian.updated', 'guardian.removed', 'collector.created', 'collector.updated', 'collector.removed'
+  'guardian.created', 'guardian.updated', 'guardian.removed', 'collector.created', 'collector.updated', 'collector.removed',
+  'attendance.marked', 'attendance.amended', 'attendance.departed', 'attendance.checkin'
 ];
 
 const auditActionSet = new Set<string>(AUDIT_ACTIONS);
@@ -28,7 +29,11 @@ export const auditActionLabel: Record<AuditAction, TKey> = {
   'guardian.removed': 'pages.audit.guardianRemoved',
   'collector.created': 'pages.audit.collectorCreated',
   'collector.updated': 'pages.audit.collectorUpdated',
-  'collector.removed': 'pages.audit.collectorRemoved'
+  'collector.removed': 'pages.audit.collectorRemoved',
+  'attendance.marked': 'pages.audit.summaryAttendanceMarked',
+  'attendance.amended': 'pages.audit.summaryAttendanceAmended',
+  'attendance.departed': 'pages.audit.summaryAttendanceDeparted',
+  'attendance.checkin': 'pages.audit.summaryAttendanceCheckin'
 };
 
 export function auditActionForDecision(decision: DecisionEvent): AuditAction {

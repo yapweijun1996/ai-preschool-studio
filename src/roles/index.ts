@@ -19,12 +19,15 @@ export type Capability =
   | 'audit.view'
   | 'children.edit'
   | 'contacts.view'
-  | 'health.view';
+  | 'health.view'
+  | 'attendance.view'
+  | 'attendance.mark'
+  | 'attendance.amend';
 
 export const ROLE_CAPABILITIES: Readonly<Record<Role, readonly Capability[]>> = {
-  teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view', 'coverage.view', 'reviews.changes', 'contacts.view', 'health.view'],
-  reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view', 'coverage.view', 'reviews.view', 'audit.view'],
-  admin: ['dashboard.view', 'students.view', 'settings.view', 'demo.controls', 'catalog.view', 'coverage.view', 'reviews.view', 'audit.view', 'children.edit', 'contacts.view', 'health.view'],
+  teacher: ['dashboard.view', 'observation.add', 'draft.edit', 'report.submit', 'report.view', 'settings.view', 'demo.controls', 'catalog.view', 'students.view', 'coverage.view', 'reviews.changes', 'contacts.view', 'health.view', 'attendance.view', 'attendance.mark', 'attendance.amend'],
+  reviewer: ['dashboard.view', 'report.review', 'report.view', 'settings.view', 'catalog.view', 'students.view', 'coverage.view', 'reviews.view', 'audit.view', 'attendance.view'],
+  admin: ['dashboard.view', 'students.view', 'settings.view', 'demo.controls', 'catalog.view', 'coverage.view', 'reviews.view', 'audit.view', 'children.edit', 'contacts.view', 'health.view', 'attendance.view', 'attendance.mark', 'attendance.amend'],
   parent: ['dashboard.view', 'settings.view']
 };
 
