@@ -35,7 +35,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(absence.getByRole('alert')).toContainText('Choose an absence reason');
   await absence.getByRole('radio', { name: 'Sick' }).check();
   await absence.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(siti.getByText('Absent', { exact: true })).toBeVisible();
+  await expect(siti.getByText('Absent · Sick', { exact: true })).toBeVisible();
   await expect(siti.locator('.attendance-child > strong')).toBeFocused();
 
   const aria = row(page, 'Aria Tan');

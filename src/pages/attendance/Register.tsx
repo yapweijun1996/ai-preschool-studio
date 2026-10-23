@@ -17,6 +17,7 @@ import {
   focusAttendanceChildWhenReady,
   FILTERS,
   FILTER_LABELS,
+  REASON_KEYS,
   REFUSAL_KEYS,
   summary,
   timeValue,
@@ -237,7 +238,9 @@ export function Attendance() {
                           {row.record ? (
                             <>
                               <span className={`status attendance-status st-${row.record.status}`}>
-                                {t(`pages.attendance.${row.record.status}`)}
+                                {row.record.status === 'absent' && row.record.absenceReason
+                                  ? `${t('pages.attendance.absent')} · ${t(REASON_KEYS[row.record.absenceReason])}`
+                                  : t(`pages.attendance.${row.record.status}`)}
                               </span>
                               {row.late && (
                                 <span className="status attendance-late-badge">
