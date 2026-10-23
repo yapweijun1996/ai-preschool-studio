@@ -18,11 +18,16 @@ test('teacher marks present, absent with required reason, changes a mark, and co
 }) => {
   await open(page);
   const aiden = row(page, 'Aiden Lee');
-  await aiden.getByRole('button', { name: 'Present', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Attendance summary' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Today’s attendance register' })).toBeVisible();
+  await expect(aiden.getByRole('button', { name: 'Mark Aiden Lee present' })).toBeVisible();
+  await expect(aiden.getByRole('button', { name: 'Mark Aiden Lee absent' })).toBeVisible();
+  await expect(aiden.getByRole('button', { name: 'Set arrival time for Aiden Lee' })).toBeVisible();
+  await aiden.getByRole('button', { name: 'Mark Aiden Lee present' }).click();
   await expect(aiden).toContainText('Present');
   await expect(aiden.locator('.attendance-child > strong')).toBeFocused();
   const siti = row(page, 'Siti Aminah');
-  await siti.getByRole('button', { name: 'Absent', exact: true }).click();
+  await siti.getByRole('button', { name: 'Mark Siti Aminah absent' }).click();
   const absence = page.getByRole('dialog', { name: 'Mark Siti Aminah absent' });
   await absence.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(absence.getByRole('alert')).toContainText('Choose an absence reason');
@@ -32,7 +37,7 @@ test('teacher marks present, absent with required reason, changes a mark, and co
   await expect(siti.locator('.attendance-child > strong')).toBeFocused();
 
   const aria = row(page, 'Aria Tan');
-  await aria.getByRole('button', { name: 'Change' }).click();
+  await aria.getByRole('button', { name: 'Change attendance for Aria Tan' }).click();
   const amend = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
   await amend
     .getByLabel('Reason for this change')
@@ -63,7 +68,7 @@ test('filters and summary counts update after marking; reviewer is read-only; pa
   const initialNotMarked = Number(
     await page.locator('.attendance-stat.stat-notMarked strong').innerText(),
   );
-  await row(page, 'Aiden Lee').getByRole('button', { name: 'Present', exact: true }).click();
+  await row(page, 'Aiden Lee').getByRole('button', { name: 'Mark Aiden Lee present' }).click();
   await expect(page.locator('.attendance-stat.stat-present strong')).toHaveText('13');
   await page.getByRole('button', { name: /Late/ }).click();
   await expect(page.locator('.attendance-row')).toHaveCount(3);
@@ -75,7 +80,7 @@ test('filters and summary counts update after marking; reviewer is read-only; pa
   await expect(reviewer.getByText('Read-only: this role can view attendance')).toBeVisible();
   await expect(reviewer.getByRole('button', { name: 'Mark remaining present' })).toHaveCount(0);
   await expect(
-    reviewer.locator('.attendance-row').getByRole('button', { name: 'Present', exact: true }),
+    reviewer.locator('.attendance-row').getByRole('button', { name: /^Mark .* present$/ }),
   ).toHaveCount(0);
   const parent = await page.context().newPage();
   await open(parent, './#/attendance', 'parent');
@@ -126,7 +131,7 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
   await open(page, './#/attendance/history', 'admin');
   await expect(page.locator('#history-date')).toHaveValue(/2026-10-/);
   const target = page.locator('#main .attendance-row').filter({ hasText: 'Aria Tan' });
-  await target.getByRole('button', { name: 'Amend' }).click();
+  await target.getByRole('button', { name: 'Amend Aria Tan' }).click();
   const dialog = page.getByRole('dialog', { name: 'Change attendance for Aria Tan' });
   await dialog
     .getByLabel('Reason for this change')
@@ -143,7 +148,7 @@ test('admin can amend a past day; teacher cannot amend a past day', async ({ pag
     teacher
       .locator('#main .attendance-row')
       .filter({ hasText: 'Aria Tan' })
-      .getByRole('button', { name: 'Amend' }),
+      .getByRole('button', { name: 'Amend Aria Tan' }),
   ).toHaveCount(0);
 });
 
@@ -152,7 +157,7 @@ test('keyboard absence dialog traps focus, Escape closes it, and focus returns t
 }) => {
   await open(page);
   const target = row(page, 'Aiden Lee');
-  const trigger = target.getByRole('button', { name: 'Absent' });
+  const trigger = target.getByRole('button', { name: 'Mark Aiden Lee absent' });
   await trigger.focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Mark Aiden Lee absent' });
@@ -169,7 +174,7 @@ test('keyboard absence dialog traps focus, Escape closes it, and focus returns t
 test('attendance dialogs are centered overlays that block page actions', async ({ page }) => {
   await open(page);
   const target = row(page, 'Aiden Lee');
-  await target.getByRole('button', { name: 'Absent', exact: true }).click();
+  await target.getByRole('button', { name: 'Mark Aiden Lee absent' }).click();
   const dialog = page.getByRole('dialog', { name: 'Mark Aiden Lee absent' });
   const box = await dialog.boundingBox();
   const viewport = page.viewportSize();
@@ -178,10 +183,10 @@ test('attendance dialogs are centered overlays that block page actions', async (
   expect(Math.abs(box!.x + box!.width / 2 - viewport!.width / 2)).toBeLessThanOrEqual(1);
   expect(Math.abs(box!.y + box!.height / 2 - viewport!.height / 2)).toBeLessThanOrEqual(1);
 
-  await expect(target.getByRole('button', { name: 'Present', exact: true })).toBeVisible();
+  await expect(target.getByRole('button', { name: 'Mark Aiden Lee present' })).toBeVisible();
   await expect(
     target
-      .getByRole('button', { name: 'Present', exact: true })
+      .getByRole('button', { name: 'Mark Aiden Lee present' })
       .click({ trial: true, timeout: 500 }),
   ).rejects.toThrow();
   await expect(target.getByText('Not marked', { exact: true })).toBeVisible();

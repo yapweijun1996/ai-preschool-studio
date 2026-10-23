@@ -243,7 +243,7 @@ export function Attendance() {
               ref={summaryRef}
               tabIndex={-1}
               className="attendance-summary"
-              aria-label={t('pages.attendance.title')}
+              aria-label={t('pages.attendance.summaryLabel')}
             >
               {(['present', 'late', 'absent', 'notMarked'] as const).map((key) => (
                 <div key={key} className={`attendance-stat stat-${key}`}>
@@ -299,7 +299,7 @@ export function Attendance() {
             )}
             <section
               className="attendance-list"
-              aria-label={t('pages.attendance.title')}
+              aria-label={t('pages.attendance.registerLabel')}
               aria-busy={loading}
             >
               {loading ? (
@@ -384,6 +384,7 @@ export function Attendance() {
                                   <button
                                     className="btn btn-primary"
                                     type="button"
+                                    aria-label={t('pages.attendance.markPresentFor', { name: row.child.name })}
                                     onClick={() => void markPresent(row, arrival)}
                                   >
                                     {t('pages.attendance.save')}
@@ -394,6 +395,7 @@ export function Attendance() {
                                   <button
                                     className="btn btn-primary"
                                     type="button"
+                                    aria-label={t('pages.attendance.markPresentFor', { name: row.child.name })}
                                     onClick={() => void markPresent(row)}
                                   >
                                     {t('pages.attendance.markPresent')}
@@ -401,6 +403,7 @@ export function Attendance() {
                                   <button
                                     className="btn btn-ghost"
                                     type="button"
+                                    aria-label={t('pages.attendance.markAbsentFor', { name: row.child.name })}
                                     onClick={(e) => {
                                       trigger.current = e.currentTarget;
                                       fallbackFocusId.current = row.child.id;
@@ -414,6 +417,7 @@ export function Attendance() {
                                   <button
                                     className="btn btn-ghost"
                                     type="button"
+                                    aria-label={t('pages.attendance.setTimeFor', { name: row.child.name })}
                                     onClick={() => {
                                       setTimeFor(row.child.id);
                                       setArrival(timeValue());
@@ -429,6 +433,7 @@ export function Attendance() {
                             <button
                               className="btn btn-secondary"
                               type="button"
+                              aria-label={t('pages.attendance.changeFor', { name: row.child.name })}
                               onClick={(e) => {
                                 trigger.current = e.currentTarget;
                                 fallbackFocusId.current = row.child.id;
@@ -1297,6 +1302,7 @@ export function AttendanceHistory() {
                         <button
                           className="btn btn-secondary"
                           type="button"
+                          aria-label={t('pages.attendance.amendFor', { name: row.child.name })}
                           onClick={() => {
                             fallbackFocusId.current = row.child.id;
                             fallbackFocusRef.current = document.querySelector<HTMLElement>(
