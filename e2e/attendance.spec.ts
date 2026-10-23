@@ -257,7 +257,7 @@ test('kiosk method tabs fit at mobile width in all supported languages', async (
     );
     expect(metrics).toHaveLength(3);
     for (const item of metrics) {
-      expect(item.height).toBeGreaterThanOrEqual(44);
+      expect(item.height).toBe(44);
       expect(item.scrollWidth).toBeLessThanOrEqual(item.clientWidth);
     }
   }
